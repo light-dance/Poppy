@@ -1,0 +1,19 @@
+Sources/Poppy/Support/AppLifecycleController.swift
+  s_a045fba1536644::t_0374cc5cae610b 14-15,43,45-50,76-83,88-91,104-106,147-154
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "64dc2478d65d0b0b0f2c126b88bede261211a69d",
+  "prompts": {},
+  "sessions": {
+    "s_a045fba1536644": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4bc1-32fb-75b2-991c-fedf8cd6a66b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
