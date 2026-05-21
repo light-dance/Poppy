@@ -1,0 +1,87 @@
+Sources/MacInstalls/Views/StatusWindowView.swift
+  s_ee5dcd17d13cb2::t_5c3fbe5c7fd699 49
+  s_ee5dcd17d13cb2::t_75d43193a8540c 1,6,14-15,17,25,28-32,38-42,44-45,52,54-55,59-60,89-107,110-113,116-128,130-138,141,143-146,149-153,157-159,226-229,231-252
+  s_ee5dcd17d13cb2::t_d4f74ecfeac126 16,18-19,24,26-27,53,57-58,108-109,114-115,129,142,162-163,230
+  s_ee5dcd17d13cb2::t_f351b5121dfdbc 168-169,187-188,190-194,196,198,200-202
+  s_ee5dcd17d13cb2::t_c35e649e0e8878 46,48,88
+  s_ee5dcd17d13cb2::t_2b0bed9687b690 197
+  s_ee5dcd17d13cb2::t_1d017a1dbb6c52 20-23,33-34,164,172,174,182,189,195,199,206-225
+  s_ee5dcd17d13cb2::t_1ab1a202440c51 63,65,67,74,79,81,84-85
+Sources/MacInstalls/Stores/InstallStore.swift
+  s_ee5dcd17d13cb2::t_42bbc2800e3470 17,80-81,213-214,234-235,237-238,240-241,253-254,260-265
+  s_ee5dcd17d13cb2::t_75d43193a8540c 172-175
+  s_ee5dcd17d13cb2::t_53b77e77396032 7,14,26-31,89-109,217,221,381
+  s_ee5dcd17d13cb2::t_e44d19e923dc26 10,39-40,112,123-124,132-133,142-143,146-148,151,171,178,188-189,195-196,199-200,216,218-219,233,285-286,329,333-334,340-342,346-347,351,358-359,371-372,379-380,389-390,392-395
+  s_ee5dcd17d13cb2::t_ed212c196f39da 58-59,156,164,228,236,247,268,314,316
+  s_ee5dcd17d13cb2::t_353d407cd24e25 176-177,179-187,405-413
+  s_ee5dcd17d13cb2::t_8ba29b45b4d50b 36-38,41-45,82,138-141,144,149-150,152-155,157-163,165-169,190-194,197-198,201-209,211-212,232,251,287,303,311,320-328,330-332,335-339,343-345,348-350,352-357,360-370,373-378,382-388,391,396-404
+  s_ee5dcd17d13cb2::t_7e1cf58410df7c 210,220,230
+Sources/MacInstalls/Views/SettingsView.swift
+  s_ee5dcd17d13cb2::t_e4047904c654d8 10-15,17-21,30,34-55
+Sources/MacInstalls/Services/DownloadsWatcher.swift
+  s_ee5dcd17d13cb2::t_ee0a7094933f38 7,15-16,20
+  s_ee5dcd17d13cb2::t_ea8dfe2f7d2bd8 100-103
+  s_ee5dcd17d13cb2::t_ed212c196f39da 25,38
+  s_ee5dcd17d13cb2::t_7e1cf58410df7c 3,72
+  s_ee5dcd17d13cb2::t_b2fec4a6103f0d 8,39,54,65-67,69-70,74-75,78-79,83,93
+Sources/MacInstalls/App/MacInstallsApp.swift
+  s_ee5dcd17d13cb2::t_6a4f818a1e2300 30-31
+  s_ee5dcd17d13cb2::t_d270ceaf95c7e2 9,42
+  s_ee5dcd17d13cb2::t_fc590377eaaa4b 23,27,39,75
+  s_ee5dcd17d13cb2::t_1d017a1dbb6c52 83-84,86-97
+  s_ee5dcd17d13cb2::t_353d407cd24e25 43-70
+  s_ee5dcd17d13cb2::t_d7476ef72a4de4 38
+  s_ee5dcd17d13cb2::t_c35e649e0e8878 32
+  s_ee5dcd17d13cb2::t_d4f74ecfeac126 82,85
+Sources/MacInstalls/Models/InstallableItem.swift
+  s_ee5dcd17d13cb2::t_b2fec4a6103f0d 1-34
+Sources/MacInstalls/Views/FloatingInstallPanelView.swift
+  s_ee5dcd17d13cb2::t_719880236b5123 309
+  s_ee5dcd17d13cb2::t_e6a2f911dfe4f3 25-29,32,34-36,38-41,44-47,50-59,61,64-65,67-68,71-73,83-86,89-90,93,96-98,137,139-141
+  s_ee5dcd17d13cb2::t_5fbdc044739fe5 33,115,153,302-308
+  s_ee5dcd17d13cb2::t_98381d497f5bcb 6,78,80-82,243,256,287,296-300
+  s_ee5dcd17d13cb2::t_d4f74ecfeac126 43,252
+  s_ee5dcd17d13cb2::t_3f3df3dc598d8e 79,196,288-295,310-313,315-317
+  s_ee5dcd17d13cb2::t_d445d2468e4342 214,226
+  s_ee5dcd17d13cb2::t_df02fe13a6de6e 30,112,150
+  s_ee5dcd17d13cb2::t_01b57da06f1ad4 15-16,143-149,152,155-156,158-161,163-183,185-189
+  s_ee5dcd17d13cb2::t_383846de4fc003 21,49
+  s_ee5dcd17d13cb2::t_3000097d6eefea 70,100,138,184
+  s_ee5dcd17d13cb2::t_269eeaa62f519d 9-12,17-18,22,24,60,66,76,142,191-195,201-207,210-213,215,217-220,222-225,227,229,231-232,236,239,249,262,267,269,275
+  s_ee5dcd17d13cb2::t_5c3cf51f1ca8e2 13-14,101-103,106-111,113-114,116-118,120-123,125-129,131-136
+  s_ee5dcd17d13cb2::t_9b969ad9807b79 208,216,228
+  s_ee5dcd17d13cb2::t_1e1ebbf12fbdb5 255
+  s_ee5dcd17d13cb2::t_40fc6b0a783dfa 62-63
+  s_ee5dcd17d13cb2::t_7114d15ff5d5d1 314
+Sources/MacInstalls/Support/FloatingInstallPanelController.swift
+  s_ee5dcd17d13cb2::t_bcee19a4ca9ffc 75
+  s_ee5dcd17d13cb2::t_269eeaa62f519d 44
+  s_ee5dcd17d13cb2::t_e95ff3b187c68d 7-8,28,31-32,43,61,72-74,76-80
+Sources/MacInstalls/Services/InstallService.swift
+  s_ee5dcd17d13cb2::t_ea8dfe2f7d2bd8 3,5,16-18,20,22,24,26,28,30,35,39,42-94,96,99,104,107,109,111-118,121,125,130,133,140-145,160,168,177,183,193,196-197,200
+Package.swift
+  s_ee5dcd17d13cb2::t_5c3fbe5c7fd699 8
+  s_ee5dcd17d13cb2::t_f848bd0598c1d1 1
+Sources/MacInstalls/Models/InstallJob.swift
+  s_ee5dcd17d13cb2::t_b2fec4a6103f0d 12-13,17-23,25
+Sources/MacInstalls/Models/InstallRecord.swift
+  s_ee5dcd17d13cb2::t_ed212c196f39da 12
+README.md
+  s_ee5dcd17d13cb2::t_ed212c196f39da 3,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "3f7b0ee03754eacf5ba251d8ee63664b2a6b00a5",
+  "prompts": {},
+  "sessions": {
+    "s_ee5dcd17d13cb2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4894-6064-70e2-bbca-4e6a787d9884",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
