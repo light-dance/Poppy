@@ -1,0 +1,21 @@
+Sources/Poppy/App/PoppyApp.swift
+  s_a045fba1536644::t_2364db6306f8f0 163-168
+Sources/Poppy/Support/AppLifecycleController.swift
+  s_a045fba1536644::t_7aca1ff72f7091 117-120
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "32a7990bfed27b1901a33ddb50e84d766ec31f47",
+  "prompts": {},
+  "sessions": {
+    "s_a045fba1536644": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4bc1-32fb-75b2-991c-fedf8cd6a66b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
