@@ -114,6 +114,10 @@ final class AppLifecycleController: ObservableObject {
         notificationObserversByWindow[id] = observer
     }
 
+    func observeSettingsWindow(_ window: NSWindow) {
+        observePresentedWindow(window)
+    }
+
     private func observePresentedWindow(_ window: NSWindow) {
         let id = ObjectIdentifier(window)
         guard !observedMainWindows.contains(id), !observedPresentedWindows.contains(id) else { return }

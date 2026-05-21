@@ -160,6 +160,12 @@ struct PoppyApp: App {
                     }
                 )
             )
+            .background {
+                WindowLifecycleReporter { window in
+                    appDelegate.lifecycle.observeSettingsWindow(window)
+                }
+                .frame(width: 0, height: 0)
+            }
         }
     }
 }
