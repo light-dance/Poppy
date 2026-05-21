@@ -2,6 +2,8 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var store: InstallStore
+    @Binding var hideInDock: Bool
+    @Binding var hideInMenuBar: Bool
 
     var body: some View {
         TabView {
@@ -21,13 +23,28 @@ struct SettingsView: View {
                         store.chooseInstallFolder()
                     }
                 }
+
+                Section("Appearance") {
+                    Toggle("Hide in Dock", isOn: $hideInDock)
+
+                    Toggle("Hide in menu bar", isOn: $hideInMenuBar)
+
+                    if hideInDock && hideInMenuBar {
+                        Label(
+                            "Opening Mac Installs from Finder or Spotlight will show this window and restore the Dock icon until the window closes.",
+                            systemImage: "info.circle"
+                        )
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    }
+                }
             }
             .formStyle(.grouped)
             .tabItem {
                 Label("General", systemImage: "gearshape")
             }
         }
-        .frame(width: 620, height: 220)
+        .frame(width: 620, height: 340)
         .scenePadding()
     }
 }

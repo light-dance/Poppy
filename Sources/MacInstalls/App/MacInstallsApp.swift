@@ -3,12 +3,20 @@ import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    let lifecycle = AppLifecycleController()
     private let panelController = FloatingInstallPanelController()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
-        NSApp.setActivationPolicy(.regular)
-        NSApp.activate(ignoringOtherApps: true)
+        lifecycle.applicationDidFinishLaunching()
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        lifecycle.applicationShouldHandleReopen(hasVisibleWindows: flag)
+    }
+
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
+        false
     }
 
     @MainActor
@@ -21,6 +29,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 struct MacInstallsApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
+    @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = false
+    @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
     @StateObject private var store = InstallStore()
 
     var body: some Scene {
@@ -31,8 +42,19 @@ struct MacInstallsApp: App {
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
                 .containerBackground(.thinMaterial, for: .window)
                 .task {
+                    appDelegate.lifecycle.configure {
+                        openWindow(id: "main")
+                    }
+                    appDelegate.lifecycle.setHideInDock(hideInDock)
+                    appDelegate.lifecycle.setHideInMenuBar(hideInMenuBar)
                     appDelegate.bind(to: store)
                     store.start()
+                }
+                .background {
+                    WindowLifecycleReporter { window in
+                        appDelegate.lifecycle.observeMainWindow(window)
+                    }
+                    .frame(width: 0, height: 0)
                 }
         }
         .defaultSize(width: 770, height: 605)
@@ -70,10 +92,16 @@ struct MacInstallsApp: App {
             }
         }
 
-        MenuBarExtra("Mac Installs", systemImage: "opticaldiscdrive") {
+        MenuBarExtra(
+            "Mac Installs",
+            systemImage: "opticaldiscdrive",
+            isInserted: Binding(
+                get: { !hideInMenuBar },
+                set: { hideInMenuBar = !$0 }
+            )
+        ) {
             Button {
-                openWindow(id: "main")
-                NSApp.activate(ignoringOtherApps: true)
+                appDelegate.lifecycle.showMainWindow()
             } label: {
                 Label("Open Mac Installs", systemImage: "sidebar.left")
             }
@@ -97,7 +125,11 @@ struct MacInstallsApp: App {
 
             Divider()
 
-            SettingsLink {
+            Button {
+                appDelegate.lifecycle.showSettings {
+                    openSettings()
+                }
+            } label: {
                 Label("Settings", systemImage: "gearshape")
             }
             .keyboardShortcut(",")
@@ -111,7 +143,23 @@ struct MacInstallsApp: App {
         }
 
         Settings {
-            SettingsView(store: store)
+            SettingsView(
+                store: store,
+                hideInDock: Binding(
+                    get: { hideInDock },
+                    set: { newValue in
+                        hideInDock = newValue
+                        appDelegate.lifecycle.setHideInDock(newValue)
+                    }
+                ),
+                hideInMenuBar: Binding(
+                    get: { hideInMenuBar },
+                    set: { newValue in
+                        hideInMenuBar = newValue
+                        appDelegate.lifecycle.setHideInMenuBar(newValue)
+                    }
+                )
+            )
         }
     }
 }
