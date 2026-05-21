@@ -35,32 +35,24 @@ struct MacInstallsApp: App {
         }
 
         MenuBarExtra("Mac Installs", systemImage: "opticaldiscdrive") {
-            Button(store.isWatching ? "Watching Folder" : "Start Watching") {
-                store.start()
+            Button {
+                NSApp.activate(ignoringOtherApps: true)
+            } label: {
+                Label("Open Mac Installs", systemImage: "sidebar.left")
             }
-            .disabled(store.isWatching)
-
-            Button("Stop Watching") {
-                store.stop()
-            }
-            .disabled(!store.isWatching)
+            .keyboardShortcut("o")
 
             Divider()
 
-            Button("Choose Watch Folder...") {
-                store.chooseWatchedFolder()
-            }
-
             SettingsLink {
-                Text("Settings...")
+                Label("Settings", systemImage: "gearshape")
             }
+            .keyboardShortcut(",")
 
-            Button("Open Mac Installs") {
-                NSApp.activate(ignoringOtherApps: true)
-            }
-
-            Button("Quit") {
+            Button {
                 NSApp.terminate(nil)
+            } label: {
+                Label("Quit", systemImage: "xmark.rectangle")
             }
             .keyboardShortcut("q")
         }
