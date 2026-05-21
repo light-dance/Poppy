@@ -11,6 +11,8 @@ final class AppLifecycleController: ObservableObject {
     private var observedMainWindows: Set<ObjectIdentifier> = []
     private var observedPresentedWindows: Set<ObjectIdentifier> = []
     private var notificationObserversByWindow: [ObjectIdentifier: NSObjectProtocol] = [:]
+    private weak var mainWindow: NSWindow?
+    private var shouldBringMainWindowForward = false
     private var openMainWindow: (() -> Void)?
 
     init(userDefaults: UserDefaults = .standard) {
@@ -38,8 +40,14 @@ final class AppLifecycleController: ObservableObject {
 
     func showMainWindow() {
         NSApp.setActivationPolicy(.regular)
+        shouldBringMainWindowForward = true
         openMainWindow?()
-        NSApp.activate(ignoringOtherApps: true)
+
+        if let mainWindow {
+            bringMainWindowForward(mainWindow)
+        } else {
+            NSApp.activate(ignoringOtherApps: true)
+        }
     }
 
     func showSettings(openSettings: () -> Void) {
@@ -65,10 +73,21 @@ final class AppLifecycleController: ObservableObject {
 
     func observeMainWindow(_ window: NSWindow) {
         let id = ObjectIdentifier(window)
-        guard !observedMainWindows.contains(id) else { return }
+        mainWindow = window
+
+        guard !observedMainWindows.contains(id) else {
+            if shouldBringMainWindowForward {
+                bringMainWindowForward(window)
+            }
+            return
+        }
 
         observedMainWindows.insert(id)
         updateActivationPolicy()
+
+        if shouldBringMainWindowForward {
+            bringMainWindowForward(window)
+        }
 
         let observer = NotificationCenter.default.addObserver(
             forName: NSWindow.willCloseNotification,
@@ -81,6 +100,9 @@ final class AppLifecycleController: ObservableObject {
                 self.observedMainWindows.remove(id)
                 if let observer = self.notificationObserversByWindow.removeValue(forKey: id) {
                     NotificationCenter.default.removeObserver(observer)
+                }
+                if self.mainWindow === window {
+                    self.mainWindow = nil
                 }
                 self.updateActivationPolicy()
             }
@@ -120,6 +142,16 @@ final class AppLifecycleController: ObservableObject {
         } else {
             NSApp.setActivationPolicy(.regular)
         }
+    }
+
+    private func bringMainWindowForward(_ window: NSWindow) {
+        shouldBringMainWindowForward = false
+        NSApp.setActivationPolicy(.regular)
+        if window.isMiniaturized {
+            window.deminiaturize(nil)
+        }
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     private func bringSettingsWindowForward() {
