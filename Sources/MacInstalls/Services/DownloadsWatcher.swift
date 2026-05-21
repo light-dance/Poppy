@@ -1,24 +1,28 @@
 import Foundation
 
+@MainActor
 final class DownloadsWatcher {
     private let downloadsURL: URL
     private let onDetected: @MainActor (URL) -> Void
-    private var knownDMGs = Set<URL>()
+    private let onChanged: @MainActor () -> Void
+    private var knownInstallables = Set<URL>()
     private var sizeCache = [URL: Int64]()
     private var source: DispatchSourceFileSystemObject?
     private var fileDescriptor: CInt = -1
 
     init(
         downloadsURL: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads"),
-        onDetected: @escaping @MainActor (URL) -> Void
+        onDetected: @escaping @MainActor (URL) -> Void,
+        onChanged: @escaping @MainActor () -> Void = {}
     ) {
         self.downloadsURL = downloadsURL
         self.onDetected = onDetected
+        self.onChanged = onChanged
     }
 
     func start() {
         stop()
-        seedKnownDMGs()
+        seedKnownInstallables()
         startDirectoryEvents()
     }
 
@@ -31,8 +35,8 @@ final class DownloadsWatcher {
         }
     }
 
-    private func seedKnownDMGs() {
-        knownDMGs = Set(currentDMGs())
+    private func seedKnownInstallables() {
+        knownInstallables = Set(currentInstallables())
     }
 
     private func startDirectoryEvents() {
@@ -47,7 +51,7 @@ final class DownloadsWatcher {
             queue: .main
         )
         source.setEventHandler { [weak self] in
-            self?.scanForReadyDMGs()
+            self?.scanForReadyInstallables()
         }
         source.setCancelHandler { [weak self] in
             guard let self, self.fileDescriptor >= 0 else { return }
@@ -58,25 +62,25 @@ final class DownloadsWatcher {
         source.resume()
     }
 
-    private func scanForReadyDMGs() {
-        let currentDMGs = currentDMGs()
-        let currentDMGSet = Set(currentDMGs)
+    private func scanForReadyInstallables() {
+        let currentInstallables = currentInstallables()
+        let currentInstallableSet = Set(currentInstallables)
 
-        knownDMGs.formIntersection(currentDMGSet)
-        sizeCache = sizeCache.filter { currentDMGSet.contains($0.key) }
+        knownInstallables.formIntersection(currentInstallableSet)
+        sizeCache = sizeCache.filter { currentInstallableSet.contains($0.key) }
 
-        for dmgURL in currentDMGs where !knownDMGs.contains(dmgURL) {
-            guard isStableFile(at: dmgURL) else {
+        onChanged()
+
+        for url in currentInstallables where !knownInstallables.contains(url) {
+            guard isStableFile(at: url) else {
                 continue
             }
-            knownDMGs.insert(dmgURL)
-            Task { @MainActor in
-                onDetected(dmgURL)
-            }
+            knownInstallables.insert(url)
+            onDetected(url)
         }
     }
 
-    private func currentDMGs() -> [URL] {
+    private func currentInstallables() -> [URL] {
         guard let urls = try? FileManager.default.contentsOfDirectory(
             at: downloadsURL,
             includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
@@ -86,13 +90,17 @@ final class DownloadsWatcher {
         }
 
         return urls.filter { url in
-            url.pathExtension.lowercased() == "dmg"
+            InstallableKind(url: url) != nil
                 && !url.lastPathComponent.hasSuffix(".download")
                 && !url.lastPathComponent.hasSuffix(".crdownload")
         }
     }
 
     private func isStableFile(at url: URL) -> Bool {
+        if InstallableKind(url: url) == .appBundle {
+            return true
+        }
+
         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize).map(Int64.init) ?? -1
         let previousSize = sizeCache[url]
         sizeCache[url] = size

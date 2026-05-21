@@ -1,7 +1,9 @@
+import AppKit
 import SwiftUI
 
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
+    @State private var installedDisplayMode: InstalledDisplayMode = .list
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -9,92 +11,167 @@ struct StatusWindowView: View {
 
             Divider()
 
-            List {
-                Section("Recent Activity") {
-                    if store.records.isEmpty {
-                        ContentUnavailableView(
-                            "No installs yet",
-                            systemImage: "opticaldiscdrive",
-                            description: Text("New DMGs added to the watched folder after this app starts will appear here.")
-                        )
-                        .frame(maxWidth: .infinity, minHeight: 220)
-                    } else {
-                        ForEach(store.records) { record in
-                            RecordRow(record: record)
+            VStack(alignment: .leading, spacing: 16) {
+                List {
+                    if !store.installingItems.isEmpty {
+                        Section("In Progress") {
+                            ForEach(store.installingItems) { item in
+                                InstallableItemRow(item: item) {}
+                            }
+                        }
+                    }
+
+                    if !store.readyItems.isEmpty {
+                        Section("Ready To Install") {
+                            ForEach(store.readyItems) { item in
+                                InstallableItemRow(item: item) {
+                                    Button {
+                                        store.installNow(item)
+                                    } label: {
+                                        Label("Install", systemImage: "arrow.down.app")
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+                .frame(height: transientListHeight)
+                .listStyle(.inset)
+                .scrollContentBackground(.hidden)
+
+                installedSection
             }
-            .listStyle(.inset)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(.clear)
+    }
+
+    private var transientListHeight: CGFloat {
+        if store.installingItems.isEmpty && store.readyItems.isEmpty {
+            return 0
+        }
+
+        let rowCount = store.installingItems.count + store.readyItems.count
+        let sectionCount = (store.installingItems.isEmpty ? 0 : 1) + (store.readyItems.isEmpty ? 0 : 1)
+        return CGFloat(min(260, 48 + rowCount * 46 + sectionCount * 24))
     }
 
     private var header: some View {
-        HStack(spacing: 14) {
-            Image(systemName: "arrow.down.app")
-                .font(.system(size: 26, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 48, height: 48)
-                .background(Color.accentColor, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Mac Installs")
-                    .font(.title2.weight(.semibold))
-                Text(statusText)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-
-            Spacer()
-
-            Button {
-                store.promptForLatestDMGInWatchedFolder()
-            } label: {
-                Label("Check Folder", systemImage: "magnifyingglass")
-            }
-            .buttonStyle(.bordered)
-
-            Button {
-                store.chooseWatchedFolder()
-            } label: {
-                Label("Folder", systemImage: "folder")
-            }
-            .buttonStyle(.bordered)
-
+        HStack(spacing: 10) {
             Button {
                 store.isWatching ? store.stop() : store.start()
             } label: {
                 Label(store.isWatching ? "Pause" : "Watch", systemImage: store.isWatching ? "pause.fill" : "play.fill")
             }
             .buttonStyle(.bordered)
+
+            Button {
+                store.chooseWatchedFolder()
+            } label: {
+                Label("Downloads Location", systemImage: "folder")
+            }
+            .buttonStyle(.bordered)
+
+            Button {
+                store.chooseInstallFolder()
+            } label: {
+                Label("Install Location", systemImage: "folder.badge.plus")
+            }
+            .buttonStyle(.bordered)
+
+            Spacer()
         }
         .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private var statusText: String {
-        let folder = store.watchedFolderURL.path(percentEncoded: false)
-        if store.isWatching {
-            return "Watching \(folder) for new DMGs"
+    private var installedSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("Installed")
+                    .font(.title2.weight(.semibold))
+
+                Spacer()
+
+                Picker("Installed View", selection: $installedDisplayMode) {
+                    Label("List", systemImage: "list.bullet").tag(InstalledDisplayMode.list)
+                    Label("Grid", systemImage: "square.grid.2x2").tag(InstalledDisplayMode.grid)
+                }
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .frame(width: 150)
+            }
+
+            if store.installedItems.isEmpty {
+                Label("No installed apps to clean up", systemImage: "checkmark.circle")
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 8)
+            } else if installedDisplayMode == .list {
+                VStack(spacing: 0) {
+                    ForEach(store.installedItems) { item in
+                        InstallableItemRow(item: item) {
+                            Button(role: .destructive) {
+                                store.cleanup(item)
+                            } label: {
+                                Label("Clean Up", systemImage: "trash")
+                            }
+                        }
+                        .contextMenu {
+                            installedContextMenu(for: item)
+                        }
+                    }
+                }
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 18)], alignment: .leading, spacing: 18) {
+                    ForEach(store.installedItems) { item in
+                        InstalledGridItem(item: item)
+                            .contextMenu {
+                                installedContextMenu(for: item)
+                            }
+                    }
+                }
+                .padding(.top, 2)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func installedContextMenu(for item: InstallableItem) -> some View {
+        Button {
+            store.openApp(item)
+        } label: {
+            Label("Open App", systemImage: "arrow.up.right.square")
         }
 
-        return "Watching is paused for \(folder)"
+        Button(role: .destructive) {
+            store.cleanup(item)
+        } label: {
+            Label("Clean Up", systemImage: "trash")
+        }
     }
 }
 
-private struct RecordRow: View {
-    let record: InstallRecord
+private enum InstalledDisplayMode {
+    case list
+    case grid
+}
+
+private struct InstallableItemRow<Actions: View>: View {
+    let item: InstallableItem
+    @ViewBuilder var actions: () -> Actions
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: iconName)
-                .foregroundStyle(iconColor)
-                .frame(width: 24)
+            rowIcon
+                .frame(width: 28, height: 28)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(record.appName)
+                Text(item.displayName)
                     .font(.headline)
-                Text(record.detail)
+                Text(detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -102,32 +179,77 @@ private struct RecordRow: View {
 
             Spacer()
 
-            Text(record.date, style: .time)
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+            actions()
         }
         .padding(.vertical, 5)
     }
 
-    private var iconName: String {
-        switch record.result {
-        case .success:
-            "checkmark.circle"
-        case .cancelled:
-            "minus.circle"
-        case .failed:
-            "exclamationmark.triangle"
+    @ViewBuilder
+    private var rowIcon: some View {
+        switch item.status {
+        case .installed(let appURL):
+            Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
+                .resizable()
+                .scaledToFit()
+                .frame(width: 28, height: 28)
+        case .ready:
+            Image(systemName: "opticaldiscdrive")
+                .foregroundStyle(Color.accentColor)
+                .frame(width: 24, height: 24)
+        case .installing:
+            Image(systemName: "arrow.down.circle")
+                .foregroundStyle(.orange)
+                .frame(width: 24, height: 24)
         }
     }
 
-    private var iconColor: Color {
-        switch record.result {
-        case .success:
-            .green
-        case .cancelled:
-            .secondary
-        case .failed:
-            .red
+    private var detail: String {
+        switch item.status {
+        case .ready:
+            item.url.lastPathComponent
+        case .installing(let step):
+            step
+        case .installed(let appURL):
+            "Installed as \(appURL.lastPathComponent)"
+        }
+    }
+}
+
+private struct EmptySectionRow: View {
+    let title: String
+    let systemImage: String
+
+    var body: some View {
+        Label(title, systemImage: systemImage)
+            .foregroundStyle(.secondary)
+            .padding(.vertical, 5)
+    }
+}
+
+private struct InstalledGridItem: View {
+    let item: InstallableItem
+
+    var body: some View {
+        VStack(spacing: 6) {
+            icon
+                .frame(width: 52, height: 52)
+        }
+        .frame(width: 72, height: 72)
+        .contentShape(Rectangle())
+    }
+
+    private var icon: some View {
+        Group {
+            if case .installed(let appURL) = item.status {
+                Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "app.dashed")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }

@@ -9,11 +9,19 @@ struct InstallJob: Identifiable, Equatable {
     }
 
     let id = UUID()
-    let dmgURL: URL
+    let sourceURL: URL
+    let kind: InstallableKind
     var appName: String?
     var state: State
 
+    init(sourceURL: URL, kind: InstallableKind? = nil, appName: String?, state: State) {
+        self.sourceURL = sourceURL
+        self.kind = kind ?? InstallableKind(url: sourceURL) ?? .diskImage
+        self.appName = appName
+        self.state = state
+    }
+
     var displayName: String {
-        appName ?? dmgURL.deletingPathExtension().lastPathComponent
+        appName ?? sourceURL.deletingPathExtension().lastPathComponent
     }
 }

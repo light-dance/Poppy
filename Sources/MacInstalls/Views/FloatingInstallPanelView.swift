@@ -3,165 +3,276 @@ import SwiftUI
 struct FloatingInstallPanelView: View {
     let job: InstallJob
     @ObservedObject var store: InstallStore
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(0.96))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(.regularMaterial)
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .stroke(.quaternary, lineWidth: 1)
-                }
-
-            VStack(alignment: .leading, spacing: 16) {
-                header(for: job)
-
-                Text(message(for: job))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                Spacer(minLength: 0)
-
-                controls(for: job)
+        Group {
+            switch job.state {
+            case .awaitingApproval:
+                approvalView
+            case .installing:
+                installingView
+            case .installed:
+                installedView
+            default:
+                statusView
             }
-            .padding(20)
         }
-        .frame(width: 420, height: 190)
+        .frame(height: 62)
     }
 
-    private func header(for job: InstallJob) -> some View {
+    private var approvalView: some View {
         HStack(spacing: 12) {
-            Image(systemName: iconName(for: job))
-                .font(.system(size: 22, weight: .semibold))
-                .foregroundStyle(iconColor(for: job))
-                .frame(width: 36, height: 36)
-                .background(.tertiary, in: Circle())
+            Button {
+                store.cancelCurrentInstall()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 40, height: 40)
+                    .background(leftButtonBackground, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(title(for: job))
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Install Downloaded App?")
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
                     .lineLimit(1)
 
-                Text(subtitle(for: job))
-                    .font(.caption)
+                Text(job.sourceURL.lastPathComponent)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .frame(minWidth: 90, maxWidth: 270, alignment: .leading)
+            .layoutPriority(1)
+
+            Button {
+                store.approveCurrentInstall()
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    Text("Install")
+                        .font(.system(size: 17, weight: .semibold, design: .rounded))
+                }
+                .foregroundStyle(.white)
+                .padding(.leading, 12)
+                .padding(.trailing, 15)
+                .frame(height: 40)
+                .background(Color.accentColor, in: Capsule(style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(9)
+        .frame(minHeight: 62)
+        .background(capsuleBackground)
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+    private var statusView: some View {
+        HStack(spacing: 12) {
+                    Image(systemName: iconName)
+                        .font(.system(size: 18, weight: iconWeight))
+                        .foregroundStyle(iconColor)
+                        .frame(width: 40, height: 40)
+                        .background(passiveIconBackground, in: Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .lineLimit(1)
+
+                Text(message)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
-            Spacer()
+            Spacer(minLength: 10)
+
+            statusAction
         }
+        .padding(9)
+        .frame(minHeight: 62)
+        .background(capsuleBackground)
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+    private var installingView: some View {
+        HStack(spacing: 12) {
+            Button {
+                store.cancelCurrentInstall()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 40, height: 40)
+                    .background(leftButtonBackground, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .lineLimit(1)
+
+                Text(message)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .frame(minWidth: 90, maxWidth: 270, alignment: .leading)
+            .layoutPriority(1)
+
+            ProgressView()
+                .controlSize(.small)
+                .frame(width: 40, height: 40)
+        }
+        .padding(9)
+        .frame(minHeight: 62)
+        .background(capsuleBackground)
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+    private var installedView: some View {
+        HStack(spacing: 12) {
+            Button {
+                store.dismissCurrentJob()
+            } label: {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .frame(width: 40, height: 40)
+                    .background(leftButtonBackground, in: Circle())
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.cancelAction)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .lineLimit(1)
+
+                Text(message)
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
+            }
+            .frame(minWidth: 90, maxWidth: 270, alignment: .leading)
+            .layoutPriority(1)
+
+            Button {
+                store.openInstalledApp()
+            } label: {
+                Text("Open")
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 82, height: 40)
+                    .background(Color.accentColor, in: Capsule(style: .continuous))
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.defaultAction)
+        }
+        .padding(9)
+        .frame(minHeight: 62)
+        .background(capsuleBackground)
+        .fixedSize(horizontal: true, vertical: true)
+    }
+
+
+    private var capsuleBackground: some View {
+        Capsule(style: .continuous)
+            .fill(.regularMaterial)
+            .overlay {
+                Capsule(style: .continuous)
+                    .stroke(capsuleStrokeColor, lineWidth: 1)
+            }
     }
 
     @ViewBuilder
-    private func controls(for job: InstallJob) -> some View {
+    private var statusAction: some View {
         switch job.state {
         case .awaitingApproval:
-            HStack {
-                Button("Not Now") {
-                    store.cancelCurrentInstall()
-                }
-                .keyboardShortcut(.cancelAction)
-
-                Spacer()
-
-                Button {
-                    store.approveCurrentInstall()
-                } label: {
-                    Label("Install", systemImage: "arrow.down.app")
-                }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
-            }
+            EmptyView()
         case .installing:
-            HStack(spacing: 10) {
-                ProgressView()
-                    .controlSize(.small)
-                Text("Working")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                Spacer()
-            }
+            ProgressView()
+                .controlSize(.small)
+                .frame(width: 40, height: 40)
         case .installed:
-            HStack {
-                Button("Done") {
-                    store.dismissCurrentJob()
-                }
-
-                Spacer()
-
-                Button {
-                    store.openInstalledApp()
-                } label: {
-                    Label("Open App", systemImage: "arrow.up.right.square")
-                }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
+            Button {
+                store.openInstalledApp()
+            } label: {
+                Text("Open")
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .foregroundStyle(.white)
+                    .frame(width: 82, height: 40)
+                    .background(Color.accentColor, in: Capsule(style: .continuous))
             }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.defaultAction)
         case .failed:
-            HStack {
-                Spacer()
-                Button("Dismiss") {
-                    store.dismissCurrentJob()
-                }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
+            Button {
+                store.dismissCurrentJob()
+            } label: {
+                Text("Dismiss")
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 94, height: 40)
+                    .background(.tertiary, in: Capsule(style: .continuous))
             }
+            .buttonStyle(.plain)
+            .keyboardShortcut(.defaultAction)
         }
     }
 
-    private func title(for job: InstallJob) -> String {
+    private var title: String {
         switch job.state {
         case .awaitingApproval:
-            "Install \(job.displayName)?"
+            "Install Downloaded App?"
         case .installing:
             "Installing \(job.displayName)"
         case .installed:
-            "\(job.displayName) installed"
+            "\(job.displayName) Installed"
         case .failed:
             "Install failed"
         }
     }
 
-    private func message(for job: InstallJob) -> String {
+    private var message: String {
         switch job.state {
         case .awaitingApproval:
-            "A new disk image appeared in Downloads. Approve this to mount it, copy the app to ~/Applications, unmount, and remove the DMG."
+            job.sourceURL.lastPathComponent
         case .installing(let step):
             step
-        case .installed(let appURL):
-            "\(appURL.lastPathComponent) was copied to ~/Applications and the disk image was cleaned up."
+        case .installed:
+            "Downloads Cleaned Up"
         case .failed(let message):
             message
         }
     }
 
-    private func subtitle(for job: InstallJob) -> String {
-        if case .failed = job.state {
-            return job.dmgURL.path
-        }
-
-        return job.dmgURL.lastPathComponent
-    }
-
-    private func iconName(for job: InstallJob) -> String {
+    private var iconName: String {
         switch job.state {
         case .awaitingApproval:
             "questionmark.app"
         case .installing:
-            "opticaldiscdrive"
+            "arrow.down.circle"
         case .installed:
-            "checkmark.circle"
+            "checkmark"
         case .failed:
             "exclamationmark.triangle"
         }
     }
 
-    private func iconColor(for job: InstallJob) -> Color {
+    private var iconColor: Color {
         switch job.state {
         case .awaitingApproval:
             .accentColor
@@ -172,5 +283,37 @@ struct FloatingInstallPanelView: View {
         case .failed:
             .red
         }
+    }
+
+    private var iconWeight: Font.Weight {
+        if case .installed = job.state {
+            return .heavy
+        }
+
+        return .semibold
+    }
+
+    private var passiveIconBackground: Color {
+        if colorScheme == .dark {
+            Color.black.opacity(0.22)
+        } else {
+            Color.white.opacity(0.38)
+        }
+    }
+
+    private var leftButtonBackground: Color {
+        if colorScheme == .dark {
+            return Color.white.opacity(0.14)
+        }
+
+        return Color.white.opacity(0.5)
+    }
+
+    private var capsuleStrokeColor: Color {
+        if colorScheme == .dark {
+            return Color.white.opacity(0.16)
+        }
+
+        return Color.white.opacity(0.72)
     }
 }

@@ -9,7 +9,7 @@ struct InstallRecord: Identifiable {
 
     let id = UUID()
     let appName: String
-    let dmgName: String
+    let sourceName: String
     let date: Date
     let result: Result
     let detail: String

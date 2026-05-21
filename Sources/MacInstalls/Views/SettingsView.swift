@@ -7,20 +7,18 @@ struct SettingsView: View {
         TabView {
             Form {
                 Section {
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        Text("Watch Folder")
-                            .frame(width: 100, alignment: .trailing)
+                    SettingsFolderRow(
+                        title: "Downloads",
+                        path: store.watchedFolderURL.path(percentEncoded: false)
+                    ) {
+                        store.chooseWatchedFolder()
+                    }
 
-                        Text(store.watchedFolderURL.path(percentEncoded: false))
-                            .lineLimit(1)
-                            .truncationMode(.middle)
-                            .textSelection(.enabled)
-
-                        Spacer()
-
-                        Button("Choose...") {
-                            store.chooseWatchedFolder()
-                        }
+                    SettingsFolderRow(
+                        title: "Install To",
+                        path: store.installFolderURL.path(percentEncoded: false)
+                    ) {
+                        store.chooseInstallFolder()
                     }
                 }
             }
@@ -29,7 +27,31 @@ struct SettingsView: View {
                 Label("General", systemImage: "gearshape")
             }
         }
-        .frame(width: 560, height: 180)
+        .frame(width: 620, height: 220)
         .scenePadding()
+    }
+}
+
+private struct SettingsFolderRow: View {
+    let title: String
+    let path: String
+    let choose: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 12) {
+            Text(title)
+                .frame(width: 100, alignment: .trailing)
+
+            Text(path)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .textSelection(.enabled)
+
+            Spacer()
+
+            Button("Choose...") {
+                choose()
+            }
+        }
     }
 }
