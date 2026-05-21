@@ -40,14 +40,15 @@ final class AppLifecycleController: ObservableObject {
 
     func showMainWindow() {
         NSApp.setActivationPolicy(.regular)
-        shouldBringMainWindowForward = true
-        openMainWindow?()
 
         if let mainWindow {
             bringMainWindowForward(mainWindow)
-        } else {
-            NSApp.activate(ignoringOtherApps: true)
+            return
         }
+
+        shouldBringMainWindowForward = true
+        openMainWindow?()
+        NSApp.activate(ignoringOtherApps: true)
     }
 
     func showSettings(openSettings: () -> Void) {
