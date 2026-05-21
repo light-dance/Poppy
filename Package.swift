@@ -3,17 +3,17 @@
 import PackageDescription
 
 let package = Package(
-    name: "MacInstalls",
+    name: "Poppy",
     platforms: [
         .macOS(.v15)
     ],
     products: [
-        .executable(name: "MacInstalls", targets: ["MacInstalls"])
+        .executable(name: "Poppy", targets: ["Poppy"])
     ],
     targets: [
         .executableTarget(
-            name: "MacInstalls",
-            path: "Sources/MacInstalls"
+            name: "Poppy",
+            path: "Sources/Poppy"
         )
     ]
 )

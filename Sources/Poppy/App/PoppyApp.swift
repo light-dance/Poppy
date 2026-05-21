@@ -26,7 +26,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 @main
-struct MacInstallsApp: App {
+struct PoppyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
@@ -35,7 +35,7 @@ struct MacInstallsApp: App {
     @StateObject private var store = InstallStore()
 
     var body: some Scene {
-        WindowGroup("Mac Installs", id: "main") {
+        WindowGroup("Poppy", id: "main") {
             StatusWindowView(store: store)
                 .frame(minWidth: 560, minHeight: 420)
                 .toolbar(removing: .title)
@@ -93,7 +93,7 @@ struct MacInstallsApp: App {
         }
 
         MenuBarExtra(
-            "Mac Installs",
+            "Poppy",
             systemImage: "opticaldiscdrive",
             isInserted: Binding(
                 get: { !hideInMenuBar },
@@ -103,7 +103,7 @@ struct MacInstallsApp: App {
             Button {
                 appDelegate.lifecycle.showMainWindow()
             } label: {
-                Label("Open Mac Installs", systemImage: "sidebar.left")
+                Label("Open Poppy", systemImage: "sidebar.left")
             }
             .keyboardShortcut("o")
 

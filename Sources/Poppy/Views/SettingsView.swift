@@ -31,7 +31,7 @@ struct SettingsView: View {
 
                     if hideInDock && hideInMenuBar {
                         Label(
-                            "Opening Mac Installs from Finder or Spotlight will show this window and restore the Dock icon until the window closes.",
+                            "Opening Poppy from Finder or Spotlight will show this window and restore the Dock icon until the window closes.",
                             systemImage: "info.circle"
                         )
                         .font(.callout)

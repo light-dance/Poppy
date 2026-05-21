@@ -2,8 +2,9 @@
 set -euo pipefail
 
 MODE="${1:-run}"
-APP_NAME="MacInstalls"
-BUNDLE_ID="dev.local.MacInstalls"
+APP_NAME="Poppy"
+APP_LONG_NAME="Poppy App Installer"
+BUNDLE_ID="dev.local.Poppy"
 MIN_SYSTEM_VERSION="14.0"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -35,6 +36,10 @@ cat >"$INFO_PLIST" <<PLIST
   <string>$BUNDLE_ID</string>
   <key>CFBundleName</key>
   <string>$APP_NAME</string>
+  <key>CFBundleDisplayName</key>
+  <string>$APP_NAME</string>
+  <key>CFBundleGetInfoString</key>
+  <string>$APP_LONG_NAME</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>LSMinimumSystemVersion</key>
