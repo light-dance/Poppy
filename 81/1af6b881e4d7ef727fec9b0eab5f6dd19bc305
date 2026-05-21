@@ -1,0 +1,20 @@
+Sources/MacInstalls/App/MacInstallsApp.swift
+  s_ee5dcd17d13cb2::t_1dd7b349fe2979 38-41,48,52,54-55
+  s_ee5dcd17d13cb2::t_0e4e48b53a8968 43,50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "811af6b881e4d7ef727fec9b0eab5f6dd19bc305",
+  "prompts": {},
+  "sessions": {
+    "s_ee5dcd17d13cb2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4894-6064-70e2-bbca-4e6a787d9884",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
