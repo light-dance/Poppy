@@ -51,13 +51,15 @@ final class AppLifecycleController: ObservableObject {
     }
 
     func showSettings(openSettings: () -> Void) {
+        let windowsBeforeOpeningSettings = Set(NSApp.windows.map { ObjectIdentifier($0) })
+
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         openSettings()
 
         DispatchQueue.main.async {
             NSApp.activate(ignoringOtherApps: true)
-            self.bringSettingsWindowForward()
+            self.bringSettingsWindowForward(excluding: windowsBeforeOpeningSettings)
         }
     }
 
@@ -154,14 +156,30 @@ final class AppLifecycleController: ObservableObject {
         NSApp.activate(ignoringOtherApps: true)
     }
 
-    private func bringSettingsWindowForward() {
-        let settingsWindow = NSApp.windows.first { window in
-            window.isVisible && window.title.localizedCaseInsensitiveContains("settings")
-        }
+    private func bringSettingsWindowForward(excluding previousWindowIDs: Set<ObjectIdentifier>) {
+        let settingsWindow = newlyPresentedSettingsWindow(excluding: previousWindowIDs) ?? existingPresentedSettingsWindow()
 
         if let settingsWindow {
             observePresentedWindow(settingsWindow)
             settingsWindow.makeKeyAndOrderFront(nil)
         }
+    }
+
+    private func newlyPresentedSettingsWindow(excluding previousWindowIDs: Set<ObjectIdentifier>) -> NSWindow? {
+        NSApp.windows.first { window in
+            isSettingsWindowCandidate(window) && !previousWindowIDs.contains(ObjectIdentifier(window))
+        }
+    }
+
+    private func existingPresentedSettingsWindow() -> NSWindow? {
+        NSApp.windows.first { window in
+            isSettingsWindowCandidate(window)
+                && !observedMainWindows.contains(ObjectIdentifier(window))
+                && !(window is NSPanel)
+        }
+    }
+
+    private func isSettingsWindowCandidate(_ window: NSWindow) -> Bool {
+        window.isVisible && window.canBecomeKey
     }
 }
