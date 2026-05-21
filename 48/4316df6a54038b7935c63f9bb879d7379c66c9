@@ -1,0 +1,32 @@
+Sources/MacInstalls/App/MacInstallsApp.swift
+  s_4d92767c11ce6d::t_7ccfa6bc17dd3a 6,11-19,34,45-47,53-57
+  s_4d92767c11ce6d::t_670b8d17844c5f 104
+  s_4d92767c11ce6d::t_9f0207a6902e51 32-33,48-49,128-132,146-162
+  s_4d92767c11ce6d::t_8c93805c88f374 95-102
+Sources/MacInstalls/Support/AppLifecycleController.swift
+  s_4d92767c11ce6d::t_670b8d17844c5f 13,57,80-84,89
+  s_4d92767c11ce6d::t_7ccfa6bc17dd3a 1-11,14-44,56,58-79,85-88,90-91,117,119-121,128,134-135
+  s_4d92767c11ce6d::t_151f58ac05b317 12,92-116,118,130-133
+  s_4d92767c11ce6d::t_9f0207a6902e51 45-55,122-127,129
+Sources/MacInstalls/Support/WindowLifecycleReporter.swift
+  s_4d92767c11ce6d::t_7ccfa6bc17dd3a 1-39
+Sources/MacInstalls/Views/SettingsView.swift
+  s_4d92767c11ce6d::t_7ccfa6bc17dd3a 26-27,29,31,33-40,47
+  s_4d92767c11ce6d::t_9f0207a6902e51 5-6,28,30,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "484316df6a54038b7935c63f9bb879d7379c66c9",
+  "prompts": {},
+  "sessions": {
+    "s_4d92767c11ce6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4971-aea1-7f01-a08b-75652568b0af",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
