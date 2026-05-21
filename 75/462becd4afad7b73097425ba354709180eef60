@@ -1,0 +1,61 @@
+Sources/MacInstalls/Services/DownloadsWatcher.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-61,69-101
+  s_ee5dcd17d13cb2::t_bc70223fedefc0 62-68
+Sources/MacInstalls/Views/FloatingInstallPanelView.swift
+  s_ee5dcd17d13cb2::t_6088bccad50162 50,141-148
+  s_ee5dcd17d13cb2::t_06a49ecea576a5 1-3,5-9,11-12,17-19,22,27,29,31,33-49,51-140,149-176
+  s_ee5dcd17d13cb2::t_14cc73026052ac 4,10,13-16,20-21,23-26,28,30,32
+script/build_and_run.sh
+  s_ee5dcd17d13cb2::t_06a49ecea576a5 1-76
+Package.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-19
+Sources/MacInstalls/Stores/InstallStore.swift
+  s_ee5dcd17d13cb2::t_6e2c944227a4ca 71-72,74-94
+  s_ee5dcd17d13cb2::t_93ff7c81977178 1-5,8-10,12-13,15,24-26,28-37,68-69,95-133,135-137,139-143,145-147,158-179
+  s_ee5dcd17d13cb2::t_209dabb6e0e90b 14,134,138,144,148-157
+  s_ee5dcd17d13cb2::t_423c94f44162fe 6-7,11,16-23,27,38-67,70,73
+README.md
+  s_ee5dcd17d13cb2::t_06a49ecea576a5 1-11
+Sources/MacInstalls/Models/InstallRecord.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-16
+Sources/MacInstalls/Views/StatusWindowView.swift
+  s_ee5dcd17d13cb2::t_6e2c944227a4ca 53,55-58
+  s_ee5dcd17d13cb2::t_06a49ecea576a5 1-17,19-42,44-45,47-51,66-72,82-133
+  s_ee5dcd17d13cb2::t_f2893b1b6e98ac 18,43,46,52,54,59-65,73-81
+.gitignore
+  s_ee5dcd17d13cb2::t_209dabb6e0e90b 1-3
+Sources/MacInstalls/Services/DMGInstaller.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-3,5-13,16-39,44-86,92-135
+  s_ee5dcd17d13cb2::t_6088bccad50162 4,14-15,40-43,87-91
+Sources/MacInstalls/App/MacInstallsApp.swift
+  s_ee5dcd17d13cb2::t_93ff7c81977178 1-3,5-37,39-49,58-65,70-72
+  s_ee5dcd17d13cb2::t_b6fc64b79b0daf 4
+  s_ee5dcd17d13cb2::t_f2893b1b6e98ac 38,50-57,66-69
+Sources/MacInstalls/Views/SettingsView.swift
+  s_ee5dcd17d13cb2::t_f2893b1b6e98ac 1-35
+Sources/MacInstalls/Services/Shell.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-29
+Sources/MacInstalls/Support/FloatingInstallPanelController.swift
+  s_ee5dcd17d13cb2::t_93ff7c81977178 1-12,15,17-20,22-25,29-39,41-43,47-70
+  s_ee5dcd17d13cb2::t_14cc73026052ac 13-14,16,21,26-28,40,44-46
+.codex/environments/environment.toml
+  s_ee5dcd17d13cb2::t_06a49ecea576a5 1-11
+Sources/MacInstalls/Models/InstallJob.swift
+  s_ee5dcd17d13cb2::t_b54502e9760ee4 1-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "75462becd4afad7b73097425ba354709180eef60",
+  "prompts": {},
+  "sessions": {
+    "s_ee5dcd17d13cb2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4894-6064-70e2-bbca-4e6a787d9884",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
