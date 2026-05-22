@@ -249,6 +249,7 @@ final class InstallService {
     }
 
     private func extractAppEntry(_ appEntry: String, fromZipAt zipURL: URL, to destinationDirectory: URL) async throws {
+        // macOS ships Info-ZIP unzip, where * matches path separators inside archive entries.
         let result = try await Shell.run("/usr/bin/unzip", arguments: [
             "-q",
             zipURL.path,
