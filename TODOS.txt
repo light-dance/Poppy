@@ -10,9 +10,6 @@
 - clean up all button
 - install dmg background (big orange poppy and maybe text like "one last time")
 
-hide in dock
-hide in menu bar
-
 notifications:
 - error state
 - dismiss timer
