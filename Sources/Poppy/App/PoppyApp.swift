@@ -27,6 +27,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
 @main
 struct PoppyApp: App {
+    private static let menuItemNameLimit = 22
+
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
@@ -118,7 +120,7 @@ struct PoppyApp: App {
                             Label("Install Now", systemImage: "arrow.down.app")
                         }
                     } label: {
-                        Label(item.displayName, systemImage: "opticaldiscdrive")
+                        Label(menuItemTitle(for: item), systemImage: "opticaldiscdrive")
                     }
                 }
             }
@@ -167,5 +169,17 @@ struct PoppyApp: App {
                 .frame(width: 0, height: 0)
             }
         }
+    }
+
+    private func menuItemTitle(for item: InstallableItem) -> String {
+        item.displayName.truncated(to: Self.menuItemNameLimit)
+    }
+}
+
+private extension String {
+    func truncated(to maxLength: Int) -> String {
+        guard count > maxLength else { return self }
+        guard maxLength > 3 else { return String(prefix(maxLength)) }
+        return String(prefix(maxLength - 3)) + "..."
     }
 }

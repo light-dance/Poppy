@@ -4,6 +4,8 @@ enum InstallServiceError: LocalizedError {
     case missingFile(URL)
     case cancelled
     case attachFailed(String)
+    case archiveReadFailed(String)
+    case archiveExtractFailed(String)
     case noMountPoint
     case noAppFound
     case copyFailed(String)
@@ -18,6 +20,10 @@ enum InstallServiceError: LocalizedError {
             "Install cancelled."
         case .attachFailed(let message):
             "Could not mount the disk image. \(message)"
+        case .archiveReadFailed(let message):
+            "Could not inspect the ZIP archive. \(message)"
+        case .archiveExtractFailed(let message):
+            "Could not extract the app from the ZIP archive. \(message)"
         case .noMountPoint:
             "The disk image mounted, but macOS did not report a mount point."
         case .noAppFound:
@@ -27,7 +33,7 @@ enum InstallServiceError: LocalizedError {
         case .detachFailed(let message):
             "The app was copied, but the disk image could not be unmounted. \(message)"
         case .deleteFailed(let message):
-            "The app was copied, but the source installer could not be deleted. \(message)"
+            "The app was copied, but the source installer could not be moved to Trash. \(message)"
         }
     }
 }
@@ -50,6 +56,8 @@ final class InstallService {
             return try await installDiskImage(sourceURL, installDirectory: installDirectory, progress: progress)
         case .appBundle:
             return try await installAppBundle(sourceURL, installDirectory: installDirectory, progress: progress)
+        case .zipArchive:
+            return try await installZipArchive(sourceURL, installDirectory: installDirectory, progress: progress)
         }
     }
 
@@ -69,7 +77,7 @@ final class InstallService {
         do {
             try fileManager.createDirectory(at: installDirectory, withIntermediateDirectories: true)
             if fileManager.fileExists(atPath: destinationApp.path) {
-                try fileManager.removeItem(at: destinationApp)
+                try trashItem(destinationApp)
             }
             try fileManager.copyItem(at: appURL, to: destinationApp)
         } catch {
@@ -78,11 +86,7 @@ final class InstallService {
 
         try checkCancellation()
         await progress("Cleaning up download")
-        do {
-            try fileManager.removeItem(at: appURL)
-        } catch {
-            throw InstallServiceError.deleteFailed(error.localizedDescription)
-        }
+        try trashSourceInstaller(appURL)
 
         return InstallResult(appURL: destinationApp)
     }
@@ -111,7 +115,7 @@ final class InstallService {
             do {
                 try fileManager.createDirectory(at: installDirectory, withIntermediateDirectories: true)
                 if fileManager.fileExists(atPath: destinationApp.path) {
-                    try fileManager.removeItem(at: destinationApp)
+                    try trashItem(destinationApp)
                 }
                 try fileManager.copyItem(at: sourceApp, to: destinationApp)
             } catch {
@@ -124,17 +128,77 @@ final class InstallService {
 
             try checkCancellation()
             await progress("Cleaning up download")
-            do {
-                try fileManager.removeItem(at: dmgURL)
-            } catch {
-                throw InstallServiceError.deleteFailed(error.localizedDescription)
-            }
+            try trashSourceInstaller(dmgURL)
 
             return InstallResult(appURL: destinationApp)
         } catch {
             try? await detach(mountPoint: mountPoint)
             throw error
         }
+    }
+
+    private func installZipArchive(
+        _ zipURL: URL,
+        installDirectory: URL,
+        progress: @MainActor @escaping (String) -> Void
+    ) async throws -> InstallResult {
+        guard fileManager.fileExists(atPath: zipURL.path) else {
+            throw InstallServiceError.missingFile(zipURL)
+        }
+
+        try checkCancellation()
+        await progress("Inspecting ZIP archive")
+        guard let appEntry = try await ZipArchiveInspector.findAppEntry(in: zipURL) else {
+            throw InstallServiceError.noAppFound
+        }
+
+        let extractionDirectory = fileManager.temporaryDirectory
+            .appendingPathComponent("Poppy-\(UUID().uuidString)", isDirectory: true)
+        defer {
+            try? fileManager.removeItem(at: extractionDirectory)
+        }
+
+        try checkCancellation()
+        await progress("Extracting \(URL(fileURLWithPath: appEntry).deletingPathExtension().lastPathComponent)")
+        try fileManager.createDirectory(at: extractionDirectory, withIntermediateDirectories: true)
+        try await extractAppEntry(appEntry, fromZipAt: zipURL, to: extractionDirectory)
+
+        let sourceApp = URL(fileURLWithPath: appEntry, isDirectory: true, relativeTo: extractionDirectory)
+            .standardizedFileURL
+        guard fileManager.fileExists(atPath: sourceApp.path) else {
+            throw InstallServiceError.archiveExtractFailed("The ZIP archive did not contain the expected app bundle.")
+        }
+        let destinationApp = installDirectory.appendingPathComponent(sourceApp.lastPathComponent, isDirectory: true)
+
+        try checkCancellation()
+        await progress("Copying \(sourceApp.deletingPathExtension().lastPathComponent)")
+        do {
+            try fileManager.createDirectory(at: installDirectory, withIntermediateDirectories: true)
+            if fileManager.fileExists(atPath: destinationApp.path) {
+                try trashItem(destinationApp)
+            }
+            try fileManager.copyItem(at: sourceApp, to: destinationApp)
+        } catch {
+            throw InstallServiceError.copyFailed(error.localizedDescription)
+        }
+
+        try checkCancellation()
+        await progress("Cleaning up download")
+        try trashSourceInstaller(zipURL)
+
+        return InstallResult(appURL: destinationApp)
+    }
+
+    private func trashSourceInstaller(_ sourceURL: URL) throws {
+        do {
+            try trashItem(sourceURL)
+        } catch {
+            throw InstallServiceError.deleteFailed(error.localizedDescription)
+        }
+    }
+
+    private func trashItem(_ url: URL) throws {
+        try fileManager.trashItem(at: url, resultingItemURL: nil)
     }
 
     private func checkCancellation() throws {
@@ -181,6 +245,24 @@ final class InstallService {
         let result = try await Shell.run("/usr/bin/hdiutil", arguments: ["detach", mountPoint.path])
         guard result.status == 0 else {
             throw InstallServiceError.detachFailed(result.error.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+    }
+
+    private func extractAppEntry(_ appEntry: String, fromZipAt zipURL: URL, to destinationDirectory: URL) async throws {
+        let result = try await Shell.run("/usr/bin/unzip", arguments: [
+            "-q",
+            zipURL.path,
+            "\(appEntry)/*",
+            "-d",
+            destinationDirectory.path
+        ])
+
+        guard result.status == 0 else {
+            let message = [result.error, result.output]
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+                .joined(separator: "\n")
+            throw InstallServiceError.archiveExtractFailed(message)
         }
     }
 

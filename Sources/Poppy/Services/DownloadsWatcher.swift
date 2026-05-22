@@ -6,6 +6,7 @@ final class DownloadsWatcher {
     private let onDetected: @MainActor (URL) -> Void
     private let onChanged: @MainActor () -> Void
     private var knownInstallables = Set<URL>()
+    private var zipInspectionTasks = Set<URL>()
     private var sizeCache = [URL: Int64]()
     private var source: DispatchSourceFileSystemObject?
     private var fileDescriptor: CInt = -1
@@ -75,8 +76,31 @@ final class DownloadsWatcher {
             guard isStableFile(at: url) else {
                 continue
             }
+            if InstallableKind(url: url) == .zipArchive {
+                inspectZipInstallable(url)
+                continue
+            }
             knownInstallables.insert(url)
             onDetected(url)
+        }
+    }
+
+    private func inspectZipInstallable(_ url: URL) {
+        guard !zipInspectionTasks.contains(url) else { return }
+        zipInspectionTasks.insert(url)
+
+        Task { [weak self] in
+            let containsApp = await ZipArchiveInspector.containsAppBundle(url)
+            await MainActor.run {
+                guard let self else { return }
+                self.zipInspectionTasks.remove(url)
+                self.knownInstallables.insert(url)
+                if containsApp {
+                    self.onDetected(url)
+                } else {
+                    self.onChanged()
+                }
+            }
         }
     }
 
