@@ -56,7 +56,7 @@ final class InstallStore: ObservableObject {
     func chooseWatchedFolder() {
         let panel = NSOpenPanel()
         panel.title = "Choose Watch Folder"
-        panel.message = "Mac Installs will watch this folder for app installers."
+        panel.message = "Poppy will watch this folder for app installers."
         panel.prompt = "Use Folder"
         panel.canChooseFiles = false
         panel.canChooseDirectories = true
