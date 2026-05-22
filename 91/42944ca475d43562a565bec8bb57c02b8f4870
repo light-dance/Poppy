@@ -1,0 +1,22 @@
+Sources/Poppy/Stores/InstallStore.swift
+  s_c4b9f4bbbd0dcb::t_24e1ff39f9db94 19,118,356-361,364,368,377-384,390-397
+  s_c4b9f4bbbd0dcb::t_c54c4bad5a2ac9 470-479
+Sources/Poppy/Services/InstallService.swift
+  s_c4b9f4bbbd0dcb::t_cca47016eced08 255,269-274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "9142944ca475d43562a565bec8bb57c02b8f4870",
+  "prompts": {},
+  "sessions": {
+    "s_c4b9f4bbbd0dcb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5146-918c-76d1-a354-df478a120db5",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
