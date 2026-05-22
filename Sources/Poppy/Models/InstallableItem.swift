@@ -3,6 +3,7 @@ import Foundation
 enum InstallableKind: Equatable {
     case diskImage
     case appBundle
+    case zipArchive
 
     init?(url: URL) {
         switch url.pathExtension.lowercased() {
@@ -10,6 +11,8 @@ enum InstallableKind: Equatable {
             self = .diskImage
         case "app":
             self = .appBundle
+        case "zip":
+            self = .zipArchive
         default:
             return nil
         }

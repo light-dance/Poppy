@@ -6,6 +6,7 @@ final class DownloadsWatcher {
     private let onDetected: @MainActor (URL) -> Void
     private let onChanged: @MainActor () -> Void
     private var knownInstallables = Set<URL>()
+    private var zipInspectionTasks = [URL: ZipInspectionFingerprint]()
     private var sizeCache = [URL: Int64]()
     private var source: DispatchSourceFileSystemObject?
     private var fileDescriptor: CInt = -1
@@ -67,6 +68,7 @@ final class DownloadsWatcher {
         let currentInstallableSet = Set(currentInstallables)
 
         knownInstallables.formIntersection(currentInstallableSet)
+        zipInspectionTasks = zipInspectionTasks.filter { currentInstallableSet.contains($0.key) }
         sizeCache = sizeCache.filter { currentInstallableSet.contains($0.key) }
 
         onChanged()
@@ -75,15 +77,45 @@ final class DownloadsWatcher {
             guard isStableFile(at: url) else {
                 continue
             }
+            if InstallableKind(url: url) == .zipArchive {
+                inspectZipInstallable(url, fingerprint: zipFingerprint(for: url))
+                continue
+            }
             knownInstallables.insert(url)
             onDetected(url)
+        }
+    }
+
+    private func inspectZipInstallable(_ url: URL, fingerprint: ZipInspectionFingerprint?) {
+        guard let fingerprint else { return }
+        guard zipInspectionTasks[url] != fingerprint else { return }
+        zipInspectionTasks[url] = fingerprint
+
+        Task { [weak self] in
+            let containsApp = await ZipArchiveInspector.containsAppBundle(url)
+            await MainActor.run {
+                guard let self else { return }
+                if self.zipInspectionTasks[url] == fingerprint {
+                    self.zipInspectionTasks.removeValue(forKey: url)
+                }
+                guard self.zipFingerprint(for: url) == fingerprint else {
+                    self.scanForReadyInstallables()
+                    return
+                }
+                if containsApp {
+                    self.knownInstallables.insert(url)
+                    self.onDetected(url)
+                } else {
+                    self.onChanged()
+                }
+            }
         }
     }
 
     private func currentInstallables() -> [URL] {
         guard let urls = try? FileManager.default.contentsOfDirectory(
             at: downloadsURL,
-            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
+            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey, .contentModificationDateKey],
             options: [.skipsHiddenFiles]
         ) else {
             return []
@@ -106,4 +138,19 @@ final class DownloadsWatcher {
         sizeCache[url] = size
         return size > 0 && previousSize == size
     }
+
+    private func zipFingerprint(for url: URL) -> ZipInspectionFingerprint? {
+        guard let values = try? url.resourceValues(forKeys: [.fileSizeKey, .contentModificationDateKey]) else {
+            return nil
+        }
+        return ZipInspectionFingerprint(
+            fileSize: values.fileSize,
+            contentModificationDate: values.contentModificationDate
+        )
+    }
+}
+
+private struct ZipInspectionFingerprint: Equatable {
+    let fileSize: Int?
+    let contentModificationDate: Date?
 }

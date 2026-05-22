@@ -16,6 +16,8 @@ final class InstallStore: ObservableObject {
     private var queuedJobs: [InstallJob] = []
     private var activeInstallTask: Task<Void, Never>?
     private var watcher: DownloadsWatcher?
+    private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
+    private var zipInspectionTasks = Set<URL>()
 
     init() {
         if let storedPath = UserDefaults.standard.string(forKey: Self.watchedFolderPathKey), !storedPath.isEmpty {
@@ -113,7 +115,7 @@ final class InstallStore: ObservableObject {
         guard
             let urls = try? FileManager.default.contentsOfDirectory(
                 at: watchedFolderURL,
-                includingPropertiesForKeys: [.contentModificationDateKey],
+                includingPropertiesForKeys: [.contentModificationDateKey, .fileSizeKey],
                 options: [.skipsHiddenFiles]
             )
         else {
@@ -121,7 +123,7 @@ final class InstallStore: ObservableObject {
         }
 
         let latestInstallable = urls
-            .filter { InstallableKind(url: $0) != nil }
+            .filter { shouldShowInstallable($0) }
             .sorted {
                 let lhsDate = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                 let rhsDate = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -150,12 +152,12 @@ final class InstallStore: ObservableObject {
 
     func cleanup(_ item: InstallableItem) {
         do {
-            try FileManager.default.removeItem(at: item.url)
+            try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
             addRecord(
                 appName: item.displayName,
                 sourceName: item.url.lastPathComponent,
                 result: .success,
-                detail: "Deleted installer from watched folder"
+                detail: "Moved installer to Trash"
             )
             scanWatchedFolder()
         } catch {
@@ -330,8 +332,12 @@ final class InstallStore: ObservableObject {
             return
         }
 
+        let currentURLSet = Set(urls)
+        zipInstallableCache = zipInstallableCache.filter { currentURLSet.contains($0.key) }
+        zipInspectionTasks.formIntersection(currentURLSet)
+
         installableItems = urls
-            .filter { InstallableKind(url: $0) != nil }
+            .filter { shouldShowInstallable($0) }
             .sorted {
                 let lhsDate = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                 let rhsDate = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -341,6 +347,54 @@ final class InstallStore: ObservableObject {
                 guard let kind = InstallableKind(url: url) else { return nil }
                 return InstallableItem(url: url, kind: kind, status: status(for: url, kind: kind))
             }
+    }
+
+    private func shouldShowInstallable(_ url: URL) -> Bool {
+        guard let kind = InstallableKind(url: url) else { return false }
+        guard kind == .zipArchive else { return true }
+
+        guard let fingerprint = zipFingerprint(for: url) else {
+            return false
+        }
+
+        if let cachedEntry = zipInstallableCache[url], cachedEntry.fingerprint == fingerprint {
+            return cachedEntry.containsApp
+        }
+
+        inspectZipForList(url, fingerprint: fingerprint)
+        return false
+    }
+
+    private func inspectZipForList(_ url: URL, fingerprint: ZipFileFingerprint) {
+        guard !zipInspectionTasks.contains(url) else { return }
+        zipInspectionTasks.insert(url)
+
+        Task { [weak self] in
+            let containsApp = await ZipArchiveInspector.containsAppBundle(url)
+            await MainActor.run {
+                guard let self else { return }
+                self.zipInspectionTasks.remove(url)
+                if self.zipFingerprint(for: url) == fingerprint {
+                    self.zipInstallableCache[url] = ZipInstallableCacheEntry(
+                        fingerprint: fingerprint,
+                        containsApp: containsApp
+                    )
+                } else {
+                    self.zipInstallableCache.removeValue(forKey: url)
+                }
+                self.scanWatchedFolder()
+            }
+        }
+    }
+
+    private func zipFingerprint(for url: URL) -> ZipFileFingerprint? {
+        guard let values = try? url.resourceValues(forKeys: [.contentModificationDateKey, .fileSizeKey]) else {
+            return nil
+        }
+        return ZipFileFingerprint(
+            contentModificationDate: values.contentModificationDate,
+            fileSize: values.fileSize
+        )
     }
 
     private func status(for sourceURL: URL, kind: InstallableKind) -> InstallableItem.Status {
@@ -412,4 +466,14 @@ final class InstallStore: ObservableObject {
             nil
         }
     }
+}
+
+private struct ZipFileFingerprint: Equatable {
+    let contentModificationDate: Date?
+    let fileSize: Int?
+}
+
+private struct ZipInstallableCacheEntry {
+    let fingerprint: ZipFileFingerprint
+    let containsApp: Bool
 }
