@@ -118,7 +118,7 @@ struct PoppyApp: App {
                             Label("Install Now", systemImage: "arrow.down.app")
                         }
                     } label: {
-                        Label(item.displayName, systemImage: "arrow.down.circle.fill")
+                        Label(item.displayName, systemImage: "plus.app")
                     }
                 }
             }
