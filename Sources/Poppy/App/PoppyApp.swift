@@ -96,7 +96,7 @@ struct PoppyApp: App {
 
         MenuBarExtra(
             "Poppy",
-            systemImage: "opticaldiscdrive",
+            systemImage: menuBarSystemImage,
             isInserted: Binding(
                 get: { !hideInMenuBar },
                 set: { hideInMenuBar = !$0 }
@@ -120,7 +120,7 @@ struct PoppyApp: App {
                             Label("Install Now", systemImage: "arrow.down.app")
                         }
                     } label: {
-                        Label(menuItemTitle(for: item), systemImage: "opticaldiscdrive")
+                        Label(menuItemTitle(for: item), systemImage: "plus.app")
                     }
                 }
             }
@@ -173,6 +173,14 @@ struct PoppyApp: App {
 
     private func menuItemTitle(for item: InstallableItem) -> String {
         item.displayName.truncated(to: Self.menuItemNameLimit)
+    }
+
+    private var menuBarSystemImage: String {
+        if !store.readyItems.isEmpty || store.currentJob != nil {
+            return "arrow.down.circle.fill"
+        }
+
+        return "arrow.down.circle.dotted"
     }
 }
 
