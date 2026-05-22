@@ -94,7 +94,7 @@ struct PoppyApp: App {
 
         MenuBarExtra(
             "Poppy",
-            systemImage: "opticaldiscdrive",
+            systemImage: menuBarSystemImage,
             isInserted: Binding(
                 get: { !hideInMenuBar },
                 set: { hideInMenuBar = !$0 }
@@ -118,7 +118,7 @@ struct PoppyApp: App {
                             Label("Install Now", systemImage: "arrow.down.app")
                         }
                     } label: {
-                        Label(item.displayName, systemImage: "opticaldiscdrive")
+                        Label(item.displayName, systemImage: "arrow.down.circle.fill")
                     }
                 }
             }
@@ -167,5 +167,13 @@ struct PoppyApp: App {
                 .frame(width: 0, height: 0)
             }
         }
+    }
+
+    private var menuBarSystemImage: String {
+        if !store.readyItems.isEmpty || store.currentJob != nil {
+            return "arrow.down.circle.fill"
+        }
+
+        return "arrow.down.circle.dotted"
     }
 }
