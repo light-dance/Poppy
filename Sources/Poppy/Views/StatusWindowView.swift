@@ -193,7 +193,7 @@ private struct InstallableItemRow<Actions: View>: View {
                 .scaledToFit()
                 .frame(width: 28, height: 28)
         case .ready:
-            Image(systemName: "opticaldiscdrive")
+            Image(systemName: "arrow.down.circle.fill")
                 .foregroundStyle(Color.accentColor)
                 .frame(width: 24, height: 24)
         case .installing:
