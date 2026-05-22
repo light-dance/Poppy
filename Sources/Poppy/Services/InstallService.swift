@@ -252,7 +252,7 @@ final class InstallService {
         let result = try await Shell.run("/usr/bin/unzip", arguments: [
             "-q",
             zipURL.path,
-            "\(appEntry)/*",
+            "\(escapedUnzipPattern(appEntry))/*",
             "-d",
             destinationDirectory.path
         ])
@@ -263,6 +263,15 @@ final class InstallService {
                 .filter { !$0.isEmpty }
                 .joined(separator: "\n")
             throw InstallServiceError.archiveExtractFailed(message)
+        }
+    }
+
+    private func escapedUnzipPattern(_ value: String) -> String {
+        value.reduce(into: "") { result, character in
+            if #"\*?[]"#.contains(character) {
+                result.append("\\")
+            }
+            result.append(character)
         }
     }
 
