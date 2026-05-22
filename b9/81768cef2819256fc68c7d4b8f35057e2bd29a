@@ -1,0 +1,43 @@
+Sources/Poppy/Stores/InstallStore.swift
+  s_4d92767c11ce6d::t_3314d05c7ae085 338,375,377-378
+  s_a5cb0930cb4d1f::t_b69c26b16dd4be 19-20,340,352-374,376
+  s_a5cb0930cb4d1f::t_ee46f63688c0f9 126,335-337
+README.md
+  s_a5cb0930cb4d1f::t_143b0c6ca466f8 5
+Sources/Poppy/App/PoppyApp.swift
+  s_a5cb0930cb4d1f::t_60a569cafc01d4 30-31,123,173-181
+  s_a5cb0930cb4d1f::t_2f0bcfe6bda298 182-183
+Sources/Poppy/Models/InstallableItem.swift
+  s_a5cb0930cb4d1f::t_143b0c6ca466f8 6,14-15
+Sources/Poppy/Services/ZipArchiveInspector.swift
+  s_a5cb0930cb4d1f::t_c54a6cf639f152 1-38
+Sources/Poppy/Services/DownloadsWatcher.swift
+  s_a5cb0930cb4d1f::t_17f41db5c2ba8a 9,79-82,88-103
+Sources/Poppy/Services/InstallService.swift
+  s_a5cb0930cb4d1f::t_e9a7df8ce25c5d 159-161
+  s_a5cb0930cb4d1f::t_143b0c6ca466f8 7-8,23-26,59-60,148-158,162-203,251-265
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "b981768cef2819256fc68c7d4b8f35057e2bd29a",
+  "prompts": {},
+  "sessions": {
+    "s_4d92767c11ce6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4971-aea1-7f01-a08b-75652568b0af",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_a5cb0930cb4d1f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5100-1cdc-75b0-8b9e-40a3a52baa3f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
