@@ -16,7 +16,7 @@ enum ZipArchiveInspector {
             guard !entry.hasPrefix("__MACOSX/") else { continue }
 
             let components = entry.split(separator: "/", omittingEmptySubsequences: true).map(String.init)
-            guard isSafeZipPath(components) else { continue }
+            guard isSafeZipPath(entry, components: components) else { continue }
 
             if let appIndex = components.firstIndex(where: {
                 URL(fileURLWithPath: $0).pathExtension.lowercased() == "app"
@@ -32,7 +32,7 @@ enum ZipArchiveInspector {
         (try? await findAppEntry(in: zipURL)) != nil
     }
 
-    private static func isSafeZipPath(_ components: [String]) -> Bool {
-        !components.isEmpty && !components.contains("..") && components.allSatisfy { !$0.hasPrefix("/") }
+    private static func isSafeZipPath(_ entry: String, components: [String]) -> Bool {
+        !entry.hasPrefix("/") && !components.isEmpty && !components.contains("..")
     }
 }
