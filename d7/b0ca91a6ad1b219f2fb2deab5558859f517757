@@ -1,0 +1,22 @@
+Sources/Poppy/Services/ZipArchiveInspector.swift
+  s_c4b9f4bbbd0dcb::t_cbd9b294aa9f6d 19,35-36
+Sources/Poppy/Services/DownloadsWatcher.swift
+  s_c4b9f4bbbd0dcb::t_b6f58051aafd13 9,71,81,89-92,98-104,106,118,141-145,151-155
+  s_c4b9f4bbbd0dcb::t_10339560cfc8df 146-149
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "d7b0ca91a6ad1b219f2fb2deab5558859f517757",
+  "prompts": {},
+  "sessions": {
+    "s_c4b9f4bbbd0dcb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5146-918c-76d1-a354-df478a120db5",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
