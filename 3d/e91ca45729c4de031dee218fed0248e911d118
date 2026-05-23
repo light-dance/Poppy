@@ -1,0 +1,37 @@
+Sources/Poppy/Views/FloatingInstallPanelView.swift
+  s_9a84d0f42de14a::t_b2647cbebf98d2 245,336-341
+  s_9a84d0f42de14a::t_1808c1c426b90e 78-84,86-96,109-110,312-317
+Sources/Poppy/App/PoppyApp.swift
+  s_8dafd292278841::t_84316874993060 120-132
+  s_9a84d0f42de14a::t_fe84b0e3cf4ad1 85
+Sources/Poppy/Stores/InstallStore.swift
+  s_8dafd292278841::t_f0cd419af93958 393
+  s_8dafd292278841::t_a60ef676cb947d 11,20,128,152,159-160,178-187,305,319-329,384,389,404-406
+  s_9a84d0f42de14a::t_2dfae64d93bd98 263,337-357
+Sources/Poppy/Views/StatusWindowView.swift
+  s_8dafd292278841::t_37ea9c205202db 7,34-44,55-56,123,133,137,146,156-204,210-220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "3de91ca45729c4de031dee218fed0248e911d118",
+  "prompts": {},
+  "sessions": {
+    "s_8dafd292278841": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5165-a7f8-7cf3-b74f-3d984573a80f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_9a84d0f42de14a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5381-0ad1-71a3-91af-e78d84c3c4e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
