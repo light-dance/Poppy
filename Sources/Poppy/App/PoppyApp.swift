@@ -23,6 +23,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func bind(to store: InstallStore) {
         panelController.bind(to: store)
     }
+
+    @MainActor
+    func setNotificationPosition(_ position: NotificationPosition) {
+        panelController.setNotificationPosition(position)
+    }
 }
 
 @main
@@ -34,6 +39,7 @@ struct PoppyApp: App {
     @Environment(\.openSettings) private var openSettings
     @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = false
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
+    @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @StateObject private var store = InstallStore()
 
     var body: some Scene {
@@ -49,6 +55,7 @@ struct PoppyApp: App {
                     }
                     appDelegate.lifecycle.setHideInDock(hideInDock)
                     appDelegate.lifecycle.setHideInMenuBar(hideInMenuBar)
+                    appDelegate.setNotificationPosition(notificationPosition)
                     appDelegate.bind(to: store)
                     store.start()
                 }
@@ -172,6 +179,13 @@ struct PoppyApp: App {
                         hideInMenuBar = newValue
                         appDelegate.lifecycle.setHideInMenuBar(newValue)
                     }
+                ),
+                notificationPosition: Binding(
+                    get: { notificationPosition },
+                    set: { newValue in
+                        notificationPositionValue = newValue.rawValue
+                        appDelegate.setNotificationPosition(newValue)
+                    }
                 )
             )
             .background {
@@ -193,6 +207,10 @@ struct PoppyApp: App {
         }
 
         return "arrow.down.circle.dotted"
+    }
+
+    private var notificationPosition: NotificationPosition {
+        NotificationPosition(rawValue: notificationPositionValue) ?? .topRight
     }
 }
 
