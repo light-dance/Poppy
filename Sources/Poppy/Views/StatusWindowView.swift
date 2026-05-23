@@ -4,6 +4,7 @@ import SwiftUI
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
     @State private var installedDisplayMode: InstalledDisplayMode = .list
+    @State private var isHiddenSectionExpanded = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -30,6 +31,17 @@ struct StatusWindowView: View {
                                     } label: {
                                         Label("Install", systemImage: "arrow.down.app")
                                     }
+
+                                    Menu {
+                                        itemActions(for: item, hideActionTitle: "Hide")
+                                    } label: {
+                                        Label("More", systemImage: "ellipsis.circle")
+                                            .labelStyle(.iconOnly)
+                                    }
+                                    .menuStyle(.button)
+                                }
+                                .contextMenu {
+                                    itemActions(for: item, hideActionTitle: "Hide")
                                 }
                             }
                         }
@@ -40,6 +52,8 @@ struct StatusWindowView: View {
                 .scrollContentBackground(.hidden)
 
                 installedSection
+
+                hiddenSection
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 16)
@@ -106,7 +120,7 @@ struct StatusWindowView: View {
             }
 
             if store.installedItems.isEmpty {
-                Label("No installed apps to clean up", systemImage: "checkmark.circle")
+                Label("No installed apps to delete", systemImage: "checkmark.circle")
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
             } else if installedDisplayMode == .list {
@@ -116,11 +130,11 @@ struct StatusWindowView: View {
                             Button(role: .destructive) {
                                 store.cleanup(item)
                             } label: {
-                                Label("Clean Up", systemImage: "trash")
+                                Label("Delete", systemImage: "trash")
                             }
                         }
                         .contextMenu {
-                            installedContextMenu(for: item)
+                            itemActions(for: item, hideActionTitle: "Hide")
                         }
                     }
                 }
@@ -129,7 +143,7 @@ struct StatusWindowView: View {
                     ForEach(store.installedItems) { item in
                         InstalledGridItem(item: item)
                             .contextMenu {
-                                installedContextMenu(for: item)
+                                itemActions(for: item, hideActionTitle: "Hide")
                             }
                     }
                 }
@@ -139,17 +153,71 @@ struct StatusWindowView: View {
     }
 
     @ViewBuilder
-    private func installedContextMenu(for item: InstallableItem) -> some View {
-        Button {
-            store.openApp(item)
-        } label: {
-            Label("Open App", systemImage: "arrow.up.right.square")
+    private var hiddenSection: some View {
+        if !store.hiddenInstallableItems.isEmpty {
+            DisclosureGroup(isExpanded: $isHiddenSectionExpanded) {
+                VStack(spacing: 0) {
+                    ForEach(store.hiddenInstallableItems) { item in
+                        InstallableItemRow(item: item) {
+                            Menu {
+                                itemActions(for: item, hideActionTitle: "Show")
+                            } label: {
+                                Label("More", systemImage: "ellipsis.circle")
+                                    .labelStyle(.iconOnly)
+                            }
+                            .menuStyle(.button)
+                        }
+                        .contextMenu {
+                            itemActions(for: item, hideActionTitle: "Show")
+                        }
+                    }
+                }
+                .padding(.top, 6)
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Hidden")
+                        .font(.title3.weight(.semibold))
+
+                    Text("\(store.hiddenInstallableItems.count)")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func itemActions(for item: InstallableItem, hideActionTitle: String) -> some View {
+        if case .installed = item.status {
+            Button {
+                store.openApp(item)
+            } label: {
+                Label("Open App", systemImage: "arrow.up.right.square")
+            }
+        } else if case .installing = item.status {
+            EmptyView()
+        } else {
+            Button {
+                store.installNow(item)
+            } label: {
+                Label("Install", systemImage: "arrow.down.app")
+            }
         }
 
         Button(role: .destructive) {
             store.cleanup(item)
         } label: {
-            Label("Clean Up", systemImage: "trash")
+            Label("Delete", systemImage: "trash")
+        }
+
+        Button {
+            if hideActionTitle == "Show" {
+                store.unhide(item)
+            } else {
+                store.hide(item)
+            }
+        } label: {
+            Label(hideActionTitle, systemImage: hideActionTitle == "Show" ? "eye" : "eye.slash")
         }
     }
 }

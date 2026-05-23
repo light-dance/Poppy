@@ -8,6 +8,7 @@ final class InstallStore: ObservableObject {
 
     @Published var currentJob: InstallJob?
     @Published private(set) var installableItems: [InstallableItem] = []
+    @Published private(set) var hiddenInstallableItems: [InstallableItem] = []
     @Published var records: [InstallRecord] = []
     @Published var isWatching = false
     @Published private(set) var watchedFolderURL: URL
@@ -16,6 +17,7 @@ final class InstallStore: ObservableObject {
     private var queuedJobs: [InstallJob] = []
     private var activeInstallTask: Task<Void, Never>?
     private var watcher: DownloadsWatcher?
+    private var hiddenInstallableURLs = Set<URL>()
     private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
     private var zipInspectionTasks = Set<URL>()
 
@@ -123,7 +125,7 @@ final class InstallStore: ObservableObject {
         }
 
         let latestInstallable = urls
-            .filter { shouldShowInstallable($0) }
+            .filter { shouldShowInstallable($0) && !hiddenInstallableURLs.contains($0) }
             .sorted {
                 let lhsDate = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                 let rhsDate = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -147,12 +149,15 @@ final class InstallStore: ObservableObject {
 
     func installNow(sourceURL: URL) {
         guard !isInstalling(sourceURL) else { return }
+        hiddenInstallableURLs.remove(sourceURL)
         install(job: InstallJob(sourceURL: sourceURL, appName: nil, state: .installing("Preparing")))
     }
 
     func cleanup(_ item: InstallableItem) {
         do {
             try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
+            hiddenInstallableURLs.remove(item.url)
+            removePendingJobs(for: item.url)
             addRecord(
                 appName: item.displayName,
                 sourceName: item.url.lastPathComponent,
@@ -168,6 +173,18 @@ final class InstallStore: ObservableObject {
                 detail: error.localizedDescription
             )
         }
+    }
+
+    func hide(_ item: InstallableItem) {
+        guard !isInstalling(item.url) else { return }
+        hiddenInstallableURLs.insert(item.url)
+        removePendingJobs(for: item.url)
+        scanWatchedFolder()
+    }
+
+    func unhide(_ item: InstallableItem) {
+        hiddenInstallableURLs.remove(item.url)
+        scanWatchedFolder()
     }
 
     func openApp(_ item: InstallableItem) {
@@ -243,7 +260,7 @@ final class InstallStore: ObservableObject {
                 scanWatchedFolder()
             } catch {
                 let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                updateCurrentJobState(.failed(message))
+                updateCurrentJobState(.failed(notificationFailureDescription(for: error)))
                 addRecord(
                     appName: job.displayName,
                     sourceName: job.sourceURL.lastPathComponent,
@@ -285,6 +302,7 @@ final class InstallStore: ObservableObject {
     }
 
     private func handleDetectedInstallable(_ sourceURL: URL) {
+        guard !hiddenInstallableURLs.contains(sourceURL) else { return }
         let job = InstallJob(sourceURL: sourceURL, appName: nil, state: .awaitingApproval)
         scanWatchedFolder()
         if currentJob == nil {
@@ -298,11 +316,45 @@ final class InstallStore: ObservableObject {
         currentJob = queuedJobs.isEmpty ? nil : queuedJobs.removeFirst()
     }
 
+    private func removePendingJobs(for sourceURL: URL) {
+        queuedJobs.removeAll { $0.sourceURL == sourceURL }
+
+        guard currentJob?.sourceURL == sourceURL else { return }
+        if case .installing = currentJob?.state {
+            return
+        }
+
+        advanceToNextJob()
+    }
+
     private func updateCurrentJobState(_ state: InstallJob.State) {
         guard var job = currentJob else { return }
         job.state = state
         currentJob = job
         scanWatchedFolder()
+    }
+
+    private func notificationFailureDescription(for error: Error) -> String {
+        guard let installError = error as? InstallServiceError else {
+            return "Install could not finish."
+        }
+
+        switch installError {
+        case .missingFile:
+            return "Installer moved or deleted."
+        case .cancelled:
+            return "Install cancelled."
+        case .attachFailed, .archiveReadFailed, .archiveExtractFailed:
+            return "Could not read the installer."
+        case .noMountPoint:
+            return "Could not open the disk image."
+        case .noAppFound:
+            return "No app was found."
+        case .copyFailed:
+            return "Check install folder permissions."
+        case .detachFailed, .deleteFailed:
+            return "Installed, but cleanup failed."
+        }
     }
 
     private func updateCurrentJob(appName: String, state: InstallJob.State) {
@@ -329,14 +381,16 @@ final class InstallStore: ObservableObject {
             )
         else {
             installableItems = []
+            hiddenInstallableItems = []
             return
         }
 
         let currentURLSet = Set(urls)
+        hiddenInstallableURLs.formIntersection(currentURLSet)
         zipInstallableCache = zipInstallableCache.filter { currentURLSet.contains($0.key) }
         zipInspectionTasks.formIntersection(currentURLSet)
 
-        installableItems = urls
+        let items: [InstallableItem] = urls
             .filter { shouldShowInstallable($0) }
             .sorted {
                 let lhsDate = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -347,6 +401,9 @@ final class InstallStore: ObservableObject {
                 guard let kind = InstallableKind(url: url) else { return nil }
                 return InstallableItem(url: url, kind: kind, status: status(for: url, kind: kind))
             }
+
+        installableItems = items.filter { !hiddenInstallableURLs.contains($0.url) }
+        hiddenInstallableItems = items.filter { hiddenInstallableURLs.contains($0.url) }
     }
 
     private func shouldShowInstallable(_ url: URL) -> Bool {

@@ -75,11 +75,25 @@ struct FloatingInstallPanelView: View {
 
     private var statusView: some View {
         HStack(spacing: 12) {
-                    Image(systemName: iconName)
-                        .font(.system(size: 18, weight: iconWeight))
-                        .foregroundStyle(iconColor)
+            if isFailed {
+                Button {
+                    store.dismissCurrentJob()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
                         .frame(width: 40, height: 40)
-                        .background(passiveIconBackground, in: Circle())
+                        .background(Color.red, in: Circle())
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.cancelAction)
+            } else {
+                Image(systemName: iconName)
+                    .font(.system(size: 18, weight: iconWeight))
+                    .foregroundStyle(iconColor)
+                    .frame(width: 40, height: 40)
+                    .background(passiveIconBackground, in: Circle())
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
@@ -92,6 +106,8 @@ struct FloatingInstallPanelView: View {
                     .lineLimit(1)
                     .truncationMode(.tail)
             }
+            .frame(minWidth: 90, maxWidth: 270, alignment: .leading)
+            .layoutPriority(1)
 
             Spacer(minLength: 10)
 
@@ -226,7 +242,7 @@ struct FloatingInstallPanelView: View {
                     .font(.system(.headline, design: .rounded, weight: .semibold))
                     .foregroundStyle(.primary)
                     .frame(width: 94, height: 40)
-                    .background(.tertiary, in: Capsule(style: .continuous))
+                    .background(dismissButtonBackground, in: Capsule(style: .continuous))
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
@@ -293,6 +309,14 @@ struct FloatingInstallPanelView: View {
         return .semibold
     }
 
+    private var isFailed: Bool {
+        if case .failed = job.state {
+            return true
+        }
+
+        return false
+    }
+
     private var passiveIconBackground: Color {
         if colorScheme == .dark {
             Color.black.opacity(0.22)
@@ -307,6 +331,14 @@ struct FloatingInstallPanelView: View {
         }
 
         return Color.white.opacity(0.5)
+    }
+
+    private var dismissButtonBackground: Color {
+        if colorScheme == .dark {
+            return Color.white.opacity(0.14)
+        }
+
+        return Color.black.opacity(0.12)
     }
 
     private var capsuleStrokeColor: Color {

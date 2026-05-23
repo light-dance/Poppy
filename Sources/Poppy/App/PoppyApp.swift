@@ -82,7 +82,7 @@ struct PoppyApp: App {
 
                 Button("Notification: Failed") {
                     store.simulateNotification(
-                        .failed("Could not copy ExampleApp into the install folder. Permission denied.")
+                        .failed("Check install folder permissions.")
                     )
                 }
 
@@ -117,7 +117,19 @@ struct PoppyApp: App {
                         Button {
                             store.installNow(item)
                         } label: {
-                            Label("Install Now", systemImage: "arrow.down.app")
+                            Label("Install", systemImage: "arrow.down.app")
+                        }
+
+                        Button(role: .destructive) {
+                            store.cleanup(item)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+
+                        Button {
+                            store.hide(item)
+                        } label: {
+                            Label("Hide", systemImage: "eye.slash")
                         }
                     } label: {
                         Label(menuItemTitle(for: item), systemImage: "plus.app")
