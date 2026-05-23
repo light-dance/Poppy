@@ -1,0 +1,50 @@
+Sources/Poppy/Resources/Wallpapers/README.md
+  s_9a84d0f42de14a::t_6525d025e2c08f 1-4,7-8
+  s_9a84d0f42de14a::t_b8ef0cc759324e 5-6
+Sources/Poppy/App/PoppyApp.swift
+  s_9a84d0f42de14a::t_0df9d8ae3aea07 26-30,42,58,182-188,211-213
+Sources/Poppy/Support/FloatingInstallPanelController.swift
+  s_9a84d0f42de14a::t_e374432dd71abd 9,12-20,33-37,77,80-81,89-106
+Sources/Poppy/Models/NotificationPosition.swift
+  s_9a84d0f42de14a::t_bda343a5d8dd79 1-22
+Package.swift
+  s_9a84d0f42de14a::t_db48cbba11aba6 16-19
+Sources/Poppy/Views/SettingsView.swift
+  s_9a84d0f42de14a::t_055a55f84adf3e 57-59,88,99,103,109,166-191
+  s_9a84d0f42de14a::t_6835b4e960c554 30,51,56,60,62-63,67,87,89,120,123-124,133,152-156,162,164
+  s_9a84d0f42de14a::t_d81537704044b2 8,31
+  s_9a84d0f42de14a::t_a2374ff7597b3e 79-86,199-206,209,211-214,231-265
+  s_9a84d0f42de14a::t_dce522ff1c17a1 114
+  s_9a84d0f42de14a::t_712a2c7bd34d13 129-131
+  s_9a84d0f42de14a::t_942baaa3897c28 165
+  s_9a84d0f42de14a::t_134b2f4972f214 210,218,222,224-225,228-229
+  s_9a84d0f42de14a::t_3db4d4277aa5d1 61,74-75,90-98,100,102,104-106,108,110-113,115-119,121-122,125-128,132,134-151,157
+  s_4d92767c11ce6d::t_3314d05c7ae085 266-268
+  s_9a84d0f42de14a::t_cf691bad3cab91 1,76-78
+  s_9a84d0f42de14a::t_b1eb60be4c8e2e 64-66,68-73,101,107
+  s_9a84d0f42de14a::t_af11bf9370c088 158-161,163,192-198,207-208,215-217,219-221,223,226-227,230
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "6aaae2d62f60b6186f126345b64acadb3e925708",
+  "prompts": {},
+  "sessions": {
+    "s_4d92767c11ce6d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e4971-aea1-7f01-a08b-75652568b0af",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_9a84d0f42de14a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5381-0ad1-71a3-91af-e78d84c3c4e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
