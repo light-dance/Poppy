@@ -285,16 +285,20 @@ private struct SettingsFolderRow: View {
     let reset: () -> Void
     let open: () -> Void
 
+    @State private var isHoveringLocation = false
+
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 12) {
-            Text(title)
-                .frame(width: 100, alignment: .trailing)
+        HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: 12) {
+                Text(title)
+                    .frame(width: 100, alignment: .trailing)
 
-            locationText
-                .lineLimit(1)
-                .truncationMode(.head)
-
-            Spacer()
+                locationText
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
+            .onHover { isHoveringLocation = $0 }
 
             Button {
                 reset()
@@ -329,9 +333,14 @@ private struct SettingsFolderRow: View {
                 .fontWeight(.regular))
                 .foregroundStyle(.secondary)
         } else {
-            Text(shortPath(for: url))
-                .foregroundStyle(.secondary)
-                .textSelection(.enabled)
+            HoverMarqueeText(
+                text: shortPath(for: url),
+                isHovering: isHoveringLocation,
+                font: .body,
+                nsFont: .preferredFont(forTextStyle: .body)
+            )
+            .foregroundStyle(.secondary)
+            .textSelection(.enabled)
         }
     }
 
@@ -344,5 +353,138 @@ private struct SettingsFolderRow: View {
         }
 
         return path
+    }
+}
+
+private struct HoverMarqueeText: View {
+    let text: String
+    let isHovering: Bool
+    let font: Font
+    let nsFont: NSFont
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    @State private var animationStartDate = Date()
+
+    private let speed: CGFloat = 34
+    private let startPause: TimeInterval = 0.55
+    private let fadeWidth: CGFloat = 14
+    private let height: CGFloat = 20
+    private let repeatGap: CGFloat = 28
+
+    var body: some View {
+        GeometryReader { proxy in
+            let availableWidth = max(1, proxy.size.width)
+            let contentWidth = measuredWidth(for: text)
+            let shouldScroll = isHovering && contentWidth > availableWidth + 1 && !reduceMotion
+
+            ZStack(alignment: .leading) {
+                staticText(width: availableWidth)
+                    .opacity(isHovering ? 0 : 1)
+
+                if isHovering {
+                    marqueeText(width: availableWidth, contentWidth: contentWidth, shouldScroll: shouldScroll)
+                        .opacity(1)
+                }
+            }
+            .frame(width: availableWidth, height: height, alignment: .leading)
+            .animation(.easeInOut(duration: 0.16), value: isHovering)
+            .animation(.easeInOut(duration: 0.16), value: shouldScroll)
+        }
+        .frame(maxWidth: .infinity, minHeight: height, idealHeight: height, maxHeight: height, alignment: .leading)
+        .onChange(of: isHovering) {
+            animationStartDate = Date()
+        }
+        .onChange(of: text) {
+            animationStartDate = Date()
+        }
+    }
+
+    private func staticText(width: CGFloat) -> some View {
+        Text(verbatim: text)
+            .font(font)
+            .lineLimit(1)
+            .truncationMode(.head)
+            .frame(width: width, height: height, alignment: .leading)
+    }
+
+    private func marqueeText(width: CGFloat, contentWidth: CGFloat, shouldScroll: Bool) -> some View {
+        TimelineView(.animation) { context in
+            let offset = shouldScroll ? offset(at: context.date, contentWidth: contentWidth) : 0
+
+            Group {
+                if shouldScroll {
+                    HStack(spacing: repeatGap) {
+                        singleLineText
+                        singleLineText
+                    }
+                    .offset(x: -offset)
+                } else {
+                    singleLineText
+                }
+            }
+            .frame(width: width, height: height, alignment: .leading)
+            .mask(alignment: .leading) {
+                fadeMask(showLeadingFade: offset > 0.5)
+                    .frame(width: width, height: height)
+            }
+        }
+    }
+
+    private var singleLineText: some View {
+        Text(verbatim: text)
+            .font(font)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+    }
+
+    private func fadeMask(showLeadingFade: Bool) -> some View {
+        HStack(spacing: 0) {
+            if showLeadingFade {
+                LinearGradient(
+                    colors: [.clear, .black],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .frame(width: fadeWidth)
+            } else {
+                Rectangle()
+                    .fill(.black)
+                    .frame(width: fadeWidth)
+            }
+
+            Rectangle()
+                .fill(.black)
+
+            LinearGradient(
+                colors: [.black, .clear],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
+            .frame(width: fadeWidth)
+        }
+    }
+
+    private func measuredWidth(for text: String) -> CGFloat {
+        (text as NSString).size(withAttributes: [.font: nsFont]).width
+    }
+
+    private func offset(at date: Date, contentWidth: CGFloat) -> CGFloat {
+        let elapsed = date.timeIntervalSince(animationStartDate)
+        guard elapsed >= 0 else {
+            return 0
+        }
+
+        let animationDistance = contentWidth + repeatGap
+        let animationDuration = max(0.1, TimeInterval(animationDistance / speed))
+        let cycleDuration = startPause + animationDuration
+        let cycleElapsed = elapsed.truncatingRemainder(dividingBy: cycleDuration)
+
+        guard cycleElapsed > startPause else {
+            return 0
+        }
+
+        let movingElapsed = cycleElapsed - startPause
+        return animationDistance * CGFloat(movingElapsed / animationDuration)
     }
 }
