@@ -16,15 +16,17 @@ struct StatusWindowView: View {
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24) {
-                    appItemSection(
-                        title: "In Progress",
-                        items: installingAppItems,
-                        emptyTitle: "No installs in progress",
-                        emptySystemImage: "clock"
-                    )
+                    if !installingAppItems.isEmpty {
+                        appItemSection(
+                            title: "Installing",
+                            items: installingAppItems,
+                            emptyTitle: "No installs in progress",
+                            emptySystemImage: "clock"
+                        )
+                    }
 
                     appItemSection(
-                        title: "Ready To Install",
+                        title: "Available",
                         items: readyAppItems,
                         emptyTitle: "No apps ready to install",
                         emptySystemImage: "tray"
@@ -37,12 +39,14 @@ struct StatusWindowView: View {
                         emptySystemImage: "checkmark.circle"
                     )
 
-                    appItemSection(
-                        title: "Hidden",
-                        items: hiddenAppItems,
-                        emptyTitle: "No hidden files",
-                        emptySystemImage: "eye.slash"
-                    )
+                    if !hiddenAppItems.isEmpty {
+                        appItemSection(
+                            title: "Hidden",
+                            items: hiddenAppItems,
+                            emptyTitle: "No hidden files",
+                            emptySystemImage: "eye.slash"
+                        )
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -78,13 +82,7 @@ struct StatusWindowView: View {
         HStack {
             Spacer()
 
-            Picker("App Item View", selection: $appItemDisplayMode) {
-                Label("List", systemImage: "list.bullet").tag(AppItemDisplayMode.list)
-                Label("Grid", systemImage: "square.grid.2x2").tag(AppItemDisplayMode.grid)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 150)
+            AppItemDisplayModeControl(selection: $appItemDisplayMode)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -177,7 +175,7 @@ struct StatusWindowView: View {
         emptySystemImage: String
     ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            appItemSectionHeader(title: title, count: items.count)
+            appItemSectionHeader(title: title, items: items)
 
             if items.isEmpty {
                 Label(emptyTitle, systemImage: emptySystemImage)
@@ -185,24 +183,22 @@ struct StatusWindowView: View {
                     .padding(.vertical, 8)
             } else if appItemDisplayMode == .list {
                 VStack(spacing: 0) {
-                    ForEach(items) { item in
-                        AppItemElement(item: item, layout: .list) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
+                        AppItemElement(item: item, layout: .list, showsSeparator: index < items.count - 1, actions: {
                             controls(for: item)
-                        }
-                        .contextMenu {
-                            itemActions(for: item)
-                        }
+                        }, contextMenuActions: {
+                            contextMenuActions(for: item)
+                        })
                     }
                 }
             } else {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 14)], alignment: .leading, spacing: 14) {
                     ForEach(items) { item in
-                        AppItemElement(item: item, layout: .grid) {
+                        AppItemElement(item: item, layout: .grid, showsSeparator: false, actions: {
                             controls(for: item)
-                        }
-                        .contextMenu {
-                            itemActions(for: item)
-                        }
+                        }, contextMenuActions: {
+                            contextMenuActions(for: item)
+                        })
                     }
                 }
                 .padding(.top, 2)
@@ -210,28 +206,46 @@ struct StatusWindowView: View {
         }
     }
 
-    private func appItemSectionHeader(title: String, count: Int) -> some View {
+    private func appItemSectionHeader(title: String, items: [AppItem]) -> some View {
         HStack(spacing: 8) {
             Text(title)
                 .font(.title2.weight(.semibold))
 
-            Text("\(count)")
-                .font(.caption.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.quaternary, in: Capsule())
+            HStack(spacing: 6) {
+                Text(itemCountText(for: items.count))
+
+                Rectangle()
+                    .fill(.secondary.opacity(0.35))
+                    .frame(width: 1, height: 11)
+
+                Text(totalSizeText(for: items))
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(.secondary.opacity(0.08), in: Capsule())
 
             Spacer()
         }
+    }
+
+    private func itemCountText(for count: Int) -> String {
+        count == 1 ? "1 Item" : "\(count) Items"
+    }
+
+    private func totalSizeText(for items: [AppItem]) -> String {
+        let totalSize = items.compactMap(\.sizeBytes).reduce(Int64(0), +)
+        return ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
+            .replacingOccurrences(of: " ", with: "")
     }
 
     @ViewBuilder
     private func controls(for item: AppItem) -> some View {
         switch item.state {
         case .ready:
-            installButton(for: item)
             moreMenu(for: item)
+            installButton(for: item)
         case .hidden:
             moreMenu(for: item)
         case .installing:
@@ -240,8 +254,8 @@ struct StatusWindowView: View {
         case .installedCleanedUp:
             openButton(for: item)
         case .installedNeedsCleanup:
-            cleanupButton(for: item)
-            moreMenu(for: item)
+            cleanupIconButton(for: item)
+            openButton(for: item)
         }
     }
 
@@ -251,9 +265,11 @@ struct StatusWindowView: View {
                 store.installNow(installableItem)
             }
         } label: {
-            Label("Install", systemImage: "arrow.down.app")
+            primaryCapsuleActionLabel("Install", systemImage: "arrow.down")
         }
+        .buttonStyle(.plain)
         .disabled(installableItem(for: item) == nil)
+        .opacity(installableItem(for: item) == nil ? 0.5 : 1)
     }
 
     private func cleanupButton(for item: AppItem) -> some View {
@@ -267,7 +283,124 @@ struct StatusWindowView: View {
         .disabled(installableItem(for: item) == nil)
     }
 
+    private func cleanupIconButton(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.cleanup(installableItem)
+            }
+        } label: {
+            Image(systemName: "trash")
+                .font(.system(size: 16, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
+                .frame(width: 30, height: 30)
+        }
+        .buttonStyle(.plain)
+        .disabled(installableItem(for: item) == nil)
+        .opacity(installableItem(for: item) == nil ? 0.5 : 1)
+    }
+
     private func openButton(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.openApp(installableItem)
+            }
+        } label: {
+            primaryCapsuleActionLabel("Open")
+        }
+        .buttonStyle(.plain)
+        .disabled(installableItem(for: item) == nil)
+        .opacity(installableItem(for: item) == nil ? 0.5 : 1)
+    }
+
+    private func primaryCapsuleActionLabel(_ title: String, systemImage: String? = nil) -> some View {
+        HStack(spacing: 5) {
+            if let systemImage {
+                Image(systemName: systemImage)
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+            }
+
+            Text(title)
+        }
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .foregroundStyle(.white)
+            .padding(.leading, systemImage == nil ? 12 : 9)
+            .padding(.trailing, 12)
+            .padding(.vertical, 6)
+            .background(Color.accentColor, in: Capsule())
+    }
+
+    private func moreMenu(for item: AppItem) -> some View {
+        Menu {
+            secondaryMenuActions(for: item)
+        } label: {
+            Image(systemName: "ellipsis.circle.fill")
+                .font(.system(size: 21, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(.secondary)
+                .frame(width: 30, height: 30)
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private func contextMenuActions(for item: AppItem) -> some View {
+        switch item.state {
+        case .installedCleanedUp, .installedNeedsCleanup:
+            openMenuAction(for: item)
+        case .ready:
+            installMenuAction(for: item)
+        case .hidden, .installing:
+            EmptyView()
+        }
+
+        if item.state.hasPrimaryContextAction {
+            Divider()
+        }
+
+        secondaryMenuActions(for: item)
+    }
+
+    @ViewBuilder
+    private func secondaryMenuActions(for item: AppItem) -> some View {
+        if item.state.isHidden {
+            showMenuAction(for: item)
+        } else if item.state.canHide {
+            hideMenuAction(for: item)
+        }
+
+        if item.revealURL != nil {
+            revealInFinderMenuAction(for: item)
+        }
+
+        if item.state.canCleanup {
+            cleanupMenuAction(for: item)
+        }
+    }
+
+    private func installMenuAction(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.installNow(installableItem)
+            }
+        } label: {
+            Label("Install", systemImage: "arrow.down")
+        }
+        .disabled(installableItem(for: item) == nil)
+    }
+
+    private func cleanupMenuAction(for item: AppItem) -> some View {
+        Button(role: .destructive) {
+            if let installableItem = installableItem(for: item) {
+                store.cleanup(installableItem)
+            }
+        } label: {
+            Label("Delete", systemImage: "trash")
+        }
+        .disabled(installableItem(for: item) == nil)
+    }
+
+    private func openMenuAction(for item: AppItem) -> some View {
         Button {
             if let installableItem = installableItem(for: item) {
                 store.openApp(installableItem)
@@ -278,49 +411,35 @@ struct StatusWindowView: View {
         .disabled(installableItem(for: item) == nil)
     }
 
-    private func moreMenu(for item: AppItem) -> some View {
-        Menu {
-            itemActions(for: item)
+    private func hideMenuAction(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.hide(installableItem)
+            }
         } label: {
-            Label("More", systemImage: "ellipsis.circle")
-                .labelStyle(.iconOnly)
+            Label("Hide", systemImage: "eye.slash")
         }
-        .menuStyle(.button)
+        .disabled(installableItem(for: item) == nil)
     }
 
-    @ViewBuilder
-    private func itemActions(for item: AppItem) -> some View {
-        switch item.state {
-        case .installedCleanedUp, .installedNeedsCleanup:
-            openButton(for: item)
-        case .ready:
-            installButton(for: item)
-        case .hidden, .installing:
-            EmptyView()
-        }
-
-        if item.state.canCleanup {
-            cleanupButton(for: item)
-        }
-
-        if item.state.isHidden {
-            Button {
-                if let installableItem = installableItem(for: item) {
-                    store.unhide(installableItem)
-                }
-            } label: {
-                Label("Show", systemImage: "eye")
+    private func showMenuAction(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.unhide(installableItem)
             }
-            .disabled(installableItem(for: item) == nil)
-        } else if item.state.canHide {
-            Button {
-                if let installableItem = installableItem(for: item) {
-                    store.hide(installableItem)
-                }
-            } label: {
-                Label("Hide", systemImage: "eye.slash")
+        } label: {
+            Label("Show", systemImage: "eye")
+        }
+        .disabled(installableItem(for: item) == nil)
+    }
+
+    private func revealInFinderMenuAction(for item: AppItem) -> some View {
+        Button {
+            if let revealURL = item.revealURL {
+                NSWorkspace.shared.activateFileViewerSelecting([revealURL])
             }
-            .disabled(installableItem(for: item) == nil)
+        } label: {
+            Label("Show in Finder", systemImage: "finder")
         }
     }
 
@@ -571,15 +690,50 @@ private enum AppItemDisplayMode {
     case grid
 }
 
+private struct AppItemDisplayModeControl: View {
+    @Binding var selection: AppItemDisplayMode
+
+    var body: some View {
+        HStack(spacing: 4) {
+            modeButton(.grid, systemImage: "square.grid.2x2")
+            modeButton(.list, systemImage: "list.bullet")
+        }
+        .padding(4)
+        .background(.secondary.opacity(0.10), in: Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("App item view")
+    }
+
+    private func modeButton(_ mode: AppItemDisplayMode, systemImage: String) -> some View {
+        Button {
+            selection = mode
+        } label: {
+            Image(systemName: systemImage)
+                .font(.system(size: 14, weight: .semibold))
+                .symbolRenderingMode(.hierarchical)
+                .foregroundStyle(selection == mode ? .white : .secondary)
+                .frame(width: 30, height: 30)
+                .background(selection == mode ? Color.accentColor : Color.clear, in: Circle())
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .help(mode == .grid ? "Grid View" : "List View")
+        .accessibilityLabel(mode == .grid ? "Grid view" : "List view")
+        .accessibilityAddTraits(selection == mode ? [.isSelected] : [])
+    }
+}
+
 private enum AppItemLayout {
     case list
     case grid
 }
 
-private struct AppItemElement<Actions: View>: View {
+private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
     let item: AppItem
     let layout: AppItemLayout
+    let showsSeparator: Bool
     @ViewBuilder var actions: () -> Actions
+    @ViewBuilder var contextMenuActions: () -> ContextMenuActions
 
     var body: some View {
         switch layout {
@@ -591,6 +745,32 @@ private struct AppItemElement<Actions: View>: View {
     }
 
     private var listLayout: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                listContextRegion
+
+                metadata
+
+                HStack(spacing: 8) {
+                    actions()
+                }
+            }
+            .padding(.vertical, 8)
+
+            if showsSeparator {
+                Rectangle()
+                    .fill(.separator.opacity(0.55))
+                    .frame(height: 1)
+                    .padding(.leading, listSeparatorLeadingPadding)
+            }
+        }
+    }
+
+    private var listSeparatorLeadingPadding: CGFloat {
+        44
+    }
+
+    private var listContextRegion: some View {
         HStack(spacing: 12) {
             icon
                 .frame(width: 32, height: 32)
@@ -598,14 +778,12 @@ private struct AppItemElement<Actions: View>: View {
             itemText(spacing: 2)
 
             Spacer(minLength: 12)
-
-            metadata
-
-            HStack(spacing: 8) {
-                actions()
-            }
         }
-        .padding(.vertical, 5)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .contextMenu {
+            contextMenuActions()
+        }
     }
 
     private var gridLayout: some View {
@@ -613,6 +791,10 @@ private struct AppItemElement<Actions: View>: View {
             HStack(alignment: .top) {
                 icon
                     .frame(width: 46, height: 46)
+                    .contentShape(Rectangle())
+                    .contextMenu {
+                        contextMenuActions()
+                    }
 
                 Spacer(minLength: 4)
 
@@ -622,16 +804,22 @@ private struct AppItemElement<Actions: View>: View {
                 .controlSize(.small)
             }
 
-            itemText(spacing: 3)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 8) {
+                itemText(spacing: 3)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-            metadata
+                metadata
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .contentShape(Rectangle())
+            .contextMenu {
+                contextMenuActions()
+            }
         }
         .padding(10)
         .frame(width: 118, alignment: .topLeading)
         .frame(minHeight: 142, alignment: .topLeading)
         .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        .contentShape(Rectangle())
     }
 
     @ViewBuilder
@@ -717,28 +905,34 @@ private struct AppItemElement<Actions: View>: View {
 
     @ViewBuilder
     private var metadata: some View {
-        let details = metadataDetails
-
-        if !details.isEmpty {
+        if item.createdDate != nil || item.sizeBytes != nil {
             if layout == .list {
-                HStack(spacing: 8) {
-                    ForEach(details, id: \.self) { detail in
-                        Text(detail)
-                            .font(.caption)
-                            .foregroundStyle(.tertiary)
-                            .lineLimit(1)
-                    }
+                VStack(alignment: .trailing, spacing: 1) {
+                    metadataContent(dateFontSize: 12, sizeFontSize: 12)
                 }
+                .frame(width: 86, alignment: .trailing)
             } else {
                 VStack(alignment: .leading, spacing: 2) {
-                    ForEach(details, id: \.self) { detail in
-                        Text(detail)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                            .lineLimit(1)
-                    }
+                    metadataContent(dateFontSize: 12, sizeFontSize: 12)
                 }
             }
+        }
+    }
+
+    @ViewBuilder
+    private func metadataContent(dateFontSize: CGFloat, sizeFontSize: CGFloat) -> some View {
+        if let createdDate = item.createdDate {
+            Text(Self.metadataDateText(for: createdDate))
+                .font(.system(size: dateFontSize, weight: .regular))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
+        }
+
+        if let sizeBytes = item.sizeBytes {
+            Text(ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file))
+                .font(.system(size: sizeFontSize, weight: .medium))
+                .foregroundStyle(.tertiary)
+                .lineLimit(1)
         }
     }
 
@@ -751,27 +945,18 @@ private struct AppItemElement<Actions: View>: View {
         case .installing(let step):
             return "\(item.fileName) - \(step)"
         case .installedCleanedUp(let appURL):
-            if let appURL {
-                return "\(item.fileName) - Installed as \(appURL.lastPathComponent), installer removed"
-            }
-            return "\(item.fileName) - Installed, installer removed"
-        case .installedNeedsCleanup(let appURL):
-            return "\(item.fileName) - Installed as \(appURL.lastPathComponent), installer remains"
+            return appURL?.lastPathComponent ?? item.name
+        case .installedNeedsCleanup:
+            return "Installer Left \(item.fileName.truncatedTail(to: 25))"
         }
     }
 
-    private var metadataDetails: [String] {
-        var details: [String] = []
-
-        if let createdDate = item.createdDate {
-            details.append(createdDate.formatted(date: .abbreviated, time: .omitted))
+    private static func metadataDateText(for date: Date) -> String {
+        if Calendar.current.isDateInToday(date) {
+            return date.formatted(date: .omitted, time: .shortened)
         }
 
-        if let sizeBytes = item.sizeBytes {
-            details.append(ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file))
-        }
-
-        return details
+        return date.formatted(date: .abbreviated, time: .omitted)
     }
 }
 
@@ -816,6 +1001,29 @@ private extension AppItem.State {
         case .hidden, .installing, .installedCleanedUp:
             return false
         }
+    }
+
+    var hasPrimaryContextAction: Bool {
+        switch self {
+        case .ready, .installedCleanedUp, .installedNeedsCleanup:
+            return true
+        case .hidden, .installing:
+            return false
+        }
+    }
+}
+
+private extension AppItem {
+    var revealURL: URL? {
+        fileURL ?? appURL
+    }
+}
+
+private extension String {
+    func truncatedTail(to maxLength: Int) -> String {
+        guard count > maxLength else { return self }
+        guard maxLength > 3 else { return String(prefix(maxLength)) }
+        return String(prefix(maxLength - 3)) + "..."
     }
 }
 
