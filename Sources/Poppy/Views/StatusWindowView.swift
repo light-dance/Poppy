@@ -81,6 +81,7 @@ struct StatusWindowView: View {
             LocationRouteButton(
                 watchedFolderURL: store.watchedFolderURL,
                 installFolderURL: store.installFolderURL,
+                isWatching: store.isWatching,
                 chooseDownloads: {
                     store.chooseWatchedFolder()
                 },
@@ -278,6 +279,7 @@ private struct LocationRouteButton: View {
 
     let watchedFolderURL: URL
     let installFolderURL: URL
+    let isWatching: Bool
     let chooseDownloads: () -> Void
     let resetDownloads: () -> Void
     let openDownloads: () -> Void
@@ -326,7 +328,7 @@ private struct LocationRouteButton: View {
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundStyle(.white.opacity(0.9))
                     .frame(width: 24, height: 24)
-                    .background(Color.accentColor, in: Circle())
+                    .background(arrowBackground, in: Circle())
                     .compositingGroup()
                     .zIndex(1)
             }
@@ -345,6 +347,10 @@ private struct LocationRouteButton: View {
             )
         }
         .foregroundStyle(.primary)
+    }
+
+    private var arrowBackground: Color {
+        isWatching ? .accentColor : .secondary.opacity(0.42)
     }
 
     private func locationSegment(
@@ -441,7 +447,7 @@ private struct LocationSegmentButton: View {
 
     private var hoverButtons: some View {
         HStack(spacing: 5) {
-            utilityButton(systemImage: "arrow.counterclockwise", action: reset, help: "Reset to Default")
+            utilityButton(systemImage: "arrow.counterclockwise", action: reset, help: "Reset to Default Location")
             utilityButton(systemImage: "folder", action: open, help: "Open in Finder")
         }
     }

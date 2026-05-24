@@ -9,19 +9,31 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section {
+            Section("Locations") {
                 SettingsFolderRow(
-                    title: "Downloads",
-                    path: store.watchedFolderURL.path(percentEncoded: false)
+                    title: "Watching",
+                    url: store.watchedFolderURL,
+                    defaultName: "Downloads",
+                    defaultURL: store.defaultWatchedFolderURL
                 ) {
                     store.chooseWatchedFolder()
+                } reset: {
+                    store.resetWatchedFolder()
+                } open: {
+                    store.openWatchedFolder()
                 }
 
                 SettingsFolderRow(
                     title: "Install To",
-                    path: store.installFolderURL.path(percentEncoded: false)
+                    url: store.installFolderURL,
+                    defaultName: "Applications",
+                    defaultURL: store.defaultInstallFolderURL
                 ) {
                     store.chooseInstallFolder()
+                } reset: {
+                    store.resetInstallFolder()
+                } open: {
+                    store.openInstallFolder()
                 }
             }
 
@@ -266,24 +278,71 @@ private final class RadioHitTargetView: NSView {
 
 private struct SettingsFolderRow: View {
     let title: String
-    let path: String
+    let url: URL
+    let defaultName: String
+    let defaultURL: URL
     let choose: () -> Void
+    let reset: () -> Void
+    let open: () -> Void
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(title)
                 .frame(width: 100, alignment: .trailing)
 
-            Text(path)
+            locationText
                 .lineLimit(1)
-                .truncationMode(.middle)
-                .textSelection(.enabled)
+                .truncationMode(.head)
 
             Spacer()
+
+            Button {
+                reset()
+            } label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.system(size: 13, weight: .bold))
+            }
+            .buttonStyle(.plain)
+            .help("Reset to Default Location")
+
+            Button {
+                open()
+            } label: {
+                Image(systemName: "folder")
+                    .font(.system(size: 13, weight: .bold))
+            }
+            .buttonStyle(.plain)
+            .help("Open in Finder")
 
             Button("Choose...") {
                 choose()
             }
         }
+    }
+
+    @ViewBuilder
+    private var locationText: some View {
+        if url.standardizedFileURL == defaultURL.standardizedFileURL {
+            (Text("Default ")
+                .fontWeight(.semibold)
+             + Text(defaultName)
+                .fontWeight(.regular))
+                .foregroundStyle(.secondary)
+        } else {
+            Text(shortPath(for: url))
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+        }
+    }
+
+    private func shortPath(for url: URL) -> String {
+        let path = url.path(percentEncoded: false)
+        let homePath = FileManager.default.homeDirectoryForCurrentUser.path(percentEncoded: false)
+
+        if path.hasPrefix(homePath) {
+            return "~" + path.dropFirst(homePath.count)
+        }
+
+        return path
     }
 }
