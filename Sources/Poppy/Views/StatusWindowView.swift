@@ -3,6 +3,7 @@ import SwiftUI
 
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
+    let openSettings: () -> Void
     @State private var installedDisplayMode: InstalledDisplayMode = .list
     @State private var isHiddenSectionExpanded = false
 
@@ -74,32 +75,82 @@ struct StatusWindowView: View {
     }
 
     private var header: some View {
-        HStack(spacing: 10) {
-            Button {
-                store.isWatching ? store.stop() : store.start()
-            } label: {
-                Label(store.isWatching ? "Pause" : "Watch", systemImage: store.isWatching ? "pause.fill" : "play.fill")
-            }
-            .buttonStyle(.bordered)
+        HStack(spacing: 12) {
+            watchToggleButton
 
-            Button {
-                store.chooseWatchedFolder()
-            } label: {
-                Label("Downloads Location", systemImage: "folder")
-            }
-            .buttonStyle(.bordered)
+            LocationRouteButton(
+                watchedFolderURL: store.watchedFolderURL,
+                installFolderURL: store.installFolderURL,
+                chooseDownloads: {
+                    store.chooseWatchedFolder()
+                },
+                resetDownloads: {
+                    store.resetWatchedFolder()
+                },
+                openDownloads: {
+                    store.openWatchedFolder()
+                },
+                chooseInstall: {
+                    store.chooseInstallFolder()
+                },
+                resetInstall: {
+                    store.resetInstallFolder()
+                },
+                openInstall: {
+                    store.openInstallFolder()
+                }
+            )
 
-            Button {
-                store.chooseInstallFolder()
-            } label: {
-                Label("Install Location", systemImage: "folder.badge.plus")
-            }
-            .buttonStyle(.bordered)
-
-            Spacer()
+            settingsButton
         }
         .padding(20)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, alignment: .center)
+    }
+
+    private var watchToggleButton: some View {
+        Button {
+            store.isWatching ? store.stop() : store.start()
+        } label: {
+            watchToggleButtonLabel
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(store.isWatching ? "Pause watching" : "Start watching")
+        .help("Pause Watching Downloads")
+    }
+
+    @ViewBuilder
+    private var watchToggleButtonLabel: some View {
+        let iconName = store.isWatching ? "pause.fill" : "play.fill"
+
+        circleGlassIcon(systemImage: iconName)
+    }
+
+    private var settingsButton: some View {
+        Button {
+            openSettings()
+        } label: {
+            circleGlassIcon(systemImage: "gearshape.fill")
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Open Settings")
+        .help("Open Settings")
+    }
+
+    @ViewBuilder
+    private func circleGlassIcon(systemImage: String) -> some View {
+        if #available(macOS 26.0, *) {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .frame(width: 42, height: 42)
+                .glassEffect(.regular.interactive(), in: Circle())
+        } else {
+            Image(systemName: systemImage)
+                .font(.system(size: 17, weight: .semibold, design: .rounded))
+                .foregroundStyle(.primary)
+                .frame(width: 42, height: 42)
+                .background(.regularMaterial, in: Circle())
+        }
     }
 
     private var installedSection: some View {
@@ -219,6 +270,221 @@ struct StatusWindowView: View {
         } label: {
             Label(hideActionTitle, systemImage: hideActionTitle == "Show" ? "eye" : "eye.slash")
         }
+    }
+}
+
+private struct LocationRouteButton: View {
+    private static let segmentWidth: CGFloat = 178
+
+    let watchedFolderURL: URL
+    let installFolderURL: URL
+    let chooseDownloads: () -> Void
+    let resetDownloads: () -> Void
+    let openDownloads: () -> Void
+    let chooseInstall: () -> Void
+    let resetInstall: () -> Void
+    let openInstall: () -> Void
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        label
+    }
+
+    @ViewBuilder
+    private var label: some View {
+        if #available(macOS 26.0, *) {
+            content
+                .frame(height: 42)
+                .glassEffect(.regular.interactive(), in: Capsule())
+        } else {
+            content
+                .frame(height: 42)
+                .background(.regularMaterial, in: Capsule())
+        }
+    }
+
+    private var content: some View {
+        HStack(spacing: 0) {
+            locationSegment(
+                title: "Watching",
+                systemImage: "arrow.down.circle.fill",
+                defaultName: "Downloads",
+                url: watchedFolderURL,
+                defaultURL: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads", isDirectory: true),
+                iconPlacement: .leading,
+                action: chooseDownloads,
+                reset: resetDownloads,
+                open: openDownloads
+            )
+
+            ZStack {
+                Rectangle()
+                    .fill(.primary.opacity(0.12))
+                    .frame(width: 1)
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 15, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .frame(width: 24, height: 24)
+                    .background(Color.accentColor, in: Circle())
+                    .compositingGroup()
+                    .zIndex(1)
+            }
+            .frame(width: 28, height: 42)
+
+            locationSegment(
+                title: "Install To",
+                systemImage: "circle.grid.3x3.circle.fill",
+                defaultName: "Applications",
+                url: installFolderURL,
+                defaultURL: URL(fileURLWithPath: "/Applications", isDirectory: true),
+                iconPlacement: .trailing,
+                action: chooseInstall,
+                reset: resetInstall,
+                open: openInstall
+            )
+        }
+        .foregroundStyle(.primary)
+    }
+
+    private func locationSegment(
+        title: String,
+        systemImage: String,
+        defaultName: String,
+        url: URL,
+        defaultURL: URL,
+        iconPlacement: LocationIconPlacement,
+        action: @escaping () -> Void,
+        reset: @escaping () -> Void,
+        open: @escaping () -> Void
+    ) -> some View {
+        LocationSegmentButton(
+            title: title,
+            systemImage: systemImage,
+            defaultName: defaultName,
+            url: url,
+            defaultURL: defaultURL,
+            iconPlacement: iconPlacement,
+            action: action,
+            reset: reset,
+            open: open
+        )
+        .frame(width: Self.segmentWidth, height: 42)
+    }
+
+}
+
+private enum LocationIconPlacement {
+    case leading
+    case trailing
+}
+
+private struct LocationSegmentButton: View {
+    let title: String
+    let systemImage: String
+    let defaultName: String
+    let url: URL
+    let defaultURL: URL
+    let iconPlacement: LocationIconPlacement
+    let action: () -> Void
+    let reset: () -> Void
+    let open: () -> Void
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 8) {
+                if iconPlacement == .leading {
+                    segmentIcon
+                }
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                        .lineLimit(1)
+
+                    if isHovered {
+                        Text("Choose...")
+                            .font(.system(size: 11, weight: .semibold, design: .rounded))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    } else {
+                        locationDetail
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if isHovered {
+                    hoverButtons
+                }
+
+                if iconPlacement == .trailing {
+                    segmentIcon
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .padding(.leading, iconPlacement == .leading ? 12 : 14)
+            .padding(.trailing, iconPlacement == .trailing ? 12 : 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { isHovered = $0 }
+    }
+
+    private var segmentIcon: some View {
+        Image(systemName: systemImage)
+            .font(.system(size: 20, weight: .semibold))
+            .symbolRenderingMode(.hierarchical)
+            .foregroundStyle(.primary)
+            .frame(width: 22)
+    }
+
+    private var hoverButtons: some View {
+        HStack(spacing: 5) {
+            utilityButton(systemImage: "arrow.counterclockwise", action: reset, help: "Reset to Default")
+            utilityButton(systemImage: "folder", action: open, help: "Open in Finder")
+        }
+    }
+
+    private func utilityButton(systemImage: String, action: @escaping () -> Void, help: String) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 13, weight: .bold))
+                .frame(width: 22, height: 22)
+        }
+        .buttonStyle(.plain)
+        .help(help)
+    }
+
+    @ViewBuilder
+    private var locationDetail: some View {
+        if url.standardizedFileURL == defaultURL.standardizedFileURL {
+            (Text("Default ")
+                .fontWeight(.semibold)
+             + Text(defaultName)
+                .fontWeight(.regular))
+                .font(.system(size: 11, design: .rounded))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.tail)
+        } else {
+            Text(shortPath(for: url))
+                .font(.system(size: 11, design: .rounded))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.head)
+        }
+    }
+
+    private func shortPath(for url: URL) -> String {
+        let path = url.path(percentEncoded: false)
+        let homePath = FileManager.default.homeDirectoryForCurrentUser.path(percentEncoded: false)
+
+        if path.hasPrefix(homePath) {
+            return "~" + path.dropFirst(homePath.count)
+        }
+
+        return path
     }
 }
 

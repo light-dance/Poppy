@@ -44,9 +44,16 @@ struct PoppyApp: App {
 
     var body: some Scene {
         WindowGroup("Poppy", id: "main") {
-            StatusWindowView(store: store)
+            StatusWindowView(
+                store: store,
+                openSettings: {
+                    appDelegate.lifecycle.showSettings {
+                        openSettings()
+                    }
+                }
+            )
                 .frame(minWidth: 560, minHeight: 420)
-                .toolbar(removing: .title)
+                .navigationTitle("Poppy")
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
                 .containerBackground(for: .window) {
                     ZStack(alignment: .top) {
@@ -74,7 +81,7 @@ struct PoppyApp: App {
                     .frame(width: 0, height: 0)
                 }
         }
-        .defaultSize(width: 770, height: 605)
+        .defaultSize(width: 680, height: 605)
         .restorationBehavior(.disabled)
         .commands {
             CommandGroup(replacing: .newItem) {}

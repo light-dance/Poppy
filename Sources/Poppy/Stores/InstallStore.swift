@@ -21,17 +21,28 @@ final class InstallStore: ObservableObject {
     private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
     private var zipInspectionTasks = Set<URL>()
 
+    static var defaultWatchedFolderURL: URL {
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads", isDirectory: true)
+    }
+
+    static var defaultInstallFolderURL: URL {
+        URL(fileURLWithPath: "/Applications", isDirectory: true)
+    }
+
+    var defaultWatchedFolderURL: URL { Self.defaultWatchedFolderURL }
+    var defaultInstallFolderURL: URL { Self.defaultInstallFolderURL }
+
     init() {
         if let storedPath = UserDefaults.standard.string(forKey: Self.watchedFolderPathKey), !storedPath.isEmpty {
             watchedFolderURL = URL(fileURLWithPath: storedPath, isDirectory: true)
         } else {
-            watchedFolderURL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads", isDirectory: true)
+            watchedFolderURL = Self.defaultWatchedFolderURL
         }
 
         if let storedPath = UserDefaults.standard.string(forKey: Self.installFolderPathKey), !storedPath.isEmpty {
             installFolderURL = URL(fileURLWithPath: storedPath, isDirectory: true)
         } else {
-            installFolderURL = URL(fileURLWithPath: "/Applications", isDirectory: true)
+            installFolderURL = Self.defaultInstallFolderURL
         }
     }
 
@@ -111,6 +122,22 @@ final class InstallStore: ObservableObject {
         installFolderURL = folderURL
         UserDefaults.standard.set(folderURL.path, forKey: Self.installFolderPathKey)
         scanWatchedFolder()
+    }
+
+    func resetWatchedFolder() {
+        setWatchedFolder(defaultWatchedFolderURL)
+    }
+
+    func resetInstallFolder() {
+        setInstallFolder(defaultInstallFolderURL)
+    }
+
+    func openWatchedFolder() {
+        NSWorkspace.shared.open(watchedFolderURL)
+    }
+
+    func openInstallFolder() {
+        NSWorkspace.shared.open(installFolderURL)
     }
 
     func promptForLatestInstallableInWatchedFolder() {
