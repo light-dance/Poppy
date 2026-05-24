@@ -1,17 +1,14 @@
 - clean up list views
 - show installing progress, available (not installed) and installed (past installs and installs that can be cleaned up)
-- header controls with custom design and centered (pause circular, then capsule with both downloads folder and applications folder, arrow in center, icons for both, title and subtitle with destination, click to edit or dropdown arrow to choose. if set somewhere, a reset button to set to default. then a settings button circular to open settings)
 - header graphic: poppy flower - hover to grow, click to spin
 	- maybe you get more when you install more apps? maybe you get stickers you can then decorate the header with
 - about screen
 - menu bar options
 - grid view display
-- item options (right click)
 - clean up all button
 - install dmg background (big orange poppy and maybe text like "one last time")
 
 notifications:
-- error state
 - dismiss timer
 
 options:

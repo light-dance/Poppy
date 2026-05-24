@@ -41,11 +41,13 @@ struct PoppyApp: App {
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @StateObject private var store = InstallStore()
+    @State private var appItemDisplayMode: AppItemDisplayMode = .list
 
     var body: some Scene {
         WindowGroup("Poppy", id: "main") {
             StatusWindowView(
                 store: store,
+                appItemDisplayMode: $appItemDisplayMode,
                 openSettings: {
                     appDelegate.lifecycle.showSettings {
                         openSettings()
@@ -82,9 +84,47 @@ struct PoppyApp: App {
                 }
         }
         .defaultSize(width: 680, height: 605)
-        .restorationBehavior(.disabled)
         .commands {
-            CommandGroup(replacing: .newItem) {}
+            CommandGroup(replacing: .newItem) {
+                Button(store.isWatching ? "Pause Watching" : "Start Watching") {
+                    store.isWatching ? store.stop() : store.start()
+                }
+                .keyboardShortcut("w", modifiers: [.command, .option])
+
+                Divider()
+
+                Button {
+                    store.openWatchedFolder()
+                } label: {
+                    Label("Open Watching Folder in Finder", systemImage: "folder")
+                }
+
+                Button {
+                    store.openInstallFolder()
+                } label: {
+                    Label("Open Install Folder in Finder", systemImage: "folder")
+                }
+
+                Divider()
+
+                Button(role: .destructive) {
+                    cleanupAllInstalledItems()
+                } label: {
+                    Label("Cleanup All Installed", systemImage: "trash")
+                }
+                .disabled(store.installedItems.isEmpty)
+            }
+            CommandGroup(replacing: .toolbar) {
+                Picker("App Item View", selection: $appItemDisplayMode) {
+                    Label("Grid", systemImage: "square.grid.2x2").tag(AppItemDisplayMode.grid)
+                    Label("List", systemImage: "list.bullet").tag(AppItemDisplayMode.list)
+                }
+
+                Divider()
+
+                EmptyView()
+            }
+            CommandGroup(replacing: .windowSize) {}
             CommandGroup(replacing: .windowArrangement) {}
 
             CommandMenu("Debug") {
@@ -240,6 +280,12 @@ struct PoppyApp: App {
 
     private var notificationPosition: NotificationPosition {
         NotificationPosition(rawValue: notificationPositionValue) ?? .topRight
+    }
+
+    private func cleanupAllInstalledItems() {
+        for item in store.installedItems {
+            store.cleanup(item)
+        }
     }
 }
 

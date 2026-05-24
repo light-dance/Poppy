@@ -4,6 +4,7 @@ import AppKit
 final class AppLifecycleController: ObservableObject {
     static let hideInDockKey = "hideInDock"
     static let hideInMenuBarKey = "hideInMenuBar"
+    private static let mainWindowFrameAutosaveName = "PoppyMainWindowFrame"
 
     @Published private(set) var hideInDock: Bool
     @Published private(set) var hideInMenuBar: Bool
@@ -86,6 +87,7 @@ final class AppLifecycleController: ObservableObject {
         }
 
         observedMainWindows.insert(id)
+        configureMainWindow(window)
         updateActivationPolicy()
 
         if shouldBringMainWindowForward {
@@ -157,6 +159,11 @@ final class AppLifecycleController: ObservableObject {
         window.titleVisibility = .visible
         window.toolbarStyle = .unified
         window.isMovableByWindowBackground = true
+    }
+
+    private func configureMainWindow(_ window: NSWindow) {
+        window.setFrameAutosaveName(Self.mainWindowFrameAutosaveName)
+        window.setFrameUsingName(Self.mainWindowFrameAutosaveName)
     }
 
     private func bringMainWindowForward(_ window: NSWindow) {

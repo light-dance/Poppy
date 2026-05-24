@@ -3,8 +3,8 @@ import SwiftUI
 
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
+    @Binding var appItemDisplayMode: AppItemDisplayMode
     let openSettings: () -> Void
-    @State private var appItemDisplayMode: AppItemDisplayMode = .list
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -120,6 +120,9 @@ struct StatusWindowView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .center)
+        .background {
+            WindowDragRegion()
+        }
     }
 
     private var watchToggleButton: some View {
@@ -685,9 +688,27 @@ private struct LocationSegmentButton: View {
     }
 }
 
-private enum AppItemDisplayMode {
+enum AppItemDisplayMode {
     case list
     case grid
+}
+
+private struct WindowDragRegion: NSViewRepresentable {
+    func makeNSView(context: Context) -> DraggingView {
+        DraggingView()
+    }
+
+    func updateNSView(_ nsView: DraggingView, context: Context) {}
+}
+
+private final class DraggingView: NSView {
+    override var mouseDownCanMoveWindow: Bool {
+        true
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
 }
 
 private struct AppItemDisplayModeControl: View {
