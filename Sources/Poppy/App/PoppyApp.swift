@@ -46,10 +46,17 @@ struct PoppyApp: App {
         WindowGroup("Poppy", id: "main") {
             StatusWindowView(store: store)
                 .frame(minWidth: 560, minHeight: 420)
-                .background(Color.black.opacity(0.2))
                 .toolbar(removing: .title)
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-                .containerBackground(.ultraThinMaterial, for: .window)
+                .containerBackground(for: .window) {
+                    ZStack(alignment: .top) {
+                        Rectangle()
+                            .fill(.regularMaterial)
+
+                        MainWindowTopGlow()
+                            .allowsHitTesting(false)
+                    }
+                }
                 .task {
                     appDelegate.lifecycle.configure {
                         openWindow(id: "main")
@@ -212,6 +219,45 @@ struct PoppyApp: App {
 
     private var notificationPosition: NotificationPosition {
         NotificationPosition(rawValue: notificationPositionValue) ?? .topRight
+    }
+}
+
+private struct MainWindowTopGlow: View {
+    var body: some View {
+        GeometryReader { proxy in
+            let width = proxy.size.width
+
+            ZStack(alignment: .top) {
+                glowEllipse(width: width * 0.46, height: 170)
+                    .offset(x: -width * 0.30, y: -112)
+
+                glowEllipse(width: width * 0.54, height: 190)
+                    .offset(y: -124)
+
+                glowEllipse(width: width * 0.46, height: 170)
+                    .offset(x: width * 0.30, y: -112)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .clipped()
+        }
+    }
+
+    private func glowEllipse(width: CGFloat, height: CGFloat) -> some View {
+        Ellipse()
+            .fill(
+                RadialGradient(
+                    colors: [
+                        Color.orange.opacity(0.22),
+                        Color.orange.opacity(0.08),
+                        Color.orange.opacity(0)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: width * 0.5
+                )
+            )
+            .frame(width: width, height: height)
+            .blur(radius: 28)
     }
 }
 
