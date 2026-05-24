@@ -201,16 +201,24 @@ struct PoppyApp: App {
                             Label("Install", systemImage: "arrow.down.app")
                         }
 
-                        Button(role: .destructive) {
-                            store.cleanup(item)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
+                        Divider()
 
                         Button {
                             store.hide(item)
                         } label: {
                             Label("Hide", systemImage: "eye.slash")
+                        }
+
+                        Button {
+                            NSWorkspace.shared.activateFileViewerSelecting([item.url])
+                        } label: {
+                            Label("Show in Finder", systemImage: "finder")
+                        }
+
+                        Button(role: .destructive) {
+                            store.cleanup(item)
+                        } label: {
+                            Label("Delete", systemImage: "trash")
                         }
                     } label: {
                         Label(menuItemTitle(for: item), systemImage: "plus.app")
