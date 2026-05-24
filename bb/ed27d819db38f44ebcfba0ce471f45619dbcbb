@@ -1,0 +1,24 @@
+Sources/Poppy/App/PoppyApp.swift
+  s_9a84d0f42de14a::t_57b30e2a211fa3 134,138-139
+  s_9a84d0f42de14a::t_55710ef2d05105 137
+Sources/Poppy/Views/StatusWindowView.swift
+  s_9a84d0f42de14a::t_bb362e9337dc19 451
+Sources/Poppy/Views/SettingsView.swift
+  s_9a84d0f42de14a::t_c017073a14b555 311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "bbed27d819db38f44ebcfba0ce471f45619dbcbb",
+  "prompts": {},
+  "sessions": {
+    "s_9a84d0f42de14a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5381-0ad1-71a3-91af-e78d84c3c4e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
