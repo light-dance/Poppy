@@ -67,7 +67,8 @@ struct FloatingInstallPanelView: View {
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
         }
-        .padding(9)
+        .padding(.vertical, 9)
+        .padding(.horizontal, 11)
         .frame(minHeight: 62)
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
@@ -113,7 +114,8 @@ struct FloatingInstallPanelView: View {
 
             statusAction
         }
-        .padding(9)
+        .padding(.vertical, 9)
+        .padding(.horizontal, 11)
         .frame(minHeight: 62)
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
@@ -151,7 +153,8 @@ struct FloatingInstallPanelView: View {
                 .controlSize(.small)
                 .frame(width: 40, height: 40)
         }
-        .padding(9)
+        .padding(.vertical, 9)
+        .padding(.horizontal, 11)
         .frame(minHeight: 62)
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
@@ -197,7 +200,8 @@ struct FloatingInstallPanelView: View {
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
         }
-        .padding(9)
+        .padding(.vertical, 9)
+        .padding(.horizontal, 11)
         .frame(minHeight: 62)
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
