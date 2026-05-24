@@ -1,0 +1,41 @@
+Sources/Poppy/Views/StatusWindowView.swift
+  s_9a84d0f42de14a::t_abe8b11cd9fe9d 282-283,285-287,310,313-317,337,340-344,356-359,361-394,397-399,416-423,425-427,429-435,437-438,440-444,446-451,456,460
+  s_9a84d0f42de14a::t_0a7c69859733a9 288-289,291-296,298-300,302-306,347
+  s_9a84d0f42de14a::t_ea65b78695f38f 327,329
+  s_9a84d0f42de14a::t_0fe01bce502994 297,301
+  s_9a84d0f42de14a::t_51575a7bc0acfd 78
+  s_9a84d0f42de14a::t_f1325b8e9db8c8 143,149,330-331
+  s_9a84d0f42de14a::t_650d771ee572a3 82-83,279-280,308-309,311-312,318,335,338-339,345,350-355,360,401-403,405,414,457-459,461-468,470-487
+  s_9a84d0f42de14a::t_0e53aa9f8a1f31 276,281,284,290,307,319,321-322,324-325,332,334,348-349,395-396,400,424,428,454-455
+  s_9a84d0f42de14a::t_950cb539cc55b2 277-278,336,404,415,469
+  s_9a84d0f42de14a::t_613bdd2934cc81 320,323,328,333
+  s_9a84d0f42de14a::t_442cccece7bcdf 6
+  s_9a84d0f42de14a::t_59de6ecc9e980f 79
+  s_9a84d0f42de14a::t_11936a37dfc2f1 326
+  s_9a84d0f42de14a::t_1f60142ceb691c 406-413,436,439,445,452-453
+  s_9a84d0f42de14a::t_e9e62e329d07b2 87-92,95-100
+  s_9a84d0f42de14a::t_34176e1fc09431 81,84-86,93-94,101-102,104,107-142,144-148,150-153
+Sources/Poppy/App/PoppyApp.swift
+  s_9a84d0f42de14a::t_ac985e771eeca5 56
+  s_9a84d0f42de14a::t_e350da60607e08 47-54
+  s_9a84d0f42de14a::t_d8d13e39d67c3c 84
+Sources/Poppy/Stores/InstallStore.swift
+  s_9a84d0f42de14a::t_015af0ec187618 25-27,29-31,127-140
+  s_9a84d0f42de14a::t_f6feeebcf8f373 24,28,32-34,39,45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "49fe174b4e9150968223120d818899f927c2b438",
+  "prompts": {},
+  "sessions": {
+    "s_9a84d0f42de14a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5381-0ad1-71a3-91af-e78d84c3c4e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
