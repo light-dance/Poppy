@@ -1,0 +1,37 @@
+Sources/Poppy/Views/StatusWindowView.swift
+  s_e5ae0ae29f8ba0::t_45edee96b03fb2 270,272,311,313-315,325-326,329-330
+  s_e5ae0ae29f8ba0::t_4998b3dfa66932 734,748-750,754-763,948-950
+  s_e5ae0ae29f8ba0::t_fcfeb0da4222d1 189,191,199,201,357-358,374-377
+  s_e5ae0ae29f8ba0::t_beda945b0c2ad8 1022-1027
+  s_e5ae0ae29f8ba0::t_4fb1e66bc150e1 85,693-713,715,717-723
+  s_e5ae0ae29f8ba0::t_9d609c01fc7caa 925
+  s_e5ae0ae29f8ba0::t_fc4ccf28d70c0f 1016-1021
+  s_e5ae0ae29f8ba0::t_f135cbf2066087 731,736,751,765-766,771-773,782-785,794-797,807-809,811-817
+  s_e5ae0ae29f8ba0::t_dbdf3c28dae092 186-187,197,258,287,292,295
+  s_e5ae0ae29f8ba0::t_9490291588cb11 178,209,214-226,233-242,248,268,309,316-324,327-328
+  s_e5ae0ae29f8ba0::t_ea32f3c08cc715 293,753,786
+  s_e5ae0ae29f8ba0::t_2873490c1e07c0 714,716
+  s_e5ae0ae29f8ba0::t_d644f81354ff04 227,752,910-911,913
+  s_e5ae0ae29f8ba0::t_4998d7236b002e 764,767-770
+  s_e5ae0ae29f8ba0::t_ab19fd69176259 257,286,288-291,294,296-300
+  s_e5ae0ae29f8ba0::t_dcd88f9388dbfb 1005-1013
+  s_e5ae0ae29f8ba0::t_72b371d61cfaa1 19-26,29,42-49,190,200,335,337,339-340,343,347,350,352,361-365,367,369-373,378-417,419-442
+  s_e5ae0ae29f8ba0::t_6d565bf2600ff5 908,916,922-924,926-936,954-956,959
+  s_e5ae0ae29f8ba0::t_654b0f7bb80f00 338,341
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "e38f4700fb2ca5376875fb684a94464f8d5140c4",
+  "prompts": {},
+  "sessions": {
+    "s_e5ae0ae29f8ba0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5835-1719-7e10-bfa3-82ce52c92b80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
