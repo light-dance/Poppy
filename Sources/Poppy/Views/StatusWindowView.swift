@@ -4,8 +4,7 @@ import SwiftUI
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
     let openSettings: () -> Void
-    @State private var installedDisplayMode: InstalledDisplayMode = .list
-    @State private var isHiddenSectionExpanded = false
+    @State private var appItemDisplayMode: AppItemDisplayMode = .list
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -13,65 +12,82 @@ struct StatusWindowView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 16) {
-                List {
-                    if !store.installingItems.isEmpty {
-                        Section("In Progress") {
-                            ForEach(store.installingItems) { item in
-                                InstallableItemRow(item: item) {}
-                            }
-                        }
-                    }
+            contentToolbar
 
-                    if !store.readyItems.isEmpty {
-                        Section("Ready To Install") {
-                            ForEach(store.readyItems) { item in
-                                InstallableItemRow(item: item) {
-                                    Button {
-                                        store.installNow(item)
-                                    } label: {
-                                        Label("Install", systemImage: "arrow.down.app")
-                                    }
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 24) {
+                    appItemSection(
+                        title: "In Progress",
+                        items: installingAppItems,
+                        emptyTitle: "No installs in progress",
+                        emptySystemImage: "clock"
+                    )
 
-                                    Menu {
-                                        itemActions(for: item, hideActionTitle: "Hide")
-                                    } label: {
-                                        Label("More", systemImage: "ellipsis.circle")
-                                            .labelStyle(.iconOnly)
-                                    }
-                                    .menuStyle(.button)
-                                }
-                                .contextMenu {
-                                    itemActions(for: item, hideActionTitle: "Hide")
-                                }
-                            }
-                        }
-                    }
+                    appItemSection(
+                        title: "Ready To Install",
+                        items: readyAppItems,
+                        emptyTitle: "No apps ready to install",
+                        emptySystemImage: "tray"
+                    )
+
+                    appItemSection(
+                        title: "Installed",
+                        items: installedAppItems,
+                        emptyTitle: "No installed apps to delete",
+                        emptySystemImage: "checkmark.circle"
+                    )
+
+                    appItemSection(
+                        title: "Hidden",
+                        items: hiddenAppItems,
+                        emptyTitle: "No hidden files",
+                        emptySystemImage: "eye.slash"
+                    )
                 }
-                .frame(height: transientListHeight)
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-
-                installedSection
-
-                hiddenSection
+                .padding(.horizontal, 20)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 16)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(.clear)
     }
 
-    private var transientListHeight: CGFloat {
-        if store.installingItems.isEmpty && store.readyItems.isEmpty {
-            return 0
-        }
+    private var installingAppItems: [AppItem] {
+        store.installingItems.map { AppItem(installableItem: $0) } + debugItems { $0.isInstalling }
+    }
 
-        let rowCount = store.installingItems.count + store.readyItems.count
-        let sectionCount = (store.installingItems.isEmpty ? 0 : 1) + (store.readyItems.isEmpty ? 0 : 1)
-        return CGFloat(min(260, 48 + rowCount * 46 + sectionCount * 24))
+    private var readyAppItems: [AppItem] {
+        store.readyItems.map { AppItem(installableItem: $0) } + debugItems { $0.isReady }
+    }
+
+    private var installedAppItems: [AppItem] {
+        store.installedItems.map { AppItem(installableItem: $0) } + debugItems { $0.isInstalled }
+    }
+
+    private var hiddenAppItems: [AppItem] {
+        store.hiddenInstallableItems.map { AppItem(installableItem: $0, isHidden: true) } + debugItems { $0.isHidden }
+    }
+
+    private func debugItems(matching predicate: (AppItem.State) -> Bool) -> [AppItem] {
+        store.debugAppItems.filter { predicate($0.state) }
+    }
+
+    private var contentToolbar: some View {
+        HStack {
+            Spacer()
+
+            Picker("App Item View", selection: $appItemDisplayMode) {
+                Label("List", systemImage: "list.bullet").tag(AppItemDisplayMode.list)
+                Label("Grid", systemImage: "square.grid.2x2").tag(AppItemDisplayMode.grid)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 150)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
     }
 
     private var header: some View {
@@ -154,49 +170,39 @@ struct StatusWindowView: View {
         }
     }
 
-    private var installedSection: some View {
+    private func appItemSection(
+        title: String,
+        items: [AppItem],
+        emptyTitle: String,
+        emptySystemImage: String
+    ) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Installed")
-                    .font(.title2.weight(.semibold))
+            appItemSectionHeader(title: title, count: items.count)
 
-                Spacer()
-
-                Picker("Installed View", selection: $installedDisplayMode) {
-                    Label("List", systemImage: "list.bullet").tag(InstalledDisplayMode.list)
-                    Label("Grid", systemImage: "square.grid.2x2").tag(InstalledDisplayMode.grid)
-                }
-                .pickerStyle(.segmented)
-                .labelsHidden()
-                .frame(width: 150)
-            }
-
-            if store.installedItems.isEmpty {
-                Label("No installed apps to delete", systemImage: "checkmark.circle")
+            if items.isEmpty {
+                Label(emptyTitle, systemImage: emptySystemImage)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
-            } else if installedDisplayMode == .list {
+            } else if appItemDisplayMode == .list {
                 VStack(spacing: 0) {
-                    ForEach(store.installedItems) { item in
-                        InstallableItemRow(item: item) {
-                            Button(role: .destructive) {
-                                store.cleanup(item)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
+                    ForEach(items) { item in
+                        AppItemElement(item: item, layout: .list) {
+                            controls(for: item)
                         }
                         .contextMenu {
-                            itemActions(for: item, hideActionTitle: "Hide")
+                            itemActions(for: item)
                         }
                     }
                 }
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 18)], alignment: .leading, spacing: 18) {
-                    ForEach(store.installedItems) { item in
-                        InstalledGridItem(item: item)
-                            .contextMenu {
-                                itemActions(for: item, hideActionTitle: "Hide")
-                            }
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 14)], alignment: .leading, spacing: 14) {
+                    ForEach(items) { item in
+                        AppItemElement(item: item, layout: .grid) {
+                            controls(for: item)
+                        }
+                        .contextMenu {
+                            itemActions(for: item)
+                        }
                     }
                 }
                 .padding(.top, 2)
@@ -204,73 +210,122 @@ struct StatusWindowView: View {
         }
     }
 
-    @ViewBuilder
-    private var hiddenSection: some View {
-        if !store.hiddenInstallableItems.isEmpty {
-            DisclosureGroup(isExpanded: $isHiddenSectionExpanded) {
-                VStack(spacing: 0) {
-                    ForEach(store.hiddenInstallableItems) { item in
-                        InstallableItemRow(item: item) {
-                            Menu {
-                                itemActions(for: item, hideActionTitle: "Show")
-                            } label: {
-                                Label("More", systemImage: "ellipsis.circle")
-                                    .labelStyle(.iconOnly)
-                            }
-                            .menuStyle(.button)
-                        }
-                        .contextMenu {
-                            itemActions(for: item, hideActionTitle: "Show")
-                        }
-                    }
-                }
-                .padding(.top, 6)
-            } label: {
-                HStack(spacing: 6) {
-                    Text("Hidden")
-                        .font(.title3.weight(.semibold))
+    private func appItemSectionHeader(title: String, count: Int) -> some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.title2.weight(.semibold))
 
-                    Text("\(store.hiddenInstallableItems.count)")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(.secondary)
-                }
-            }
+            Text("\(count)")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.quaternary, in: Capsule())
+
+            Spacer()
         }
     }
 
     @ViewBuilder
-    private func itemActions(for item: InstallableItem, hideActionTitle: String) -> some View {
-        if case .installed = item.status {
-            Button {
-                store.openApp(item)
-            } label: {
-                Label("Open App", systemImage: "arrow.up.right.square")
-            }
-        } else if case .installing = item.status {
-            EmptyView()
-        } else {
-            Button {
-                store.installNow(item)
-            } label: {
-                Label("Install", systemImage: "arrow.down.app")
-            }
+    private func controls(for item: AppItem) -> some View {
+        switch item.state {
+        case .ready:
+            installButton(for: item)
+            moreMenu(for: item)
+        case .hidden:
+            moreMenu(for: item)
+        case .installing:
+            ProgressView()
+                .controlSize(.small)
+        case .installedCleanedUp:
+            openButton(for: item)
+        case .installedNeedsCleanup:
+            cleanupButton(for: item)
+            moreMenu(for: item)
         }
+    }
 
+    private func installButton(for item: AppItem) -> some View {
+        Button {
+            if let installableItem = installableItem(for: item) {
+                store.installNow(installableItem)
+            }
+        } label: {
+            Label("Install", systemImage: "arrow.down.app")
+        }
+        .disabled(installableItem(for: item) == nil)
+    }
+
+    private func cleanupButton(for item: AppItem) -> some View {
         Button(role: .destructive) {
-            store.cleanup(item)
+            if let installableItem = installableItem(for: item) {
+                store.cleanup(installableItem)
+            }
         } label: {
             Label("Delete", systemImage: "trash")
         }
+        .disabled(installableItem(for: item) == nil)
+    }
 
+    private func openButton(for item: AppItem) -> some View {
         Button {
-            if hideActionTitle == "Show" {
-                store.unhide(item)
-            } else {
-                store.hide(item)
+            if let installableItem = installableItem(for: item) {
+                store.openApp(installableItem)
             }
         } label: {
-            Label(hideActionTitle, systemImage: hideActionTitle == "Show" ? "eye" : "eye.slash")
+            Label("Open", systemImage: "arrow.up.right.square")
         }
+        .disabled(installableItem(for: item) == nil)
+    }
+
+    private func moreMenu(for item: AppItem) -> some View {
+        Menu {
+            itemActions(for: item)
+        } label: {
+            Label("More", systemImage: "ellipsis.circle")
+                .labelStyle(.iconOnly)
+        }
+        .menuStyle(.button)
+    }
+
+    @ViewBuilder
+    private func itemActions(for item: AppItem) -> some View {
+        switch item.state {
+        case .installedCleanedUp, .installedNeedsCleanup:
+            openButton(for: item)
+        case .ready:
+            installButton(for: item)
+        case .hidden, .installing:
+            EmptyView()
+        }
+
+        if item.state.canCleanup {
+            cleanupButton(for: item)
+        }
+
+        if item.state.isHidden {
+            Button {
+                if let installableItem = installableItem(for: item) {
+                    store.unhide(installableItem)
+                }
+            } label: {
+                Label("Show", systemImage: "eye")
+            }
+            .disabled(installableItem(for: item) == nil)
+        } else if item.state.canHide {
+            Button {
+                if let installableItem = installableItem(for: item) {
+                    store.hide(installableItem)
+                }
+            } label: {
+                Label("Hide", systemImage: "eye.slash")
+            }
+            .disabled(installableItem(for: item) == nil)
+        }
+    }
+
+    private func installableItem(for appItem: AppItem) -> InstallableItem? {
+        (store.installableItems + store.hiddenInstallableItems).first { $0.id == appItem.id }
     }
 }
 
@@ -396,6 +451,7 @@ private struct LocationSegmentButton: View {
     let reset: () -> Void
     let open: () -> Void
     @State private var isHovered = false
+    @State private var hoverTask: Task<Void, Never>?
 
     var body: some View {
         Button(action: action) {
@@ -434,7 +490,23 @@ private struct LocationSegmentButton: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .onHover { isHovered = $0 }
+        .onHover { hovering in
+            hoverTask?.cancel()
+
+            if hovering {
+                hoverTask = Task {
+                    try? await Task.sleep(for: .milliseconds(50))
+                    guard !Task.isCancelled else { return }
+                    isHovered = true
+                }
+            } else {
+                isHovered = false
+                hoverTask = nil
+            }
+        }
+        .onDisappear {
+            hoverTask?.cancel()
+        }
     }
 
     private var segmentIcon: some View {
@@ -494,102 +566,268 @@ private struct LocationSegmentButton: View {
     }
 }
 
-private enum InstalledDisplayMode {
+private enum AppItemDisplayMode {
     case list
     case grid
 }
 
-private struct InstallableItemRow<Actions: View>: View {
-    let item: InstallableItem
+private enum AppItemLayout {
+    case list
+    case grid
+}
+
+private struct AppItemElement<Actions: View>: View {
+    let item: AppItem
+    let layout: AppItemLayout
     @ViewBuilder var actions: () -> Actions
 
     var body: some View {
+        switch layout {
+        case .list:
+            listLayout
+        case .grid:
+            gridLayout
+        }
+    }
+
+    private var listLayout: some View {
         HStack(spacing: 12) {
-            rowIcon
-                .frame(width: 28, height: 28)
+            icon
+                .frame(width: 32, height: 32)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(item.displayName)
-                    .font(.headline)
-                Text(detail)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
+            itemText(spacing: 2)
+
+            Spacer(minLength: 12)
+
+            metadata
+
+            HStack(spacing: 8) {
+                actions()
             }
-
-            Spacer()
-
-            actions()
         }
         .padding(.vertical, 5)
     }
 
+    private var gridLayout: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .top) {
+                icon
+                    .frame(width: 46, height: 46)
+
+                Spacer(minLength: 4)
+
+                HStack(spacing: 6) {
+                    actions()
+                }
+                .controlSize(.small)
+            }
+
+            itemText(spacing: 3)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            metadata
+        }
+        .padding(10)
+        .frame(width: 118, alignment: .topLeading)
+        .frame(minHeight: 142, alignment: .topLeading)
+        .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .contentShape(Rectangle())
+    }
+
     @ViewBuilder
-    private var rowIcon: some View {
-        switch item.status {
-        case .installed(let appURL):
-            Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
-                .resizable()
-                .scaledToFit()
-                .frame(width: 28, height: 28)
+    private var icon: some View {
+        switch item.state {
+        case .installedCleanedUp(let appURL):
+            if let appURL {
+                appIcon(for: appURL)
+            } else {
+                fallbackIcon(systemName: "app.dashed", color: .secondary)
+            }
+        case .installedNeedsCleanup(let appURL):
+            appIcon(for: appURL)
         case .ready:
-            Image(systemName: "arrow.down.circle.fill")
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 24, height: 24)
+            fileIcon
         case .installing:
-            Image(systemName: "arrow.down.circle")
-                .foregroundStyle(.orange)
-                .frame(width: 24, height: 24)
+            ZStack {
+                fileIcon
+                    .opacity(0.7)
+                ProgressView()
+                    .controlSize(.small)
+            }
+        case .hidden:
+            fileIcon
+                .opacity(0.42)
+                .overlay(alignment: .bottomTrailing) {
+                    Image(systemName: "eye.slash.fill")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.secondary)
+                        .background(.regularMaterial, in: Circle())
+                }
+        }
+    }
+
+    private var fileIcon: some View {
+        Group {
+            if let fileURL = item.fileURL {
+                appIcon(for: fileURL)
+            } else {
+                fallbackIcon(systemName: item.kind.systemImage, color: .secondary)
+            }
+        }
+    }
+
+    private func appIcon(for url: URL) -> some View {
+        Image(nsImage: NSWorkspace.shared.icon(forFile: url.path))
+            .resizable()
+            .scaledToFit()
+    }
+
+    private func fallbackIcon(systemName: String, color: Color) -> some View {
+        Image(systemName: systemName)
+            .resizable()
+            .scaledToFit()
+            .foregroundStyle(color)
+            .padding(3)
+    }
+
+    private func itemText(spacing: CGFloat) -> some View {
+        VStack(alignment: .leading, spacing: spacing) {
+            HStack(spacing: 5) {
+                Text(item.name)
+                    .font(layout == .list ? .headline : .subheadline.weight(.semibold))
+                    .lineLimit(layout == .list ? 1 : 2)
+
+                if item.isDebugSample {
+                    Text("Sample")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(.quaternary, in: Capsule())
+                }
+            }
+
+            Text(detail)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(layout == .list ? 1 : 2)
+                .truncationMode(.middle)
+        }
+    }
+
+    @ViewBuilder
+    private var metadata: some View {
+        let details = metadataDetails
+
+        if !details.isEmpty {
+            if layout == .list {
+                HStack(spacing: 8) {
+                    ForEach(details, id: \.self) { detail in
+                        Text(detail)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 2) {
+                    ForEach(details, id: \.self) { detail in
+                        Text(detail)
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
+                            .lineLimit(1)
+                    }
+                }
+            }
         }
     }
 
     private var detail: String {
-        switch item.status {
+        switch item.state {
+        case .hidden:
+            return "\(item.fileName) - Hidden from install prompts"
         case .ready:
-            item.url.lastPathComponent
+            return item.fileName
         case .installing(let step):
-            step
-        case .installed(let appURL):
-            "Installed as \(appURL.lastPathComponent)"
-        }
-    }
-}
-
-private struct EmptySectionRow: View {
-    let title: String
-    let systemImage: String
-
-    var body: some View {
-        Label(title, systemImage: systemImage)
-            .foregroundStyle(.secondary)
-            .padding(.vertical, 5)
-    }
-}
-
-private struct InstalledGridItem: View {
-    let item: InstallableItem
-
-    var body: some View {
-        VStack(spacing: 6) {
-            icon
-                .frame(width: 52, height: 52)
-        }
-        .frame(width: 72, height: 72)
-        .contentShape(Rectangle())
-    }
-
-    private var icon: some View {
-        Group {
-            if case .installed(let appURL) = item.status {
-                Image(nsImage: NSWorkspace.shared.icon(forFile: appURL.path))
-                    .resizable()
-                    .scaledToFit()
-            } else {
-                Image(systemName: "app.dashed")
-                    .resizable()
-                    .scaledToFit()
-                    .foregroundStyle(.secondary)
+            return "\(item.fileName) - \(step)"
+        case .installedCleanedUp(let appURL):
+            if let appURL {
+                return "\(item.fileName) - Installed as \(appURL.lastPathComponent), installer removed"
             }
+            return "\(item.fileName) - Installed, installer removed"
+        case .installedNeedsCleanup(let appURL):
+            return "\(item.fileName) - Installed as \(appURL.lastPathComponent), installer remains"
+        }
+    }
+
+    private var metadataDetails: [String] {
+        var details: [String] = []
+
+        if let createdDate = item.createdDate {
+            details.append(createdDate.formatted(date: .abbreviated, time: .omitted))
+        }
+
+        if let sizeBytes = item.sizeBytes {
+            details.append(ByteCountFormatter.string(fromByteCount: sizeBytes, countStyle: .file))
+        }
+
+        return details
+    }
+}
+
+private extension AppItem.State {
+    var isHidden: Bool {
+        if case .hidden = self { return true }
+        return false
+    }
+
+    var isReady: Bool {
+        if case .ready = self { return true }
+        return false
+    }
+
+    var isInstalling: Bool {
+        if case .installing = self { return true }
+        return false
+    }
+
+    var isInstalled: Bool {
+        switch self {
+        case .installedCleanedUp, .installedNeedsCleanup:
+            return true
+        case .hidden, .ready, .installing:
+            return false
+        }
+    }
+
+    var canCleanup: Bool {
+        switch self {
+        case .hidden, .ready, .installedNeedsCleanup:
+            return true
+        case .installing, .installedCleanedUp:
+            return false
+        }
+    }
+
+    var canHide: Bool {
+        switch self {
+        case .ready, .installedNeedsCleanup:
+            return true
+        case .hidden, .installing, .installedCleanedUp:
+            return false
+        }
+    }
+}
+
+private extension InstallableKind {
+    var systemImage: String {
+        switch self {
+        case .diskImage:
+            return "externaldrive"
+        case .appBundle:
+            return "app"
+        case .zipArchive:
+            return "doc.zipper"
         }
     }
 }

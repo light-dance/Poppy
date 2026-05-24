@@ -9,6 +9,7 @@ final class InstallStore: ObservableObject {
     @Published var currentJob: InstallJob?
     @Published private(set) var installableItems: [InstallableItem] = []
     @Published private(set) var hiddenInstallableItems: [InstallableItem] = []
+    @Published private(set) var debugAppItems: [AppItem] = []
     @Published var records: [InstallRecord] = []
     @Published var isWatching = false
     @Published private(set) var watchedFolderURL: URL
@@ -229,6 +230,17 @@ final class InstallStore: ObservableObject {
 
     func dismissSimulatedNotification() {
         currentJob = nil
+    }
+
+    func populateDebugAppItems() {
+        debugAppItems = AppItem.debugSamples(
+            watchedFolderURL: watchedFolderURL,
+            installFolderURL: installFolderURL
+        )
+    }
+
+    func clearDebugAppItems() {
+        debugAppItems = []
     }
 
     var installingItems: [InstallableItem] {

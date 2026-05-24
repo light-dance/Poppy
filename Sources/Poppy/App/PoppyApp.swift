@@ -110,6 +110,16 @@ struct PoppyApp: App {
 
                 Divider()
 
+                Button("Populate App Item Samples") {
+                    store.populateDebugAppItems()
+                }
+
+                Button("Clear App Item Samples") {
+                    store.clearDebugAppItems()
+                }
+
+                Divider()
+
                 Button("Dismiss Notification") {
                     store.dismissSimulatedNotification()
                 }
