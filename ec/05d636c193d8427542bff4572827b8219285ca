@@ -1,0 +1,19 @@
+Sources/Poppy/Views/FloatingInstallPanelView.swift
+  s_7912ad71b4ce75::t_4a93695d03a5f9 70-71,117-118,156-157,203-204
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "ec05d636c193d8427542bff4572827b8219285ca",
+  "prompts": {},
+  "sessions": {
+    "s_7912ad71b4ce75": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5887-d4fa-7d81-b184-2d2131a6c452",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
