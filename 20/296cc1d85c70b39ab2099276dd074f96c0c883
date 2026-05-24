@@ -1,0 +1,27 @@
+script/build_and_run.sh
+  s_e5ae0ae29f8ba0::t_986ad789bd45c6 17,20-22,30,34-50,70-71
+  s_e5ae0ae29f8ba0::t_e0876741d809fa 9-10,66-69
+Sources/Poppy/Views/StatusWindowView.swift
+  s_e5ae0ae29f8ba0::t_ee311c3776bb20 135-136,155-156
+Sources/Poppy/Views/AboutView.swift
+  s_e5ae0ae29f8ba0::t_cd266604a2d9ee 1-55,57-65
+  s_e5ae0ae29f8ba0::t_011227e96f1d87 56
+Sources/Poppy/App/PoppyApp.swift
+  s_e5ae0ae29f8ba0::t_619d8f620de8c1 88-92,272-282
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "20296cc1d85c70b39ab2099276dd074f96c0c883",
+  "prompts": {},
+  "sessions": {
+    "s_e5ae0ae29f8ba0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5835-1719-7e10-bfa3-82ce52c92b80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
