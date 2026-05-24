@@ -1,0 +1,42 @@
+Sources/Poppy/App/PoppyApp.swift
+  s_e5ae0ae29f8ba0::t_d5c5b556c0e346 113-122
+Sources/Poppy/Models/AppItem.swift
+  s_e5ae0ae29f8ba0::t_c9546237585da3 1-48,50-80,82-159
+  s_e5ae0ae29f8ba0::t_2e41211f3eef5d 49,81
+Sources/Poppy/Views/StatusWindowView.swift
+  s_e5ae0ae29f8ba0::t_b3f55340c9a06e 58,62,66,70,631-632,639,750
+  s_e5ae0ae29f8ba0::t_185c1e28556556 569-574,579-581,585-593,595-596,598-602,604-606,611-630,633-636,638,641-645,649,651-741,746-747,753-754,756,758,763-764,766-770,772-774,778-782,784-799,803-830
+  s_e5ae0ae29f8ba0::t_f19151a76fc4fc 748,752,755,757,759
+  s_9a84d0f42de14a::t_4fd82a612fd8a5 454,493-509
+  s_e5ae0ae29f8ba0::t_0da0e4425d7494 186,189-190,193,198,200-202,230-251,253-254,256-257,259,261-263,267-268,270,272-273,276-323,326-328
+  s_e5ae0ae29f8ba0::t_aa5c6dadb9a10f 7,57,59-61,63-65,67-69,71-74
+  s_e5ae0ae29f8ba0::t_f44b249a1fdace 203-205
+  s_e5ae0ae29f8ba0::t_a22b73e851184f 640,646-647,771
+  s_e5ae0ae29f8ba0::t_8cfa450862faf3 15-45,47-49,51,75-79,81-90,173-178,180,182-183,188,199,213-216,218-225
+Sources/Poppy/Stores/InstallStore.swift
+  s_e5ae0ae29f8ba0::t_ad5c560d7b97da 12,235-243
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.0",
+  "base_commit_sha": "1f5975e44df01c5ca7ec063c9f275e223031bfe4",
+  "prompts": {},
+  "sessions": {
+    "s_9a84d0f42de14a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5381-0ad1-71a3-91af-e78d84c3c4e7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_e5ae0ae29f8ba0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5835-1719-7e10-bfa3-82ce52c92b80",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
