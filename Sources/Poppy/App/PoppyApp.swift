@@ -131,14 +131,12 @@ struct PoppyApp: App {
             }
             .keyboardShortcut("o")
 
-            if !store.isWatching || !store.readyItems.isEmpty {
+            if store.isWatching || !store.readyItems.isEmpty {
                 Divider()
 
-                if !store.isWatching {
-                    Text("Paused")
-                        .foregroundStyle(.secondary)
-                        .fontWeight(.semibold)
-                }
+                Text(store.isWatching ? "Active" : "Paused")
+                    .foregroundStyle(.secondary)
+                    .fontWeight(.semibold)
 
                 ForEach(store.readyItems) { item in
                     Menu {

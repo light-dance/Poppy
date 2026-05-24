@@ -308,7 +308,7 @@ private struct SettingsFolderRow: View {
             Button {
                 open()
             } label: {
-                Image(systemName: "folder")
+                Image(systemName: "finder")
                     .font(.system(size: 13, weight: .bold))
             }
             .buttonStyle(.plain)

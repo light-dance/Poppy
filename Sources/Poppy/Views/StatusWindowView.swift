@@ -448,7 +448,7 @@ private struct LocationSegmentButton: View {
     private var hoverButtons: some View {
         HStack(spacing: 5) {
             utilityButton(systemImage: "arrow.counterclockwise", action: reset, help: "Reset to Default Location")
-            utilityButton(systemImage: "folder", action: open, help: "Open in Finder")
+            utilityButton(systemImage: "finder", action: open, help: "Open in Finder")
         }
     }
 
