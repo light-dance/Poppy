@@ -46,9 +46,10 @@ struct PoppyApp: App {
         WindowGroup("Poppy", id: "main") {
             StatusWindowView(store: store)
                 .frame(minWidth: 560, minHeight: 420)
+                .background(Color.black.opacity(0.2))
                 .toolbar(removing: .title)
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
-                .containerBackground(.thinMaterial, for: .window)
+                .containerBackground(.ultraThinMaterial, for: .window)
                 .task {
                     appDelegate.lifecycle.configure {
                         openWindow(id: "main")

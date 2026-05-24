@@ -8,48 +8,46 @@ struct SettingsView: View {
     @Binding var notificationPosition: NotificationPosition
 
     var body: some View {
-        TabView {
-            Form {
-                Section {
-                    SettingsFolderRow(
-                        title: "Downloads",
-                        path: store.watchedFolderURL.path(percentEncoded: false)
-                    ) {
-                        store.chooseWatchedFolder()
-                    }
-
-                    SettingsFolderRow(
-                        title: "Install To",
-                        path: store.installFolderURL.path(percentEncoded: false)
-                    ) {
-                        store.chooseInstallFolder()
-                    }
+        Form {
+            Section {
+                SettingsFolderRow(
+                    title: "Downloads",
+                    path: store.watchedFolderURL.path(percentEncoded: false)
+                ) {
+                    store.chooseWatchedFolder()
                 }
 
-                Section("Appearance") {
-                    NotificationPositionPicker(selection: $notificationPosition)
-
-                    Toggle("Hide in Dock", isOn: $hideInDock)
-
-                    Toggle("Hide in menu bar", isOn: $hideInMenuBar)
-
-                    if hideInDock && hideInMenuBar {
-                        Label(
-                            "Opening Poppy from Finder or Spotlight will show this window and restore the Dock icon until the window closes.",
-                            systemImage: "info.circle"
-                        )
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    }
+                SettingsFolderRow(
+                    title: "Install To",
+                    path: store.installFolderURL.path(percentEncoded: false)
+                ) {
+                    store.chooseInstallFolder()
                 }
             }
-            .formStyle(.grouped)
-            .tabItem {
-                Label("General", systemImage: "gearshape")
+
+            Section("Appearance") {
+                NotificationPositionPicker(selection: $notificationPosition)
+
+                Toggle("Hide in Dock", isOn: $hideInDock)
+
+                Toggle("Hide in menu bar", isOn: $hideInMenuBar)
+
+                if hideInDock && hideInMenuBar {
+                    Label(
+                        "Opening Poppy from Finder or Spotlight will show this window and restore the Dock icon until the window closes.",
+                        systemImage: "info.circle"
+                    )
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                }
             }
         }
-        .frame(width: 620, height: 430)
-        .scenePadding()
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+        .contentMargins(.top, 8, for: .scrollContent)
+        .contentMargins(.horizontal, 16, for: .scrollContent)
+        .contentMargins(.bottom, 16, for: .scrollContent)
+        .frame(width: 570, height: 720)
     }
 }
 

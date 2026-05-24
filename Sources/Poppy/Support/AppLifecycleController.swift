@@ -115,6 +115,7 @@ final class AppLifecycleController: ObservableObject {
     }
 
     func observeSettingsWindow(_ window: NSWindow) {
+        configureSettingsWindow(window)
         observePresentedWindow(window)
     }
 
@@ -149,6 +150,13 @@ final class AppLifecycleController: ObservableObject {
         } else {
             NSApp.setActivationPolicy(.regular)
         }
+    }
+
+    private func configureSettingsWindow(_ window: NSWindow) {
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .visible
+        window.toolbarStyle = .unified
+        window.isMovableByWindowBackground = true
     }
 
     private func bringMainWindowForward(_ window: NSWindow) {
