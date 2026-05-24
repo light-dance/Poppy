@@ -132,6 +132,8 @@ struct StatusWindowView: View {
             watchToggleButtonLabel
         }
         .buttonStyle(.plain)
+        .frame(width: 42, height: 42)
+        .contentShape(Circle())
         .accessibilityLabel(store.isWatching ? "Pause watching" : "Start watching")
         .help("Pause Watching Downloads")
     }
@@ -150,6 +152,8 @@ struct StatusWindowView: View {
             circleGlassIcon(systemImage: "gearshape.fill")
         }
         .buttonStyle(.plain)
+        .frame(width: 42, height: 42)
+        .contentShape(Circle())
         .accessibilityLabel("Open Settings")
         .help("Open Settings")
     }

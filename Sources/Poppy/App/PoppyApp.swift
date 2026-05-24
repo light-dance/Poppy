@@ -85,6 +85,11 @@ struct PoppyApp: App {
         }
         .defaultSize(width: 680, height: 605)
         .commands {
+            CommandGroup(replacing: .appInfo) {
+                Button("About Poppy") {
+                    openWindow(id: "about")
+                }
+            }
             CommandGroup(replacing: .newItem) {
                 Button(store.isWatching ? "Pause Watching" : "Start Watching") {
                     store.isWatching ? store.stop() : store.start()
@@ -264,6 +269,17 @@ struct PoppyApp: App {
                 .frame(width: 0, height: 0)
             }
         }
+
+        Window("About Poppy", id: "about") {
+            AboutView()
+                .background {
+                    WindowLifecycleReporter { window in
+                        appDelegate.lifecycle.observeSettingsWindow(window)
+                    }
+                    .frame(width: 0, height: 0)
+                }
+        }
+        .windowResizability(.contentSize)
     }
 
     private func menuItemTitle(for item: InstallableItem) -> String {

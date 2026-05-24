@@ -6,14 +6,20 @@ APP_NAME="Poppy"
 APP_LONG_NAME="Poppy App Installer"
 BUNDLE_ID="dev.local.Poppy"
 MIN_SYSTEM_VERSION="14.0"
+APP_VERSION="0.1.0"
+APP_BUILD="1"
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$ROOT_DIR/dist"
 APP_BUNDLE="$DIST_DIR/$APP_NAME.app"
 APP_CONTENTS="$APP_BUNDLE/Contents"
 APP_MACOS="$APP_CONTENTS/MacOS"
+APP_RESOURCES="$APP_CONTENTS/Resources"
 APP_BINARY="$APP_MACOS/$APP_NAME"
 INFO_PLIST="$APP_CONTENTS/Info.plist"
+APP_ICON_SOURCE="$ROOT_DIR/AppIcon.appiconset"
+APP_ICONSET="$DIST_DIR/AppIcon.iconset"
+APP_ICON="$APP_RESOURCES/AppIcon.icns"
 
 pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 
@@ -21,9 +27,26 @@ swift build
 BUILD_BINARY="$(swift build --show-bin-path)/$APP_NAME"
 
 rm -rf "$APP_BUNDLE"
-mkdir -p "$APP_MACOS"
+mkdir -p "$APP_MACOS" "$APP_RESOURCES"
 cp "$BUILD_BINARY" "$APP_BINARY"
 chmod +x "$APP_BINARY"
+
+if [[ -d "$APP_ICON_SOURCE" ]] && command -v iconutil >/dev/null 2>&1; then
+  rm -rf "$APP_ICONSET"
+  mkdir -p "$APP_ICONSET"
+  cp "$APP_ICON_SOURCE/mac16.png" "$APP_ICONSET/icon_16x16.png"
+  cp "$APP_ICON_SOURCE/mac32.png" "$APP_ICONSET/icon_16x16@2x.png"
+  cp "$APP_ICON_SOURCE/mac32.png" "$APP_ICONSET/icon_32x32.png"
+  cp "$APP_ICON_SOURCE/mac64.png" "$APP_ICONSET/icon_32x32@2x.png"
+  cp "$APP_ICON_SOURCE/mac128.png" "$APP_ICONSET/icon_128x128.png"
+  cp "$APP_ICON_SOURCE/mac256.png" "$APP_ICONSET/icon_128x128@2x.png"
+  cp "$APP_ICON_SOURCE/mac256.png" "$APP_ICONSET/icon_256x256.png"
+  cp "$APP_ICON_SOURCE/mac512.png" "$APP_ICONSET/icon_256x256@2x.png"
+  cp "$APP_ICON_SOURCE/mac512.png" "$APP_ICONSET/icon_512x512.png"
+  cp "$APP_ICON_SOURCE/mac1024.png" "$APP_ICONSET/icon_512x512@2x.png"
+  iconutil -c icns "$APP_ICONSET" -o "$APP_ICON"
+  rm -rf "$APP_ICONSET"
+fi
 
 cat >"$INFO_PLIST" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -40,6 +63,12 @@ cat >"$INFO_PLIST" <<PLIST
   <string>$APP_NAME</string>
   <key>CFBundleGetInfoString</key>
   <string>$APP_LONG_NAME</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$APP_VERSION</string>
+  <key>CFBundleVersion</key>
+  <string>$APP_BUILD</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>LSMinimumSystemVersion</key>
