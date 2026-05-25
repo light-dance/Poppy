@@ -1,0 +1,39 @@
+Sources/Poppy/Models/NotificationDismissalDelay.swift
+  s_70bdb090304c8a::t_99bc7e7684302c 1-39
+Sources/Poppy/App/PoppyApp.swift
+  s_70bdb090304c8a::t_99bc7e7684302c 43,272-275,314-315
+Sources/Poppy/Views/SettingsView.swift
+  s_0547145498351d::t_f5b85514bd7548 97
+  s_0547145498351d::t_f10578273148c5 42-48
+  s_70bdb090304c8a::t_99bc7e7684302c 9,49
+Sources/Poppy/Views/FloatingInstallPanelView.swift
+  s_70bdb090304c8a::t_83394c9e22866e 112,409-414
+  s_70bdb090304c8a::t_9ab980c73906a1 263-280
+  s_70bdb090304c8a::t_99bc7e7684302c 6,8,31,73-111,113-117
+Sources/Poppy/Support/AppLifecycleController.swift
+  s_70bdb090304c8a::t_e80d36cb3a9971 161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.1",
+  "base_commit_sha": "a3cd408800867df6bba3795e8dae69ddd90b066c",
+  "prompts": {},
+  "sessions": {
+    "s_0547145498351d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5ca4-be75-7002-935a-d478d4f75aae",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_70bdb090304c8a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e5c99-a741-74d2-a05f-d858329b3bc7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
