@@ -40,6 +40,7 @@ struct PoppyApp: App {
     @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = false
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
+    @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
     @StateObject private var store = InstallStore()
     @State private var appItemDisplayMode: AppItemDisplayMode = .list
 
@@ -268,6 +269,10 @@ struct PoppyApp: App {
                         notificationPositionValue = newValue.rawValue
                         appDelegate.setNotificationPosition(newValue)
                     }
+                ),
+                notificationDismissalDelay: Binding(
+                    get: { notificationDismissalDelay },
+                    set: { notificationDismissalDelayValue = $0.rawValue }
                 )
             )
             .background {
@@ -304,6 +309,10 @@ struct PoppyApp: App {
 
     private var notificationPosition: NotificationPosition {
         NotificationPosition(rawValue: notificationPositionValue) ?? .topRight
+    }
+
+    private var notificationDismissalDelay: NotificationDismissalDelay {
+        NotificationDismissalDelay(rawValue: notificationDismissalDelayValue) ?? .after15Seconds
     }
 
     private func cleanupAllInstalledItems() {

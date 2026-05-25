@@ -6,6 +6,7 @@ struct SettingsView: View {
     @Binding var hideInDock: Bool
     @Binding var hideInMenuBar: Bool
     @Binding var notificationPosition: NotificationPosition
+    @Binding var notificationDismissalDelay: NotificationDismissalDelay
 
     var body: some View {
         Form {
@@ -38,6 +39,14 @@ struct SettingsView: View {
             }
 
             Section("Appearance") {
+                Picker("Dismiss Notification", selection: $notificationDismissalDelay) {
+                    ForEach(NotificationDismissalDelay.allCases) { delay in
+                        Text(delay.title)
+                            .tag(delay)
+                    }
+                }
+                .pickerStyle(.menu)
+
                 NotificationPositionPicker(selection: $notificationPosition)
 
                 Toggle("Hide in Dock", isOn: $hideInDock)
@@ -85,6 +94,7 @@ private struct NotificationPositionPicker: View {
 
             ZStack(alignment: .top) {
                 wallpaperPreview
+                    .allowsHitTesting(false)
 
                 radioButton(for: .topLeft)
                     .position(x: 22, y: 21)

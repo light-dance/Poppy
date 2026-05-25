@@ -158,7 +158,7 @@ final class AppLifecycleController: ObservableObject {
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .visible
         window.toolbarStyle = .unified
-        window.isMovableByWindowBackground = true
+        window.isMovableByWindowBackground = false
     }
 
     private func configureMainWindow(_ window: NSWindow) {
