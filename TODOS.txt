@@ -1,15 +1,8 @@
 - clean up list views
-- show installing progress, available (not installed) and installed (past installs and installs that can be cleaned up)
-- header graphic: poppy flower - hover to grow, click to spin
-	- maybe you get more when you install more apps? maybe you get stickers you can then decorate the header with
-- about screen
 - menu bar options
 - grid view display
 - clean up all button
 - install dmg background (big orange poppy and maybe text like "one last time")
-
-notifications:
-- dismiss timer
 
 options:
 - auto install without notification (warning)
