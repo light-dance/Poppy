@@ -126,36 +126,39 @@ struct StatusWindowView: View {
     }
 
     private var watchToggleButton: some View {
-        Button {
+        circularToolbarButton(
+            systemImage: store.isWatching ? "pause.fill" : "play.fill",
+            accessibilityLabel: store.isWatching ? "Pause watching" : "Start watching",
+            help: "Pause Watching Downloads"
+        ) {
             store.isWatching ? store.stop() : store.start()
-        } label: {
-            watchToggleButtonLabel
         }
-        .buttonStyle(.plain)
-        .frame(width: 42, height: 42)
-        .contentShape(Circle())
-        .accessibilityLabel(store.isWatching ? "Pause watching" : "Start watching")
-        .help("Pause Watching Downloads")
-    }
-
-    @ViewBuilder
-    private var watchToggleButtonLabel: some View {
-        let iconName = store.isWatching ? "pause.fill" : "play.fill"
-
-        circleGlassIcon(systemImage: iconName)
     }
 
     private var settingsButton: some View {
-        Button {
+        circularToolbarButton(
+            systemImage: "gearshape.fill",
+            accessibilityLabel: "Open Settings",
+            help: "Open Settings"
+        ) {
             openSettings()
-        } label: {
-            circleGlassIcon(systemImage: "gearshape.fill")
+        }
+    }
+
+    @ViewBuilder
+    private func circularToolbarButton(
+        systemImage: String,
+        accessibilityLabel: String,
+        help: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            circleGlassIcon(systemImage: systemImage)
+                .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .frame(width: 42, height: 42)
-        .contentShape(Circle())
-        .accessibilityLabel("Open Settings")
-        .help("Open Settings")
+        .accessibilityLabel(accessibilityLabel)
+        .help(help)
     }
 
     @ViewBuilder
