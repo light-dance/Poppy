@@ -10,6 +10,7 @@ final class InstallStore: ObservableObject {
     @Published private(set) var installableItems: [InstallableItem] = []
     @Published private(set) var hiddenInstallableItems: [InstallableItem] = []
     @Published private(set) var debugAppItems: [AppItem] = []
+    @Published private(set) var diagnosticLogEntries: [DiagnosticLogEntry] = []
     @Published var records: [InstallRecord] = []
     @Published var isWatching = false
     @Published private(set) var watchedFolderURL: URL
@@ -21,6 +22,8 @@ final class InstallStore: ObservableObject {
     private var hiddenInstallableURLs = Set<URL>()
     private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
     private var zipInspectionTasks = Set<URL>()
+    private var zipRetryStates = [URL: ZipRetryState]()
+    private let maxInstallReadinessStableRetries = 5
 
     static var defaultWatchedFolderURL: URL {
         FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads", isDirectory: true)
@@ -57,6 +60,9 @@ final class InstallStore: ObservableObject {
             },
             onChanged: { [weak self] in
                 self?.scanWatchedFolder()
+            },
+            onLog: { [weak self] message in
+                self?.addDiagnosticLog(message)
             }
         )
         watcher?.start()
@@ -64,6 +70,7 @@ final class InstallStore: ObservableObject {
     }
 
     func stop() {
+        addDiagnosticLog("Stopping watcher")
         watcher?.stop()
         watcher = nil
         isWatching = false
@@ -266,20 +273,18 @@ final class InstallStore: ObservableObject {
         installingJob.state = .installing("Preparing")
         currentJob = installingJob
         let installDirectory = installFolderURL
+        addDiagnosticLog("Starting install for \(job.sourceURL.lastPathComponent)")
         scanWatchedFolder()
 
         activeInstallTask?.cancel()
         activeInstallTask = Task {
             do {
-                let installer = InstallService()
-                let result = try await installer.install(
-                    sourceURL: installingJob.sourceURL,
-                    kind: installingJob.kind,
+                let result = try await installWithReadinessRetries(
+                    job: installingJob,
                     installDirectory: installDirectory
-                ) { [weak self] message in
-                    self?.updateCurrentJobState(.installing(message))
-                }
+                )
                 let appName = result.appURL.deletingPathExtension().lastPathComponent
+                addDiagnosticLog("Installed \(appName)")
                 updateCurrentJob(appName: appName, state: .installed(appURL: result.appURL))
                 addRecord(
                     appName: appName,
@@ -289,6 +294,7 @@ final class InstallStore: ObservableObject {
                 )
                 scanWatchedFolder()
             } catch InstallServiceError.cancelled {
+                addDiagnosticLog("Install cancelled for \(job.sourceURL.lastPathComponent)")
                 addRecord(
                     appName: job.displayName,
                     sourceName: job.sourceURL.lastPathComponent,
@@ -298,6 +304,7 @@ final class InstallStore: ObservableObject {
                 advanceToNextJob()
                 scanWatchedFolder()
             } catch {
+                addDiagnosticLog("Install failed for \(job.sourceURL.lastPathComponent): \(error.localizedDescription)")
                 let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
                 updateCurrentJobState(.failed(notificationFailureDescription(for: error)))
                 addRecord(
@@ -310,6 +317,51 @@ final class InstallStore: ObservableObject {
             }
 
             activeInstallTask = nil
+        }
+    }
+
+    private func installWithReadinessRetries(
+        job: InstallJob,
+        installDirectory: URL
+    ) async throws -> InstallResult {
+        var lastObservedSize = fileSize(for: job.sourceURL)
+        var stableFailureCount = 0
+
+        while true {
+            do {
+                let installer = InstallService()
+                return try await installer.install(
+                    sourceURL: job.sourceURL,
+                    kind: job.kind,
+                    installDirectory: installDirectory
+                ) { [weak self] message in
+                    self?.updateCurrentJobState(.installing(message))
+                }
+            } catch {
+                guard shouldRetryInstallReadinessError(error) else {
+                    throw error
+                }
+
+                try checkCancellation()
+                addDiagnosticLog("Install read failed for \(job.sourceURL.lastPathComponent): \(error.localizedDescription)")
+                updateCurrentJobState(.installing("Installer may still be downloading. Retrying in 1s"))
+                try await Task.sleep(for: .seconds(1))
+                try checkCancellation()
+
+                let currentSize = fileSize(for: job.sourceURL)
+                if currentSize != lastObservedSize {
+                    stableFailureCount = 0
+                    addDiagnosticLog("Installer size changed; continuing retries for \(job.sourceURL.lastPathComponent)")
+                    updateCurrentJobState(.installing("Download is still changing. Retrying install"))
+                } else {
+                    stableFailureCount += 1
+                    guard stableFailureCount <= maxInstallReadinessStableRetries else {
+                        addDiagnosticLog("Installer size stayed stable after retries; surfacing error for \(job.sourceURL.lastPathComponent)")
+                        throw error
+                    }
+                }
+                lastObservedSize = currentSize
+            }
         }
     }
 
@@ -342,6 +394,7 @@ final class InstallStore: ObservableObject {
 
     private func handleDetectedInstallable(_ sourceURL: URL) {
         guard !hiddenInstallableURLs.contains(sourceURL) else { return }
+        addDiagnosticLog("Queuing detected installer: \(sourceURL.lastPathComponent)")
         let job = InstallJob(sourceURL: sourceURL, appName: nil, state: .awaitingApproval)
         scanWatchedFolder()
         if currentJob == nil {
@@ -396,6 +449,29 @@ final class InstallStore: ObservableObject {
         }
     }
 
+    private func shouldRetryInstallReadinessError(_ error: Error) -> Bool {
+        guard let installError = error as? InstallServiceError else {
+            return false
+        }
+
+        switch installError {
+        case .attachFailed, .archiveReadFailed, .archiveExtractFailed, .noMountPoint:
+            return true
+        case .missingFile, .cancelled, .noAppFound, .copyFailed, .detachFailed, .deleteFailed:
+            return false
+        }
+    }
+
+    private func fileSize(for url: URL) -> Int? {
+        (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize)
+    }
+
+    private func checkCancellation() throws {
+        if Task.isCancelled {
+            throw InstallServiceError.cancelled
+        }
+    }
+
     private func updateCurrentJob(appName: String, state: InstallJob.State) {
         guard var job = currentJob else { return }
         job.appName = appName
@@ -409,6 +485,17 @@ final class InstallStore: ObservableObject {
             InstallRecord(appName: appName, sourceName: sourceName, date: Date(), result: result, detail: detail),
             at: 0
         )
+    }
+
+    func clearDiagnosticLog() {
+        diagnosticLogEntries.removeAll()
+    }
+
+    private func addDiagnosticLog(_ message: String) {
+        diagnosticLogEntries.insert(DiagnosticLogEntry(date: Date(), message: message), at: 0)
+        if diagnosticLogEntries.count > 250 {
+            diagnosticLogEntries.removeLast(diagnosticLogEntries.count - 250)
+        }
     }
 
     private func scanWatchedFolder() {
@@ -428,6 +515,7 @@ final class InstallStore: ObservableObject {
         hiddenInstallableURLs.formIntersection(currentURLSet)
         zipInstallableCache = zipInstallableCache.filter { currentURLSet.contains($0.key) }
         zipInspectionTasks.formIntersection(currentURLSet)
+        zipRetryStates = zipRetryStates.filter { currentURLSet.contains($0.key) }
 
         let items: [InstallableItem] = urls
             .filter { shouldShowInstallable($0) }
@@ -466,20 +554,74 @@ final class InstallStore: ObservableObject {
         zipInspectionTasks.insert(url)
 
         Task { [weak self] in
-            let containsApp = await ZipArchiveInspector.containsAppBundle(url)
+            let result: Result<String?, Error>
+            do {
+                result = .success(try await ZipArchiveInspector.findAppEntry(in: url))
+            } catch {
+                result = .failure(error)
+            }
+
             await MainActor.run {
                 guard let self else { return }
                 self.zipInspectionTasks.remove(url)
-                if self.zipFingerprint(for: url) == fingerprint {
+
+                guard self.zipFingerprint(for: url) == fingerprint else {
+                    self.zipInstallableCache.removeValue(forKey: url)
+                    self.zipRetryStates.removeValue(forKey: url)
+                    self.scanWatchedFolder()
+                    return
+                }
+
+                switch result {
+                case .success(let appEntry):
+                    self.zipRetryStates.removeValue(forKey: url)
+                    self.addDiagnosticLog(
+                        appEntry == nil
+                            ? "List zip ignored because no app was found: \(url.lastPathComponent)"
+                            : "List zip contains an app: \(url.lastPathComponent)"
+                    )
                     self.zipInstallableCache[url] = ZipInstallableCacheEntry(
                         fingerprint: fingerprint,
-                        containsApp: containsApp
+                        containsApp: appEntry != nil
                     )
-                } else {
-                    self.zipInstallableCache.removeValue(forKey: url)
+                    self.scanWatchedFolder()
+                case .failure:
+                    self.addDiagnosticLog("List zip inspection failed for \(url.lastPathComponent)")
+                    self.scheduleZipListInspectionRetry(for: url, fingerprint: fingerprint)
                 }
-                self.scanWatchedFolder()
             }
+        }
+    }
+
+    private func scheduleZipListInspectionRetry(for url: URL, fingerprint: ZipFileFingerprint) {
+        let currentSize = fileSize(for: url)
+        let state = zipRetryStates[url] ?? ZipRetryState(lastObservedSize: currentSize, stableFailureCount: 0)
+        let nextStableFailureCount = state.lastObservedSize == currentSize ? state.stableFailureCount + 1 : 0
+
+        guard nextStableFailureCount <= maxInstallReadinessStableRetries else {
+            zipRetryStates.removeValue(forKey: url)
+            zipInstallableCache[url] = ZipInstallableCacheEntry(fingerprint: fingerprint, containsApp: false)
+            addDiagnosticLog("List zip inspection stopped after stable failures: \(url.lastPathComponent)")
+            scanWatchedFolder()
+            return
+        }
+
+        zipRetryStates[url] = ZipRetryState(
+            lastObservedSize: currentSize,
+            stableFailureCount: nextStableFailureCount
+        )
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [weak self] in
+            guard let self else { return }
+            guard FileManager.default.fileExists(atPath: url.path) else { return }
+            guard self.zipFingerprint(for: url) == fingerprint else {
+                self.zipInstallableCache.removeValue(forKey: url)
+                self.zipRetryStates.removeValue(forKey: url)
+                self.scanWatchedFolder()
+                return
+            }
+            self.addDiagnosticLog("Retrying list zip inspection: \(url.lastPathComponent)")
+            self.inspectZipForList(url, fingerprint: fingerprint)
         }
     }
 
@@ -572,4 +714,9 @@ private struct ZipFileFingerprint: Equatable {
 private struct ZipInstallableCacheEntry {
     let fingerprint: ZipFileFingerprint
     let containsApp: Bool
+}
+
+private struct ZipRetryState {
+    let lastObservedSize: Int?
+    let stableFailureCount: Int
 }

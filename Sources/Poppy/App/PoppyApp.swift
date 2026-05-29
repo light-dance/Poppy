@@ -55,7 +55,7 @@ struct PoppyApp: App {
                     }
                 }
             )
-                .frame(minWidth: 560, minHeight: 420)
+                .frame(minWidth: 520, minHeight: 420)
                 .navigationTitle("Poppy")
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
                 .containerBackground(for: .window) {
@@ -134,6 +134,13 @@ struct PoppyApp: App {
             CommandGroup(replacing: .windowArrangement) {}
 
             CommandMenu("Debug") {
+                Button("Open Logs") {
+                    openWindow(id: "logs")
+                }
+                .keyboardShortcut("l", modifiers: [.command, .option])
+
+                Divider()
+
                 Button("Notification: Approval") {
                     store.simulateNotification(.awaitingApproval)
                 }
@@ -230,6 +237,13 @@ struct PoppyApp: App {
             Divider()
 
             Button {
+                openWindow(id: "logs")
+            } label: {
+                Label("Open Logs", systemImage: "doc.text.magnifyingglass")
+            }
+            .keyboardShortcut("l", modifiers: [.command, .option])
+
+            Button {
                 appDelegate.lifecycle.showSettings {
                     openSettings()
                 }
@@ -293,6 +307,11 @@ struct PoppyApp: App {
                 }
         }
         .windowResizability(.contentSize)
+
+        Window("Poppy Logs", id: "logs") {
+            DiagnosticLogView(store: store)
+        }
+        .defaultSize(width: 760, height: 480)
     }
 
     private func menuItemTitle(for item: InstallableItem) -> String {

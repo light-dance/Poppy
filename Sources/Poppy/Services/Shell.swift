@@ -19,10 +19,13 @@ enum Shell {
             process.standardError = errorPipe
 
             try process.run()
+
+            async let outputData = outputPipe.fileHandleForReading.readToEnd() ?? Data()
+            async let errorData = errorPipe.fileHandleForReading.readToEnd() ?? Data()
             process.waitUntilExit()
 
-            let output = String(data: outputPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
-            let error = String(data: errorPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+            let output = String(data: try await outputData, encoding: .utf8) ?? ""
+            let error = String(data: try await errorData, encoding: .utf8) ?? ""
             return ShellResult(status: process.terminationStatus, output: output, error: error)
         }.value
     }
