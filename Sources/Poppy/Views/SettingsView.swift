@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject var store: InstallStore
     @Binding var hideInDock: Bool
     @Binding var hideInMenuBar: Bool
+    @Binding var deleteAfterInstall: Bool
     @Binding var automaticallyInstallDetectedApplications: Bool
     @Binding var notificationPosition: NotificationPosition
     @Binding var notificationDismissalDelay: NotificationDismissalDelay
@@ -40,6 +41,8 @@ struct SettingsView: View {
             }
 
             Section("General") {
+                Toggle("Delete after Install", isOn: $deleteAfterInstall)
+
                 Toggle("Install Automatically", isOn: autoInstallBinding)
 
                 if automaticallyInstallDetectedApplications {

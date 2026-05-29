@@ -284,6 +284,7 @@ final class InstallStore: ObservableObject {
         installingJob.state = .installing("Preparing")
         currentJob = installingJob
         let installDirectory = installFolderURL
+        let deleteAfterInstall = DeleteAfterInstall.isEnabled
         addDiagnosticLog("Starting install for \(job.sourceURL.lastPathComponent)")
         scanWatchedFolder()
 
@@ -292,7 +293,8 @@ final class InstallStore: ObservableObject {
             do {
                 let result = try await installWithReadinessRetries(
                     job: installingJob,
-                    installDirectory: installDirectory
+                    installDirectory: installDirectory,
+                    deleteAfterInstall: deleteAfterInstall
                 )
                 let appName = result.appURL.deletingPathExtension().lastPathComponent
                 addDiagnosticLog("Installed \(appName)")
@@ -333,7 +335,8 @@ final class InstallStore: ObservableObject {
 
     private func installWithReadinessRetries(
         job: InstallJob,
-        installDirectory: URL
+        installDirectory: URL,
+        deleteAfterInstall: Bool
     ) async throws -> InstallResult {
         var lastObservedSize = fileSize(for: job.sourceURL)
         var stableFailureCount = 0
@@ -344,7 +347,8 @@ final class InstallStore: ObservableObject {
                 return try await installer.install(
                     sourceURL: job.sourceURL,
                     kind: job.kind,
-                    installDirectory: installDirectory
+                    installDirectory: installDirectory,
+                    deleteAfterInstall: deleteAfterInstall
                 ) { [weak self] message in
                     self?.updateCurrentJobState(.installing(message))
                 }

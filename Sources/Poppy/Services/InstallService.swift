@@ -49,15 +49,26 @@ final class InstallService {
         sourceURL: URL,
         kind: InstallableKind,
         installDirectory: URL,
+        deleteAfterInstall: Bool,
         progress: @MainActor @escaping (String) -> Void
     ) async throws -> InstallResult {
         switch kind {
         case .diskImage:
-            return try await installDiskImage(sourceURL, installDirectory: installDirectory, progress: progress)
+            return try await installDiskImage(
+                sourceURL,
+                installDirectory: installDirectory,
+                deleteAfterInstall: deleteAfterInstall,
+                progress: progress
+            )
         case .appBundle:
             return try await installAppBundle(sourceURL, installDirectory: installDirectory, progress: progress)
         case .zipArchive:
-            return try await installZipArchive(sourceURL, installDirectory: installDirectory, progress: progress)
+            return try await installZipArchive(
+                sourceURL,
+                installDirectory: installDirectory,
+                deleteAfterInstall: deleteAfterInstall,
+                progress: progress
+            )
         }
     }
 
@@ -94,6 +105,7 @@ final class InstallService {
     private func installDiskImage(
         _ dmgURL: URL,
         installDirectory: URL,
+        deleteAfterInstall: Bool,
         progress: @MainActor @escaping (String) -> Void
     ) async throws -> InstallResult {
         guard fileManager.fileExists(atPath: dmgURL.path) else {
@@ -126,9 +138,11 @@ final class InstallService {
             await progress("Unmounting disk image")
             try await detach(mountPoint: mountPoint)
 
-            try checkCancellation()
-            await progress("Cleaning up download")
-            try trashSourceInstaller(dmgURL)
+            if deleteAfterInstall {
+                try checkCancellation()
+                await progress("Cleaning up download")
+                try trashSourceInstaller(dmgURL)
+            }
 
             return InstallResult(appURL: destinationApp)
         } catch {
@@ -140,6 +154,7 @@ final class InstallService {
     private func installZipArchive(
         _ zipURL: URL,
         installDirectory: URL,
+        deleteAfterInstall: Bool,
         progress: @MainActor @escaping (String) -> Void
     ) async throws -> InstallResult {
         guard fileManager.fileExists(atPath: zipURL.path) else {
@@ -182,9 +197,11 @@ final class InstallService {
             throw InstallServiceError.copyFailed(error.localizedDescription)
         }
 
-        try checkCancellation()
-        await progress("Cleaning up download")
-        try trashSourceInstaller(zipURL)
+        if deleteAfterInstall {
+            try checkCancellation()
+            await progress("Cleaning up download")
+            try trashSourceInstaller(zipURL)
+        }
 
         return InstallResult(appURL: destinationApp)
     }
