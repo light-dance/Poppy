@@ -5,7 +5,7 @@ struct FloatingInstallPanelView: View {
     @ObservedObject var store: InstallStore
     @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
     @Environment(\.colorScheme) private var colorScheme
-    @State private var approvalCountdownStart = Date()
+    @State private var notificationCountdownStart = Date()
 
     var body: some View {
         Group {
@@ -74,13 +74,13 @@ struct FloatingInstallPanelView: View {
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
         .onAppear {
-            approvalCountdownStart = Date()
+            notificationCountdownStart = Date()
         }
         .onChange(of: job.id) {
-            approvalCountdownStart = Date()
+            notificationCountdownStart = Date()
         }
         .onChange(of: notificationDismissalDelayValue) {
-            approvalCountdownStart = Date()
+            notificationCountdownStart = Date()
         }
         .task(id: approvalDismissalTaskID) {
             if let seconds = approvalAutoInstallSeconds {
@@ -104,7 +104,7 @@ struct FloatingInstallPanelView: View {
                 .fill(leftButtonBackground)
 
             if notificationDismissalDelay.seconds != nil && approvalAutoInstallSeconds == nil {
-                approvalCountdownRing
+                notificationCountdownRing
             }
 
             Image(systemName: "xmark")
@@ -114,12 +114,12 @@ struct FloatingInstallPanelView: View {
         .frame(width: 40, height: 40)
     }
 
-    private var approvalCountdownRing: some View {
+    private var notificationCountdownRing: some View {
         TimelineView(.animation) { context in
             Circle()
-                .trim(from: 0, to: approvalCountdownProgress(at: context.date))
+                .trim(from: 0, to: notificationCountdownProgress(at: context.date))
                 .stroke(
-                    approvalCountdownRingColor,
+                    notificationCountdownRingColor,
                     style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
@@ -236,11 +236,7 @@ struct FloatingInstallPanelView: View {
             Button {
                 store.dismissCurrentJob()
             } label: {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 15, weight: .bold, design: .rounded))
-                    .foregroundStyle(.secondary)
-                    .frame(width: 40, height: 40)
-                    .background(leftButtonBackground, in: Circle())
+                installedDismissButtonLabel
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.cancelAction)
@@ -276,6 +272,38 @@ struct FloatingInstallPanelView: View {
         .frame(minHeight: 62)
         .background(capsuleBackground)
         .fixedSize(horizontal: true, vertical: true)
+        .onAppear {
+            notificationCountdownStart = Date()
+        }
+        .onChange(of: job.id) {
+            notificationCountdownStart = Date()
+        }
+        .onChange(of: notificationDismissalDelayValue) {
+            notificationCountdownStart = Date()
+        }
+        .task(id: installedDismissalTaskID) {
+            guard let seconds = notificationDismissalDelay.seconds else { return }
+
+            try? await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
+            guard !Task.isCancelled else { return }
+            store.dismissCurrentJob()
+        }
+    }
+
+    private var installedDismissButtonLabel: some View {
+        ZStack {
+            Circle()
+                .fill(leftButtonBackground)
+
+            if notificationDismissalDelay.seconds != nil {
+                notificationCountdownRing
+            }
+
+            Image(systemName: "checkmark")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: 40, height: 40)
     }
 
 
@@ -296,6 +324,10 @@ struct FloatingInstallPanelView: View {
         "\(job.id.uuidString)-\(notificationDismissalDelayValue)-\(approvalAutoInstallSeconds ?? 0)"
     }
 
+    private var installedDismissalTaskID: String {
+        "\(job.id.uuidString)-\(notificationDismissalDelayValue)-installed"
+    }
+
     private var approvalAutoInstallSeconds: Int? {
         guard case .autoInstall(let seconds) = job.approvalBehavior else {
             return nil
@@ -304,12 +336,12 @@ struct FloatingInstallPanelView: View {
         return seconds
     }
 
-    private func approvalCountdownProgress(at date: Date) -> CGFloat {
+    private func notificationCountdownProgress(at date: Date) -> CGFloat {
         guard let seconds = notificationDismissalDelay.seconds else {
             return 0
         }
 
-        let elapsed = date.timeIntervalSince(approvalCountdownStart)
+        let elapsed = date.timeIntervalSince(notificationCountdownStart)
         let remaining = max(0, TimeInterval(seconds) - elapsed)
         return CGFloat(remaining / TimeInterval(seconds))
     }
@@ -319,7 +351,7 @@ struct FloatingInstallPanelView: View {
             return 0
         }
 
-        let elapsed = date.timeIntervalSince(approvalCountdownStart)
+        let elapsed = date.timeIntervalSince(notificationCountdownStart)
         return min(1, max(0, CGFloat(elapsed / TimeInterval(seconds))))
     }
 
@@ -451,12 +483,12 @@ struct FloatingInstallPanelView: View {
         return Color.black.opacity(0.12)
     }
 
-    private var approvalCountdownRingColor: Color {
+    private var notificationCountdownRingColor: Color {
         if colorScheme == .dark {
             return Color.white.opacity(0.46)
         }
 
-        return Color.black.opacity(0.34)
+        return Color.white
     }
 
     private var capsuleStrokeColor: Color {
