@@ -60,7 +60,10 @@ struct FloatingInstallPanelView: View {
                 .padding(.leading, 12)
                 .padding(.trailing, 15)
                 .frame(height: 40)
-                .background(Color.accentColor, in: Capsule(style: .continuous))
+                .background {
+                    installButtonBackground
+                        .clipShape(Capsule(style: .continuous))
+                }
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
@@ -80,6 +83,13 @@ struct FloatingInstallPanelView: View {
             approvalCountdownStart = Date()
         }
         .task(id: approvalDismissalTaskID) {
+            if let seconds = approvalAutoInstallSeconds {
+                try? await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
+                guard !Task.isCancelled else { return }
+                store.approveCurrentInstall()
+                return
+            }
+
             guard let seconds = notificationDismissalDelay.seconds else { return }
 
             try? await Task.sleep(nanoseconds: UInt64(seconds) * 1_000_000_000)
@@ -93,7 +103,7 @@ struct FloatingInstallPanelView: View {
             Circle()
                 .fill(leftButtonBackground)
 
-            if notificationDismissalDelay.seconds != nil {
+            if notificationDismissalDelay.seconds != nil && approvalAutoInstallSeconds == nil {
                 approvalCountdownRing
             }
 
@@ -114,6 +124,24 @@ struct FloatingInstallPanelView: View {
                 )
                 .rotationEffect(.degrees(-90))
                 .padding(1.25)
+        }
+    }
+
+    @ViewBuilder
+    private var installButtonBackground: some View {
+        if approvalAutoInstallSeconds != nil {
+            TimelineView(.animation) { context in
+                GeometryReader { proxy in
+                    ZStack(alignment: .leading) {
+                        Color.blue.opacity(0.42)
+
+                        Color.accentColor
+                            .frame(width: proxy.size.width * approvalAutoInstallProgress(at: context.date))
+                    }
+                }
+            }
+        } else {
+            Color.accentColor
         }
     }
 
@@ -265,7 +293,15 @@ struct FloatingInstallPanelView: View {
     }
 
     private var approvalDismissalTaskID: String {
-        "\(job.id.uuidString)-\(notificationDismissalDelayValue)"
+        "\(job.id.uuidString)-\(notificationDismissalDelayValue)-\(approvalAutoInstallSeconds ?? 0)"
+    }
+
+    private var approvalAutoInstallSeconds: Int? {
+        guard case .autoInstall(let seconds) = job.approvalBehavior else {
+            return nil
+        }
+
+        return seconds
     }
 
     private func approvalCountdownProgress(at date: Date) -> CGFloat {
@@ -276,6 +312,15 @@ struct FloatingInstallPanelView: View {
         let elapsed = date.timeIntervalSince(approvalCountdownStart)
         let remaining = max(0, TimeInterval(seconds) - elapsed)
         return CGFloat(remaining / TimeInterval(seconds))
+    }
+
+    private func approvalAutoInstallProgress(at date: Date) -> CGFloat {
+        guard let seconds = approvalAutoInstallSeconds else {
+            return 0
+        }
+
+        let elapsed = date.timeIntervalSince(approvalCountdownStart)
+        return min(1, max(0, CGFloat(elapsed / TimeInterval(seconds))))
     }
 
     @ViewBuilder

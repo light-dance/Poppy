@@ -5,11 +5,6 @@
 - install dmg background (big orange poppy and maybe text like "one last time")
 
 options:
-- auto install without notification (warning)
-- notification position
-- notification dismissal (5s, 10s, 15s, 20s, 30s, 1m, never)
-- downloads folder
-- applications folder
 - delete after install
 
 marketing:

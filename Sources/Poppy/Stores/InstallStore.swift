@@ -25,6 +25,14 @@ final class InstallStore: ObservableObject {
     private var zipRetryStates = [URL: ZipRetryState]()
     private let maxInstallReadinessStableRetries = 5
 
+    private static var detectedInstallApprovalBehavior: InstallJob.ApprovalBehavior {
+        if UserDefaults.standard.bool(forKey: AutoInstallDetectedApplications.storageKey) {
+            return .autoInstall(afterSeconds: AutoInstallDetectedApplications.delaySeconds)
+        }
+
+        return .manual
+    }
+
     static var defaultWatchedFolderURL: URL {
         FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Downloads", isDirectory: true)
     }
@@ -56,7 +64,10 @@ final class InstallStore: ObservableObject {
         watcher = DownloadsWatcher(
             downloadsURL: watchedFolderURL,
             onDetected: { [weak self] sourceURL in
-                self?.handleDetectedInstallable(sourceURL)
+                self?.handleDetectedInstallable(
+                    sourceURL,
+                    approvalBehavior: Self.detectedInstallApprovalBehavior
+                )
             },
             onChanged: { [weak self] in
                 self?.scanWatchedFolder()
@@ -392,10 +403,18 @@ final class InstallStore: ObservableObject {
         advanceToNextJob()
     }
 
-    private func handleDetectedInstallable(_ sourceURL: URL) {
+    private func handleDetectedInstallable(
+        _ sourceURL: URL,
+        approvalBehavior: InstallJob.ApprovalBehavior = .manual
+    ) {
         guard !hiddenInstallableURLs.contains(sourceURL) else { return }
         addDiagnosticLog("Queuing detected installer: \(sourceURL.lastPathComponent)")
-        let job = InstallJob(sourceURL: sourceURL, appName: nil, state: .awaitingApproval)
+        let job = InstallJob(
+            sourceURL: sourceURL,
+            appName: nil,
+            state: .awaitingApproval,
+            approvalBehavior: approvalBehavior
+        )
         scanWatchedFolder()
         if currentJob == nil {
             currentJob = job

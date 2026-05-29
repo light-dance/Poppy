@@ -39,6 +39,7 @@ struct PoppyApp: App {
     @Environment(\.openSettings) private var openSettings
     @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = false
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
+    @AppStorage(AutoInstallDetectedApplications.storageKey) private var automaticallyInstallDetectedApplications = false
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
     @StateObject private var store = InstallStore()
@@ -229,7 +230,7 @@ struct PoppyApp: App {
                             Label("Delete", systemImage: "trash")
                         }
                     } label: {
-                        Label(menuItemTitle(for: item), systemImage: "plus.app")
+                        Label(menuItemTitle(for: item), systemImage: "app")
                     }
                 }
             }
@@ -277,6 +278,7 @@ struct PoppyApp: App {
                         appDelegate.lifecycle.setHideInMenuBar(newValue)
                     }
                 ),
+                automaticallyInstallDetectedApplications: $automaticallyInstallDetectedApplications,
                 notificationPosition: Binding(
                     get: { notificationPosition },
                     set: { newValue in

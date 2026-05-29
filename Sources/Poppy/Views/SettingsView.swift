@@ -5,6 +5,7 @@ struct SettingsView: View {
     @ObservedObject var store: InstallStore
     @Binding var hideInDock: Bool
     @Binding var hideInMenuBar: Bool
+    @Binding var automaticallyInstallDetectedApplications: Bool
     @Binding var notificationPosition: NotificationPosition
     @Binding var notificationDismissalDelay: NotificationDismissalDelay
 
@@ -35,6 +36,19 @@ struct SettingsView: View {
                     store.resetInstallFolder()
                 } open: {
                     store.openInstallFolder()
+                }
+            }
+
+            Section("General") {
+                Toggle("Install Automatically", isOn: autoInstallBinding)
+
+                if automaticallyInstallDetectedApplications {
+                    Label(
+                        "Poppy will install newly detected apps after \(AutoInstallDetectedApplications.delaySeconds) seconds unless you cancel.",
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
                 }
             }
 
@@ -69,6 +83,32 @@ struct SettingsView: View {
         .contentMargins(.horizontal, 16, for: .scrollContent)
         .contentMargins(.bottom, 16, for: .scrollContent)
         .frame(width: 570, height: 720)
+    }
+
+    private var autoInstallBinding: Binding<Bool> {
+        Binding(
+            get: { automaticallyInstallDetectedApplications },
+            set: { newValue in
+                guard newValue else {
+                    automaticallyInstallDetectedApplications = false
+                    return
+                }
+
+                if confirmAutoInstall() {
+                    automaticallyInstallDetectedApplications = true
+                }
+            }
+        )
+    }
+
+    private func confirmAutoInstall() -> Bool {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Automatically Install Downloaded Applications?"
+        alert.informativeText = "Apps will be moved to your Applications folder without needing your confirmation. This could be dangerous."
+        alert.addButton(withTitle: "Turn On Auto Install")
+        alert.addButton(withTitle: "Cancel")
+        return alert.runModal() == .alertFirstButtonReturn
     }
 }
 
