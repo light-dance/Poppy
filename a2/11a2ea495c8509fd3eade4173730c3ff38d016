@@ -1,0 +1,19 @@
+Sources/Poppy/Views/StatusWindowView.swift
+  s_dd24e3e19608da::t_27ee1227a58ad0 129-133,139-143,145-157,160-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a211a2ea495c8509fd3eade4173730c3ff38d016",
+  "prompts": {},
+  "sessions": {
+    "s_dd24e3e19608da": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e750b-487e-7912-95af-d2ec1ca5116c",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
