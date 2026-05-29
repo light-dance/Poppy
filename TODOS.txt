@@ -4,9 +4,6 @@
 - clean up all button
 - install dmg background (big orange poppy and maybe text like "one last time")
 
-options:
-- delete after install
-
 marketing:
 - video showcase
 - video demo
