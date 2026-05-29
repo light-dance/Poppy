@@ -1,0 +1,27 @@
+Sources/Poppy/Services/InstallService.swift
+  s_3bed293fa80b1d::t_70a3c706b27d7c 52,57-62,66-71,108,141-145,157,200-204
+Sources/Poppy/Stores/InstallStore.swift
+  s_3bed293fa80b1d::t_70a3c706b27d7c 287,296-297,338-339,350-351
+Sources/Poppy/App/PoppyApp.swift
+  s_3bed293fa80b1d::t_70a3c706b27d7c 42,282
+Sources/Poppy/Models/DeleteAfterInstall.swift
+  s_3bed293fa80b1d::t_70a3c706b27d7c 1-13
+Sources/Poppy/Views/SettingsView.swift
+  s_3bed293fa80b1d::t_70a3c706b27d7c 8,44-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "5170e885da77da2bc83b25ae432b98524696ef13",
+  "prompts": {},
+  "sessions": {
+    "s_3bed293fa80b1d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e7545-3dbe-7c50-92f9-7e4766384089",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
