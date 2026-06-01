@@ -19,19 +19,22 @@ struct InstallJob: Identifiable, Equatable {
     var appName: String?
     var state: State
     var approvalBehavior: ApprovalBehavior
+    var startedAt: Date?
 
     init(
         sourceURL: URL,
         kind: InstallableKind? = nil,
         appName: String?,
         state: State,
-        approvalBehavior: ApprovalBehavior = .manual
+        approvalBehavior: ApprovalBehavior = .manual,
+        startedAt: Date? = nil
     ) {
         self.sourceURL = sourceURL
         self.kind = kind ?? InstallableKind(url: sourceURL) ?? .diskImage
         self.appName = appName
         self.state = state
         self.approvalBehavior = approvalBehavior
+        self.startedAt = startedAt
     }
 
     var displayName: String {

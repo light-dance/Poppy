@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import SwiftData
 
 @MainActor
 final class InstallStore: ObservableObject {
@@ -24,6 +25,7 @@ final class InstallStore: ObservableObject {
     private var zipInspectionTasks = Set<URL>()
     private var zipRetryStates = [URL: ZipRetryState]()
     private let maxInstallReadinessStableRetries = 5
+    private let modelContext: ModelContext?
 
     private static var detectedInstallApprovalBehavior: InstallJob.ApprovalBehavior {
         if UserDefaults.standard.bool(forKey: AutoInstallDetectedApplications.storageKey) {
@@ -45,6 +47,8 @@ final class InstallStore: ObservableObject {
     var defaultInstallFolderURL: URL { Self.defaultInstallFolderURL }
 
     init() {
+        modelContext = Self.makeModelContext()
+
         if let storedPath = UserDefaults.standard.string(forKey: Self.watchedFolderPathKey), !storedPath.isEmpty {
             watchedFolderURL = URL(fileURLWithPath: storedPath, isDirectory: true)
         } else {
@@ -56,6 +60,8 @@ final class InstallStore: ObservableObject {
         } else {
             installFolderURL = Self.defaultInstallFolderURL
         }
+
+        records = Self.loadRecords(from: modelContext)
     }
 
     func start() {
@@ -250,7 +256,7 @@ final class InstallStore: ObservableObject {
     }
 
     func openApp(_ item: InstallableItem) {
-        guard case .installed(let appURL) = item.status else { return }
+        guard case .installed(let appURL, _) = item.status else { return }
         NSWorkspace.shared.open(appURL)
     }
 
@@ -298,6 +304,7 @@ final class InstallStore: ObservableObject {
     private func install(job: InstallJob) {
         var installingJob = job
         installingJob.state = .installing("Preparing")
+        installingJob.startedAt = Date()
         currentJob = installingJob
         let installDirectory = installFolderURL
         let deleteAfterInstall = DeleteAfterInstall.isEnabled
@@ -318,6 +325,7 @@ final class InstallStore: ObservableObject {
                 addRecord(
                     appName: appName,
                     sourceName: job.sourceURL.lastPathComponent,
+                    appURL: result.appURL,
                     result: .success,
                     detail: "Installed into \(installDirectory.path)"
                 )
@@ -519,11 +527,22 @@ final class InstallStore: ObservableObject {
         scanWatchedFolder()
     }
 
-    private func addRecord(appName: String, sourceName: String, result: InstallRecord.Result, detail: String) {
-        records.insert(
-            InstallRecord(appName: appName, sourceName: sourceName, date: Date(), result: result, detail: detail),
-            at: 0
+    private func addRecord(appName: String, sourceName: String, appURL: URL? = nil, result: InstallRecord.Result, detail: String) {
+        let record = InstallRecord(
+            appName: appName,
+            sourceName: sourceName,
+            appURL: appURL,
+            date: Date(),
+            result: result,
+            detail: detail
         )
+        modelContext?.insert(record)
+        do {
+            try modelContext?.save()
+        } catch {
+            addDiagnosticLog("Could not save install record: \(error.localizedDescription)")
+        }
+        records.insert(record, at: 0)
     }
 
     func clearDiagnosticLog() {
@@ -534,6 +553,31 @@ final class InstallStore: ObservableObject {
         diagnosticLogEntries.insert(DiagnosticLogEntry(date: Date(), message: message), at: 0)
         if diagnosticLogEntries.count > 250 {
             diagnosticLogEntries.removeLast(diagnosticLogEntries.count - 250)
+        }
+    }
+
+    private static func makeModelContext() -> ModelContext? {
+        do {
+            let container = try ModelContainer(for: InstallRecord.self)
+            return ModelContext(container)
+        } catch {
+            return nil
+        }
+    }
+
+    private static func loadRecords(from modelContext: ModelContext?) -> [InstallRecord] {
+        guard let modelContext else {
+            return []
+        }
+
+        do {
+            var descriptor = FetchDescriptor<InstallRecord>(
+                sortBy: [SortDescriptor(\.date, order: .reverse)]
+            )
+            descriptor.fetchLimit = 250
+            return try modelContext.fetch(descriptor)
+        } catch {
+            return []
         }
     }
 
@@ -680,7 +724,7 @@ final class InstallStore: ObservableObject {
         }
 
         if let installedAppURL = installedAppURL(for: sourceURL, kind: kind) {
-            return .installed(appURL: installedAppURL)
+            return .installed(appURL: installedAppURL, installedAt: installedDate(for: sourceURL))
         }
 
         return .ready
@@ -691,9 +735,9 @@ final class InstallStore: ObservableObject {
 
         switch currentJob?.state {
         case .installing(let step):
-            return .installing(step)
+            return .installing(step, startedAt: currentJob?.startedAt)
         case .some(.installed(let appURL)):
-            return .installed(appURL: appURL)
+            return .installed(appURL: appURL, installedAt: installedDate(for: sourceURL))
         default:
             return nil
         }
@@ -715,6 +759,12 @@ final class InstallStore: ObservableObject {
             }
         }
         return nil
+    }
+
+    private func installedDate(for sourceURL: URL) -> Date? {
+        records.first {
+            $0.result == .success && $0.sourceName == sourceURL.lastPathComponent
+        }?.date
     }
 
     private func appNameCandidates(for sourceURL: URL, kind: InstallableKind) -> [String] {

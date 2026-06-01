@@ -22,8 +22,8 @@ enum InstallableKind: Equatable {
 struct InstallableItem: Identifiable, Equatable {
     enum Status: Equatable {
         case ready
-        case installing(String)
-        case installed(appURL: URL)
+        case installing(String, startedAt: Date?)
+        case installed(appURL: URL, installedAt: Date?)
     }
 
     var id: String { url.path }

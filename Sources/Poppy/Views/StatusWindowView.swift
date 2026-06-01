@@ -38,11 +38,14 @@ struct StatusWindowView: View {
     }
 
     private var installingAppItems: [AppItem] {
-        store.installingItems.map { AppItem(installableItem: $0) } + debugItems { $0.isInstalling }
+        (store.installingItems.map { AppItem(installableItem: $0) } + debugItems { $0.isInstalling })
+            .sorted {
+                ($0.installStartedDate ?? .distantFuture) < ($1.installStartedDate ?? .distantFuture)
+            }
     }
 
     private var readyAppItems: [AppItem] {
-        store.readyItems.map { AppItem(installableItem: $0) } + debugItems { $0.isReady }
+        sortNewestFirst(store.readyItems.map { AppItem(installableItem: $0) } + debugItems { $0.isReady })
     }
 
     private var availableAppItems: [AppItem] {
@@ -50,15 +53,27 @@ struct StatusWindowView: View {
     }
 
     private var installedAppItems: [AppItem] {
-        store.installedItems.map { AppItem(installableItem: $0) } + debugItems { $0.isInstalled }
+        let watchedFolderInstalledItems = store.installedItems.map { AppItem(installableItem: $0) }
+        let watchedFolderInstalledSourceNames = Set(watchedFolderInstalledItems.map(\.fileName))
+        let recordInstalledItems = store.records
+            .filter { $0.result == .success && $0.appURL != nil && !watchedFolderInstalledSourceNames.contains($0.sourceName) }
+            .map { AppItem(installRecord: $0) }
+
+        return sortNewestFirst(watchedFolderInstalledItems + recordInstalledItems + debugItems { $0.isInstalled })
     }
 
     private var hiddenAppItems: [AppItem] {
-        store.hiddenInstallableItems.map { AppItem(installableItem: $0, isHidden: true) } + debugItems { $0.isHidden }
+        sortNewestFirst(store.hiddenInstallableItems.map { AppItem(installableItem: $0, isHidden: true) } + debugItems { $0.isHidden })
     }
 
     private func debugItems(matching predicate: (AppItem.State) -> Bool) -> [AppItem] {
         store.debugAppItems.filter { predicate($0.state) }
+    }
+
+    private func sortNewestFirst(_ items: [AppItem]) -> [AppItem] {
+        items.sorted {
+            ($0.createdDate ?? .distantPast) > ($1.createdDate ?? .distantPast)
+        }
     }
 
     private var header: some View {
@@ -372,15 +387,17 @@ struct StatusWindowView: View {
 
     private func openButton(for item: AppItem) -> some View {
         Button {
-            if let installableItem = installableItem(for: item) {
+            if let appURL = item.appURL {
+                NSWorkspace.shared.open(appURL)
+            } else if let installableItem = installableItem(for: item) {
                 store.openApp(installableItem)
             }
         } label: {
             primaryCapsuleActionLabel("Open")
         }
         .buttonStyle(.plain)
-        .disabled(installableItem(for: item) == nil)
-        .opacity(installableItem(for: item) == nil ? 0.5 : 1)
+        .disabled(item.appURL == nil && installableItem(for: item) == nil)
+        .opacity(item.appURL == nil && installableItem(for: item) == nil ? 0.5 : 1)
     }
 
     private func primaryCapsuleActionLabel(_ title: String, systemImage: String? = nil) -> some View {
@@ -472,13 +489,15 @@ struct StatusWindowView: View {
 
     private func openMenuAction(for item: AppItem) -> some View {
         Button {
-            if let installableItem = installableItem(for: item) {
+            if let appURL = item.appURL {
+                NSWorkspace.shared.open(appURL)
+            } else if let installableItem = installableItem(for: item) {
                 store.openApp(installableItem)
             }
         } label: {
             Label("Open", systemImage: "arrow.up.right.square")
         }
-        .disabled(installableItem(for: item) == nil)
+        .disabled(item.appURL == nil && installableItem(for: item) == nil)
     }
 
     private func hideMenuAction(for item: AppItem) -> some View {

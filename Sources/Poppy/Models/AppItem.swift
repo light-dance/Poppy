@@ -17,6 +17,7 @@ struct AppItem: Identifiable, Equatable {
     let kind: InstallableKind
     let state: State
     let createdDate: Date?
+    let installStartedDate: Date?
     let sizeBytes: Int64?
     let isDebugSample: Bool
 
@@ -29,6 +30,7 @@ struct AppItem: Identifiable, Equatable {
         kind: InstallableKind,
         state: State,
         createdDate: Date?,
+        installStartedDate: Date? = nil,
         sizeBytes: Int64?,
         isDebugSample: Bool = false
     ) {
@@ -40,6 +42,7 @@ struct AppItem: Identifiable, Equatable {
         self.kind = kind
         self.state = state
         self.createdDate = createdDate
+        self.installStartedDate = installStartedDate
         self.sizeBytes = sizeBytes
         self.isDebugSample = isDebugSample
     }
@@ -52,21 +55,31 @@ struct AppItem: Identifiable, Equatable {
         ])
         let state: State
         let appURL: URL?
+        let createdDate: Date?
+        let installStartedDate: Date?
 
         if isHidden {
             state = .hidden
             appURL = nil
+            createdDate = values?.creationDate ?? values?.contentModificationDate
+            installStartedDate = nil
         } else {
             switch item.status {
             case .ready:
                 state = .ready
                 appURL = nil
-            case .installing(let step):
+                createdDate = values?.creationDate ?? values?.contentModificationDate
+                installStartedDate = nil
+            case .installing(let step, let startedAt):
                 state = .installing(step)
                 appURL = nil
-            case .installed(let installedAppURL):
+                createdDate = values?.creationDate ?? values?.contentModificationDate
+                installStartedDate = startedAt
+            case .installed(let installedAppURL, let installedAt):
                 state = .installedNeedsCleanup(appURL: installedAppURL)
                 appURL = installedAppURL
+                createdDate = installedAt ?? values?.creationDate ?? values?.contentModificationDate
+                installStartedDate = nil
             }
         }
 
@@ -78,8 +91,26 @@ struct AppItem: Identifiable, Equatable {
             appURL: appURL,
             kind: item.kind,
             state: state,
-            createdDate: values?.creationDate ?? values?.contentModificationDate,
+            createdDate: createdDate,
+            installStartedDate: installStartedDate,
             sizeBytes: values?.fileSize.map(Int64.init),
+            isDebugSample: false
+        )
+    }
+
+    init(installRecord record: InstallRecord) {
+        let sourceURL = URL(fileURLWithPath: record.sourceName)
+
+        self.init(
+            id: "install-record-\(record.id.uuidString)",
+            name: record.appName,
+            fileName: record.sourceName,
+            fileURL: nil,
+            appURL: record.appURL,
+            kind: InstallableKind(url: sourceURL) ?? .diskImage,
+            state: .installedCleanedUp(appURL: record.appURL),
+            createdDate: record.date,
+            sizeBytes: nil,
             isDebugSample: false
         )
     }
@@ -127,6 +158,7 @@ struct AppItem: Identifiable, Equatable {
                 kind: .diskImage,
                 state: .installing("Copying app bundle"),
                 createdDate: now.addingTimeInterval(-86_400 * 2),
+                installStartedDate: now.addingTimeInterval(-600),
                 sizeBytes: 215_000_000,
                 isDebugSample: true
             ),
