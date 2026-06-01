@@ -5,6 +5,7 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let lifecycle = AppLifecycleController()
     private let panelController = FloatingInstallPanelController()
+    private var aboutWindowController: NSWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
@@ -28,6 +29,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func setNotificationPosition(_ position: NotificationPosition) {
         panelController.setNotificationPosition(position)
     }
+
+    @MainActor
+    func showAboutWindow() {
+        if let window = aboutWindowController?.window {
+            window.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+
+        let hostingController = NSHostingController(rootView: AboutView())
+        let window = NSWindow(contentViewController: hostingController)
+        window.title = "About Poppy"
+        window.styleMask = [.titled, .closable]
+        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.isReleasedWhenClosed = false
+        window.center()
+
+        let controller = NSWindowController(window: window)
+        aboutWindowController = controller
+        controller.showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
 }
 
 @main
@@ -43,6 +67,7 @@ struct PoppyApp: App {
     @AppStorage(AutoInstallDetectedApplications.storageKey) private var automaticallyInstallDetectedApplications = false
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
+    @AppStorage(HiddenItemsVisibility.storageKey) private var showsHiddenItems = false
     @StateObject private var store = InstallStore()
 
     var body: some Scene {
@@ -88,7 +113,7 @@ struct PoppyApp: App {
         .commands {
             CommandGroup(replacing: .appInfo) {
                 Button("About Poppy") {
-                    openWindow(id: "about")
+                    appDelegate.showAboutWindow()
                 }
             }
             CommandGroup(replacing: .newItem) {
@@ -121,6 +146,11 @@ struct PoppyApp: App {
                 .disabled(store.installedItems.isEmpty)
             }
             CommandGroup(replacing: .toolbar) {}
+            CommandGroup(after: .toolbar) {
+                Button(showsHiddenItems ? "Hide Hidden" : "Show Hidden") {
+                    showsHiddenItems.toggle()
+                }
+            }
             CommandGroup(replacing: .windowSize) {}
             CommandGroup(replacing: .windowArrangement) {}
 
@@ -282,17 +312,6 @@ struct PoppyApp: App {
                 .frame(width: 0, height: 0)
             }
         }
-
-        Window("About Poppy", id: "about") {
-            AboutView()
-                .background {
-                    WindowLifecycleReporter { window in
-                        appDelegate.lifecycle.observeSettingsWindow(window)
-                    }
-                    .frame(width: 0, height: 0)
-                }
-        }
-        .windowResizability(.contentSize)
 
         Window("Poppy Logs", id: "logs") {
             DiagnosticLogView(store: store)
