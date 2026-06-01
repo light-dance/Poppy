@@ -556,14 +556,20 @@ private struct LocationSegmentButton: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Button(action: action) {
-                segmentLabel
+            if iconPlacement == .leading {
+                segmentIcon
+
+                segmentButton
+            } else {
+                segmentButton
             }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
             if isHovered {
                 hoverButtons
+            }
+
+            if iconPlacement == .trailing {
+                segmentIcon
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
@@ -572,12 +578,8 @@ private struct LocationSegmentButton: View {
         .onHover { isHovered = $0 }
     }
 
-    private var segmentLabel: some View {
-        HStack(spacing: 8) {
-            if iconPlacement == .leading {
-                segmentIcon
-            }
-
+    private var segmentButton: some View {
+        Button(action: action) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -592,14 +594,11 @@ private struct LocationSegmentButton: View {
                     locationDetail
                 }
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-
-            if iconPlacement == .trailing {
-                segmentIcon
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .contentShape(Rectangle())
     }
 
     private var segmentIcon: some View {
