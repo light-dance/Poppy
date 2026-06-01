@@ -55,7 +55,7 @@ struct PoppyApp: App {
                     }
                 }
             )
-                .frame(minWidth: 520, minHeight: 420)
+                .frame(minWidth: 560, minHeight: 420)
                 .navigationTitle("Poppy")
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
                 .containerBackground(for: .window) {

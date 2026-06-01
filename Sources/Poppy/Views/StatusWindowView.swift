@@ -11,7 +11,7 @@ struct StatusWindowView: View {
 
             Divider()
 
-            ScrollView {
+            ScrollView(.vertical) {
                 LazyVStack(alignment: .leading, spacing: 24) {
                     if !installingAppItems.isEmpty {
                         appItemSection(
@@ -29,12 +29,14 @@ struct StatusWindowView: View {
                         emptySystemImage: "tray"
                     )
 
-                    appItemSection(
-                        title: "Installed",
-                        items: installedAppItems,
-                        emptyTitle: "No installed apps to delete",
-                        emptySystemImage: "checkmark.circle"
-                    )
+                    if !installedAppItems.isEmpty {
+                        appItemSection(
+                            title: "Installed",
+                            items: installedAppItems,
+                            emptyTitle: "No installed apps to delete",
+                            emptySystemImage: "checkmark.circle"
+                        )
+                    }
 
                     if !hiddenAppItems.isEmpty {
                         appItemSection(
@@ -232,8 +234,7 @@ struct StatusWindowView: View {
         case .hidden:
             moreMenu(for: item)
         case .installing:
-            ProgressView()
-                .controlSize(.small)
+            InstallingSpinner(size: 30)
         case .installedCleanedUp:
             openButton(for: item)
         case .installedNeedsCleanup:
@@ -673,13 +674,16 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
             HStack(spacing: 12) {
                 listContextRegion
 
-                metadata
-
                 HStack(spacing: 8) {
                     actions()
                 }
             }
             .padding(.vertical, 8)
+            .background(alignment: .center) {
+                if item.state.isInstalling {
+                    InstallingRowGlow()
+                }
+            }
 
             if showsSeparator {
                 Rectangle()
@@ -724,12 +728,8 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
         case .ready:
             fileIcon
         case .installing:
-            ZStack {
-                fileIcon
-                    .opacity(0.7)
-                ProgressView()
-                    .controlSize(.small)
-            }
+            fileIcon
+                .opacity(0.7)
         case .hidden:
             fileIcon
                 .opacity(0.42)
@@ -783,21 +783,23 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
                 }
             }
 
+            metadataLine
+        }
+    }
+
+    @ViewBuilder
+    private var metadataLine: some View {
+        if item.createdDate != nil || item.sizeBytes != nil {
+            HStack(spacing: 6) {
+                metadataContent(dateFontSize: 12, sizeFontSize: 12)
+            }
+            .lineLimit(1)
+        } else {
             Text(detail)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
                 .truncationMode(.middle)
-        }
-    }
-
-    @ViewBuilder
-    private var metadata: some View {
-        if item.createdDate != nil || item.sizeBytes != nil {
-            VStack(alignment: .trailing, spacing: 1) {
-                metadataContent(dateFontSize: 12, sizeFontSize: 12)
-            }
-            .frame(width: 86, alignment: .trailing)
         }
     }
 
@@ -839,6 +841,41 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
         }
 
         return date.formatted(date: .abbreviated, time: .omitted)
+    }
+}
+
+private struct InstallingRowGlow: View {
+    var body: some View {
+        Color.accentColor
+            .opacity(0.14)
+        .blur(radius: 10)
+        .padding(.horizontal, -20)
+        .padding(.vertical, -3)
+        .allowsHitTesting(false)
+    }
+}
+
+private struct InstallingSpinner: View {
+    let size: CGFloat
+    @State private var rotation = Angle.degrees(0)
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .trim(from: 0.08, to: 0.88)
+                .stroke(
+                    Color.secondary,
+                    style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+                )
+                .frame(width: 18, height: 18)
+                .rotationEffect(rotation)
+        }
+        .frame(width: size, height: size)
+        .onAppear {
+            withAnimation(.linear(duration: 1.25).repeatForever(autoreverses: false)) {
+                rotation = .degrees(360)
+            }
+        }
     }
 }
 

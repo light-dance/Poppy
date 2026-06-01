@@ -1,8 +1,9 @@
-- clean up list views
 - menu bar options
-- grid view display
 - clean up all button
 - install dmg background (big orange poppy and maybe text like "one last time")
+
+publish app flow
+update app flow (and infra)
 
 marketing:
 - video showcase

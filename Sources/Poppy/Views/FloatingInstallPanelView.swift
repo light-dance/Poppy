@@ -220,9 +220,7 @@ struct FloatingInstallPanelView: View {
             .frame(minWidth: 90, maxWidth: 270, alignment: .leading)
             .layoutPriority(1)
 
-            ProgressView()
-                .controlSize(.small)
-                .frame(width: 40, height: 40)
+            InstallingSpinner(size: 40)
         }
         .padding(.vertical, 9)
         .padding(.horizontal, 11)
@@ -361,9 +359,7 @@ struct FloatingInstallPanelView: View {
         case .awaitingApproval:
             EmptyView()
         case .installing:
-            ProgressView()
-                .controlSize(.small)
-                .frame(width: 40, height: 40)
+            InstallingSpinner(size: 40)
         case .installed:
             Button {
                 store.openInstalledApp()
@@ -497,5 +493,27 @@ struct FloatingInstallPanelView: View {
         }
 
         return Color.white.opacity(0.72)
+    }
+}
+
+private struct InstallingSpinner: View {
+    let size: CGFloat
+    @State private var rotation = Angle.degrees(0)
+
+    var body: some View {
+        Circle()
+            .trim(from: 0.08, to: 0.88)
+            .stroke(
+                Color.secondary,
+                style: StrokeStyle(lineWidth: 2.5, lineCap: .round)
+            )
+            .frame(width: size * 0.6, height: size * 0.6)
+            .rotationEffect(rotation)
+            .frame(width: size, height: size)
+            .onAppear {
+                withAnimation(.linear(duration: 1.25).repeatForever(autoreverses: false)) {
+                    rotation = .degrees(360)
+                }
+            }
     }
 }
