@@ -1,0 +1,24 @@
+Sources/Poppy/Models/HiddenItemsVisibility.swift
+  s_cdb21fb82444eb::t_50822c2ce74347 1-3
+Sources/Poppy/App/PoppyApp.swift
+  s_cdb21fb82444eb::t_50822c2ce74347 70,149-153
+  s_cdb21fb82444eb::t_0f4ba3ac97e2cf 8,32-54,116
+Sources/Poppy/Views/StatusWindowView.swift
+  s_cdb21fb82444eb::t_50822c2ce74347 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "7f48b76050e8055ce5cd41d2430e3d848700be50",
+  "prompts": {},
+  "sessions": {
+    "s_cdb21fb82444eb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e84b4-86ed-7d40-8720-6d1bcf78c72b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
