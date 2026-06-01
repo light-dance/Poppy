@@ -2,9 +2,11 @@ import AppKit
 import SwiftUI
 
 struct StatusWindowView: View {
+    private static let showsHiddenItemsStorageKey = "showsHiddenItems"
+
     @ObservedObject var store: InstallStore
     let openSettings: () -> Void
-    @State private var showsHiddenItems = false
+    @AppStorage(Self.showsHiddenItemsStorageKey) private var showsHiddenItems = false
     @State private var isHoveringHiddenToggle = false
 
     var body: some View {
