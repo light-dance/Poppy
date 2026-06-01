@@ -1,0 +1,19 @@
+Sources/Poppy/Views/StatusWindowView.swift
+  s_cdb21fb82444eb::t_b0ead709ce76e8 559-564,570-573,581-582,597-598,600
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "377718ecc6a1e8670d1bbab2a7e73d48bcdf6dd5",
+  "prompts": {},
+  "sessions": {
+    "s_cdb21fb82444eb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e84b4-86ed-7d40-8720-6d1bcf78c72b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
