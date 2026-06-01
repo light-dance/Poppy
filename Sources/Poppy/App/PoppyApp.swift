@@ -44,13 +44,11 @@ struct PoppyApp: App {
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
     @StateObject private var store = InstallStore()
-    @State private var appItemDisplayMode: AppItemDisplayMode = .list
 
     var body: some Scene {
         WindowGroup("Poppy", id: "main") {
             StatusWindowView(
                 store: store,
-                appItemDisplayMode: $appItemDisplayMode,
                 openSettings: {
                     appDelegate.lifecycle.showSettings {
                         openSettings()
@@ -122,16 +120,7 @@ struct PoppyApp: App {
                 }
                 .disabled(store.installedItems.isEmpty)
             }
-            CommandGroup(replacing: .toolbar) {
-                Picker("App Item View", selection: $appItemDisplayMode) {
-                    Label("Grid", systemImage: "square.grid.2x2").tag(AppItemDisplayMode.grid)
-                    Label("List", systemImage: "list.bullet").tag(AppItemDisplayMode.list)
-                }
-
-                Divider()
-
-                EmptyView()
-            }
+            CommandGroup(replacing: .toolbar) {}
             CommandGroup(replacing: .windowSize) {}
             CommandGroup(replacing: .windowArrangement) {}
 
@@ -237,13 +226,6 @@ struct PoppyApp: App {
             }
 
             Divider()
-
-            Button {
-                openWindow(id: "logs")
-            } label: {
-                Label("Open Logs", systemImage: "doc.text.magnifyingglass")
-            }
-            .keyboardShortcut("l", modifiers: [.command, .option])
 
             Button {
                 appDelegate.lifecycle.showSettings {

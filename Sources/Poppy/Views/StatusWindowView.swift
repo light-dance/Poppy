@@ -3,7 +3,6 @@ import SwiftUI
 
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
-    @Binding var appItemDisplayMode: AppItemDisplayMode
     let openSettings: () -> Void
 
     var body: some View {
@@ -11,8 +10,6 @@ struct StatusWindowView: View {
             header
 
             Divider()
-
-            contentToolbar
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 24) {
@@ -78,16 +75,6 @@ struct StatusWindowView: View {
         store.debugAppItems.filter { predicate($0.state) }
     }
 
-    private var contentToolbar: some View {
-        HStack {
-            Spacer()
-
-            AppItemDisplayModeControl(selection: $appItemDisplayMode)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-    }
-
     private var header: some View {
         HStack(spacing: 12) {
             watchToggleButton
@@ -120,9 +107,6 @@ struct StatusWindowView: View {
         }
         .padding(20)
         .frame(maxWidth: .infinity, alignment: .center)
-        .background {
-            WindowDragRegion()
-        }
     }
 
     private var watchToggleButton: some View {
@@ -191,27 +175,16 @@ struct StatusWindowView: View {
                 Label(emptyTitle, systemImage: emptySystemImage)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 8)
-            } else if appItemDisplayMode == .list {
+            } else {
                 VStack(spacing: 0) {
                     ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
-                        AppItemElement(item: item, layout: .list, showsSeparator: index < items.count - 1, actions: {
+                        AppItemElement(item: item, showsSeparator: index < items.count - 1, actions: {
                             controls(for: item)
                         }, contextMenuActions: {
                             contextMenuActions(for: item)
                         })
                     }
                 }
-            } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 118), spacing: 14)], alignment: .leading, spacing: 14) {
-                    ForEach(items) { item in
-                        AppItemElement(item: item, layout: .grid, showsSeparator: false, actions: {
-                            controls(for: item)
-                        }, contextMenuActions: {
-                            contextMenuActions(for: item)
-                        })
-                    }
-                }
-                .padding(.top, 2)
             }
         }
     }
@@ -580,62 +553,53 @@ private struct LocationSegmentButton: View {
     let reset: () -> Void
     let open: () -> Void
     @State private var isHovered = false
-    @State private var hoverTask: Task<Void, Never>?
 
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: 8) {
-                if iconPlacement == .leading {
-                    segmentIcon
-                }
+        HStack(spacing: 8) {
+            Button(action: action) {
+                segmentLabel
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(title)
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .lineLimit(1)
+            if isHovered {
+                hoverButtons
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(.leading, iconPlacement == .leading ? 12 : 14)
+        .padding(.trailing, iconPlacement == .trailing ? 12 : 14)
+        .onHover { isHovered = $0 }
+    }
 
-                    if isHovered {
-                        Text("Choose...")
-                            .font(.system(size: 11, weight: .semibold, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                    } else {
-                        locationDetail
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+    private var segmentLabel: some View {
+        HStack(spacing: 8) {
+            if iconPlacement == .leading {
+                segmentIcon
+            }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .lineLimit(1)
 
                 if isHovered {
-                    hoverButtons
-                }
-
-                if iconPlacement == .trailing {
-                    segmentIcon
+                    Text("Choose...")
+                        .font(.system(size: 11, weight: .semibold, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                } else {
+                    locationDetail
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-            .padding(.leading, iconPlacement == .leading ? 12 : 14)
-            .padding(.trailing, iconPlacement == .trailing ? 12 : 14)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .onHover { hovering in
-            hoverTask?.cancel()
+            .frame(maxWidth: .infinity, alignment: .leading)
 
-            if hovering {
-                hoverTask = Task {
-                    try? await Task.sleep(for: .milliseconds(50))
-                    guard !Task.isCancelled else { return }
-                    isHovered = true
-                }
-            } else {
-                isHovered = false
-                hoverTask = nil
+            if iconPlacement == .trailing {
+                segmentIcon
             }
         }
-        .onDisappear {
-            hoverTask?.cancel()
-        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
     }
 
     private var segmentIcon: some View {
@@ -695,81 +659,14 @@ private struct LocationSegmentButton: View {
     }
 }
 
-enum AppItemDisplayMode {
-    case list
-    case grid
-}
-
-private struct WindowDragRegion: NSViewRepresentable {
-    func makeNSView(context: Context) -> DraggingView {
-        DraggingView()
-    }
-
-    func updateNSView(_ nsView: DraggingView, context: Context) {}
-}
-
-private final class DraggingView: NSView {
-    override var mouseDownCanMoveWindow: Bool {
-        true
-    }
-
-    override func mouseDown(with event: NSEvent) {
-        window?.performDrag(with: event)
-    }
-}
-
-private struct AppItemDisplayModeControl: View {
-    @Binding var selection: AppItemDisplayMode
-
-    var body: some View {
-        HStack(spacing: 4) {
-            modeButton(.grid, systemImage: "square.grid.2x2")
-            modeButton(.list, systemImage: "list.bullet")
-        }
-        .padding(4)
-        .background(.secondary.opacity(0.10), in: Capsule())
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("App item view")
-    }
-
-    private func modeButton(_ mode: AppItemDisplayMode, systemImage: String) -> some View {
-        Button {
-            selection = mode
-        } label: {
-            Image(systemName: systemImage)
-                .font(.system(size: 14, weight: .semibold))
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(selection == mode ? .white : .secondary)
-                .frame(width: 30, height: 30)
-                .background(selection == mode ? Color.accentColor : Color.clear, in: Circle())
-                .contentShape(Circle())
-        }
-        .buttonStyle(.plain)
-        .help(mode == .grid ? "Grid View" : "List View")
-        .accessibilityLabel(mode == .grid ? "Grid view" : "List view")
-        .accessibilityAddTraits(selection == mode ? [.isSelected] : [])
-    }
-}
-
-private enum AppItemLayout {
-    case list
-    case grid
-}
-
 private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
     let item: AppItem
-    let layout: AppItemLayout
     let showsSeparator: Bool
     @ViewBuilder var actions: () -> Actions
     @ViewBuilder var contextMenuActions: () -> ContextMenuActions
 
     var body: some View {
-        switch layout {
-        case .list:
-            listLayout
-        case .grid:
-            gridLayout
-        }
+        listLayout
     }
 
     private var listLayout: some View {
@@ -812,42 +709,6 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
         .contextMenu {
             contextMenuActions()
         }
-    }
-
-    private var gridLayout: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
-                icon
-                    .frame(width: 46, height: 46)
-                    .contentShape(Rectangle())
-                    .contextMenu {
-                        contextMenuActions()
-                    }
-
-                Spacer(minLength: 4)
-
-                HStack(spacing: 6) {
-                    actions()
-                }
-                .controlSize(.small)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                itemText(spacing: 3)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                metadata
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .contentShape(Rectangle())
-            .contextMenu {
-                contextMenuActions()
-            }
-        }
-        .padding(10)
-        .frame(width: 118, alignment: .topLeading)
-        .frame(minHeight: 142, alignment: .topLeading)
-        .background(.quaternary.opacity(0.45), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     @ViewBuilder
@@ -910,8 +771,8 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
         VStack(alignment: .leading, spacing: spacing) {
             HStack(spacing: 5) {
                 Text(item.name)
-                    .font(layout == .list ? .headline : .subheadline.weight(.semibold))
-                    .lineLimit(layout == .list ? 1 : 2)
+                    .font(.headline)
+                    .lineLimit(1)
 
                 if item.isDebugSample {
                     Text("Sample")
@@ -926,7 +787,7 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
             Text(detail)
                 .font(.caption)
                 .foregroundStyle(.secondary)
-                .lineLimit(layout == .list ? 1 : 2)
+                .lineLimit(1)
                 .truncationMode(.middle)
         }
     }
@@ -934,16 +795,10 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
     @ViewBuilder
     private var metadata: some View {
         if item.createdDate != nil || item.sizeBytes != nil {
-            if layout == .list {
-                VStack(alignment: .trailing, spacing: 1) {
-                    metadataContent(dateFontSize: 12, sizeFontSize: 12)
-                }
-                .frame(width: 86, alignment: .trailing)
-            } else {
-                VStack(alignment: .leading, spacing: 2) {
-                    metadataContent(dateFontSize: 12, sizeFontSize: 12)
-                }
+            VStack(alignment: .trailing, spacing: 1) {
+                metadataContent(dateFontSize: 12, sizeFontSize: 12)
             }
+            .frame(width: 86, alignment: .trailing)
         }
     }
 

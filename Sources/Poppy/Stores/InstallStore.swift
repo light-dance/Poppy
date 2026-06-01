@@ -97,11 +97,15 @@ final class InstallStore: ObservableObject {
         panel.allowsMultipleSelection = false
         panel.directoryURL = watchedFolderURL
 
-        guard panel.runModal() == .OK, let folderURL = panel.url else {
-            return
-        }
+        presentFolderPanel(panel) { [weak self] response in
+            guard response == .OK, let folderURL = panel.url else {
+                return
+            }
 
-        setWatchedFolder(folderURL)
+            Task { @MainActor in
+                self?.setWatchedFolder(folderURL)
+            }
+        }
     }
 
     func setWatchedFolder(_ folderURL: URL) {
@@ -130,11 +134,15 @@ final class InstallStore: ObservableObject {
         panel.allowsMultipleSelection = false
         panel.directoryURL = installFolderURL
 
-        guard panel.runModal() == .OK, let folderURL = panel.url else {
-            return
-        }
+        presentFolderPanel(panel) { [weak self] response in
+            guard response == .OK, let folderURL = panel.url else {
+                return
+            }
 
-        setInstallFolder(folderURL)
+            Task { @MainActor in
+                self?.setInstallFolder(folderURL)
+            }
+        }
     }
 
     func setInstallFolder(_ folderURL: URL) {
@@ -157,6 +165,14 @@ final class InstallStore: ObservableObject {
 
     func openInstallFolder() {
         NSWorkspace.shared.open(installFolderURL)
+    }
+
+    private func presentFolderPanel(_ panel: NSOpenPanel, completion: @escaping (NSApplication.ModalResponse) -> Void) {
+        if let window = NSApp.keyWindow ?? NSApp.mainWindow {
+            panel.beginSheetModal(for: window, completionHandler: completion)
+        } else {
+            panel.begin(completionHandler: completion)
+        }
     }
 
     func promptForLatestInstallableInWatchedFolder() {
