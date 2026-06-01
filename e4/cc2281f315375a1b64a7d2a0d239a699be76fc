@@ -1,0 +1,23 @@
+Sources/Poppy/Views/StatusWindowView.swift
+  s_cdb21fb82444eb::t_b99221ab056705 7,18,178-182,184-220,222-226,228-230,232-235,238,247-251,272-275,279,300
+  s_cdb21fb82444eb::t_bfae4612c2d089 221
+  s_cdb21fb82444eb::t_2620d85581e0b9 48-49
+  s_cdb21fb82444eb::t_568d9ea47ab910 8,183,231,236-237,239-245,280-299,301
+  s_cdb21fb82444eb::t_b97a40028271d3 227,501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e4cc2281f315375a1b64a7d2a0d239a699be76fc",
+  "prompts": {},
+  "sessions": {
+    "s_cdb21fb82444eb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e84b4-86ed-7d40-8720-6d1bcf78c72b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
