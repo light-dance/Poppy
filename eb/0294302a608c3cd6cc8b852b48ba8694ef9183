@@ -1,0 +1,37 @@
+Sources/Poppy/Models/InstallRecord.swift
+  s_cdb21fb82444eb::t_9c64cfac0fd305 19,29-40,42,44-45
+  s_cdb21fb82444eb::t_83846ed40795dd 2,4-6,12-18,20-28,41,43
+Sources/Poppy/Views/StatusWindowView.swift
+  s_cdb21fb82444eb::t_b31e9a76c2affd 56-62,390-392,399-400,492-494,500
+  s_cdb21fb82444eb::t_7aac52dfe21776 41-44,48,66,73-76
+Sources/Poppy/Models/AppItem.swift
+  s_cdb21fb82444eb::t_8ae13e88993bbf 20,33,45,58-59,64-65,71-73,76-78,81-82,94-95,161
+  s_cdb21fb82444eb::t_6f03a3688082f5 101-117
+Sources/Poppy/Models/InstallableItem.swift
+  s_cdb21fb82444eb::t_8ae13e88993bbf 25-26
+Sources/Poppy/Models/InstallJob.swift
+  s_cdb21fb82444eb::t_8ae13e88993bbf 22,29-30,37
+Sources/Poppy/Stores/InstallStore.swift
+  s_cdb21fb82444eb::t_5214a5248be59b 727
+  s_cdb21fb82444eb::t_83846ed40795dd 3,28,50,64,531-537,539-545,559,561-562,568-569,574-578
+  s_cdb21fb82444eb::t_c6dd723c64f529 259,307,738,740,764-767
+  s_cdb21fb82444eb::t_9c64cfac0fd305 51,63,560,563,566-567,570-573,579-581
+  s_cdb21fb82444eb::t_6f03a3688082f5 328,530
+  s_cdb21fb82444eb::t_f93f93e2f285a9 564
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "eb0294302a608c3cd6cc8b852b48ba8694ef9183",
+  "prompts": {},
+  "sessions": {
+    "s_cdb21fb82444eb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e84b4-86ed-7d40-8720-6d1bcf78c72b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
