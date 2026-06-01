@@ -459,7 +459,7 @@ struct FloatingInstallPanelView: View {
         if colorScheme == .dark {
             Color.black.opacity(0.22)
         } else {
-            Color.white.opacity(0.38)
+            Color.white.opacity(0.62)
         }
     }
 
@@ -468,7 +468,7 @@ struct FloatingInstallPanelView: View {
             return Color.white.opacity(0.14)
         }
 
-        return Color.white.opacity(0.5)
+        return Color.white.opacity(0.72)
     }
 
     private var dismissButtonBackground: Color {
@@ -476,7 +476,7 @@ struct FloatingInstallPanelView: View {
             return Color.white.opacity(0.14)
         }
 
-        return Color.black.opacity(0.12)
+        return Color.white.opacity(0.72)
     }
 
     private var notificationCountdownRingColor: Color {
@@ -484,7 +484,7 @@ struct FloatingInstallPanelView: View {
             return Color.white.opacity(0.46)
         }
 
-        return Color.white
+        return Color.black.opacity(0.3)
     }
 
     private var capsuleStrokeColor: Color {
