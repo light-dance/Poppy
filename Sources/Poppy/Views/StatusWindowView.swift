@@ -4,6 +4,8 @@ import SwiftUI
 struct StatusWindowView: View {
     @ObservedObject var store: InstallStore
     let openSettings: () -> Void
+    @State private var showsHiddenItems = false
+    @State private var isHoveringHiddenToggle = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -13,21 +15,7 @@ struct StatusWindowView: View {
 
             ScrollView(.vertical) {
                 LazyVStack(alignment: .leading, spacing: 24) {
-                    if !installingAppItems.isEmpty {
-                        appItemSection(
-                            title: "Installing",
-                            items: installingAppItems,
-                            emptyTitle: "No installs in progress",
-                            emptySystemImage: "clock"
-                        )
-                    }
-
-                    appItemSection(
-                        title: "Available",
-                        items: readyAppItems,
-                        emptyTitle: "No apps ready to install",
-                        emptySystemImage: "tray"
-                    )
+                    availableSection
 
                     if !installedAppItems.isEmpty {
                         appItemSection(
@@ -38,14 +26,6 @@ struct StatusWindowView: View {
                         )
                     }
 
-                    if !hiddenAppItems.isEmpty {
-                        appItemSection(
-                            title: "Hidden",
-                            items: hiddenAppItems,
-                            emptyTitle: "No hidden files",
-                            emptySystemImage: "eye.slash"
-                        )
-                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.vertical, 16)
@@ -63,6 +43,10 @@ struct StatusWindowView: View {
 
     private var readyAppItems: [AppItem] {
         store.readyItems.map { AppItem(installableItem: $0) } + debugItems { $0.isReady }
+    }
+
+    private var availableAppItems: [AppItem] {
+        installingAppItems + readyAppItems
     }
 
     private var installedAppItems: [AppItem] {
@@ -191,7 +175,80 @@ struct StatusWindowView: View {
         }
     }
 
-    private func appItemSectionHeader(title: String, items: [AppItem]) -> some View {
+    private var availableSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            appItemSectionHeader(
+                title: "Available",
+                items: availableHeaderItems,
+                showsHiddenToggle: true
+            )
+
+            if availableAppItems.isEmpty && (!showsHiddenItems || hiddenAppItems.isEmpty) {
+                Label("No apps ready to install", systemImage: "tray")
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 8)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(availableAppItems.enumerated()), id: \.element.id) { index, item in
+                        AppItemElement(item: item, showsSeparator: showsAvailableSeparator(after: index), actions: {
+                            controls(for: item)
+                        }, contextMenuActions: {
+                            contextMenuActions(for: item)
+                        })
+                    }
+
+                    if showsHiddenItems && !hiddenAppItems.isEmpty {
+                        hiddenSubheading
+
+                        ForEach(Array(hiddenAppItems.enumerated()), id: \.element.id) { index, item in
+                            AppItemElement(item: item, showsSeparator: index < hiddenAppItems.count - 1, actions: {
+                                controls(for: item)
+                            }, contextMenuActions: {
+                                contextMenuActions(for: item)
+                            })
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private var availableHeaderItems: [AppItem] {
+        showsHiddenItems ? availableAppItems + hiddenAppItems : availableAppItems
+    }
+
+    private func showsAvailableSeparator(after index: Int) -> Bool {
+        index < availableAppItems.count - 1
+    }
+
+    private var hiddenSubheading: some View {
+        HStack(spacing: 8) {
+            Text("Hidden")
+                .font(.title3.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            Text(itemCountText(for: hiddenAppItems.count))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+                .padding(.horizontal, 6)
+                .padding(.vertical, 2)
+                .background(.secondary.opacity(0.08), in: Capsule())
+
+            Spacer()
+
+            Button("Hide Hidden") {
+                showsHiddenItems = false
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.secondary)
+            .buttonStyle(.plain)
+            .help("Hide Hidden Items")
+        }
+        .padding(.top, availableAppItems.isEmpty ? 0 : 10)
+        .padding(.bottom, 4)
+    }
+
+    private func appItemSectionHeader(title: String, items: [AppItem], showsHiddenToggle: Bool = false) -> some View {
         HStack(spacing: 8) {
             Text(title)
                 .font(.title2.weight(.semibold))
@@ -212,7 +269,36 @@ struct StatusWindowView: View {
             .background(.secondary.opacity(0.08), in: Capsule())
 
             Spacer()
+
+            if showsHiddenToggle {
+                hiddenToggleButton
+            }
         }
+    }
+
+    private var hiddenToggleButton: some View {
+        HStack(spacing: 6) {
+            Text(showsHiddenItems ? "Hide Hidden" : "Show Hidden")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .opacity(isHoveringHiddenToggle ? 1 : 0)
+                .animation(.easeOut(duration: 0.16), value: isHoveringHiddenToggle)
+
+            Button {
+                showsHiddenItems.toggle()
+            } label: {
+                Image(systemName: showsHiddenItems ? "eye.slash" : "eye")
+                    .font(.system(size: 12, weight: .semibold))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundStyle(.secondary)
+                    .frame(width: 22, height: 22)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .help(showsHiddenItems ? "Hide Hidden Items" : "Show Hidden Items")
+            .accessibilityLabel(showsHiddenItems ? "Hide hidden items" : "Show hidden items")
+        }
+        .onHover { isHoveringHiddenToggle = $0 }
     }
 
     private func itemCountText(for count: Int) -> String {
@@ -412,7 +498,7 @@ struct StatusWindowView: View {
                 store.unhide(installableItem)
             }
         } label: {
-            Label("Show", systemImage: "eye")
+            Label("Unhide", systemImage: "eye")
         }
         .disabled(installableItem(for: item) == nil)
     }
@@ -733,12 +819,6 @@ private struct AppItemElement<Actions: View, ContextMenuActions: View>: View {
         case .hidden:
             fileIcon
                 .opacity(0.42)
-                .overlay(alignment: .bottomTrailing) {
-                    Image(systemName: "eye.slash.fill")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(.secondary)
-                        .background(.regularMaterial, in: Circle())
-                }
         }
     }
 
