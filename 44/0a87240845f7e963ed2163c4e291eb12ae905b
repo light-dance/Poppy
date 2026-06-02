@@ -1,0 +1,26 @@
+README.md
+  s_9f1b077e055a60::t_493707706bd945 15
+  s_9f1b077e055a60::t_b7bae39a59fb15 7-11
+app/README.md
+  s_9f1b077e055a60::t_285c11ebd6a5cd 5
+  s_9f1b077e055a60::t_493707706bd945 8,11
+  s_9f1b077e055a60::t_b7bae39a59fb15 1-4,6-7,9-10
+.gitignore
+  s_9f1b077e055a60::t_bb148303b34f0d 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "440a87240845f7e963ed2163c4e291eb12ae905b",
+  "prompts": {},
+  "sessions": {
+    "s_9f1b077e055a60": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e851f-3f92-7400-ba72-0a608f438611",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
