@@ -61,7 +61,7 @@ struct PoppyApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.openWindow) private var openWindow
     @Environment(\.openSettings) private var openSettings
-    @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = false
+    @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = true
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
     @AppStorage(DeleteAfterInstall.storageKey) private var deleteAfterInstall = true
     @AppStorage(AutoInstallDetectedApplications.storageKey) private var automaticallyInstallDetectedApplications = false

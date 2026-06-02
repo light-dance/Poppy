@@ -18,7 +18,7 @@ final class AppLifecycleController: ObservableObject {
     private var openMainWindow: (() -> Void)?
 
     init(userDefaults: UserDefaults = .standard) {
-        hideInDock = userDefaults.bool(forKey: Self.hideInDockKey)
+        hideInDock = userDefaults.object(forKey: Self.hideInDockKey) as? Bool ?? true
         hideInMenuBar = userDefaults.bool(forKey: Self.hideInMenuBarKey)
     }
 
