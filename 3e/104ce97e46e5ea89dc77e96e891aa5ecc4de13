@@ -1,0 +1,19 @@
+web/package.json
+  s_f7a4f77bbf858a::t_9656f24629079d 21-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "3e104ce97e46e5ea89dc77e96e891aa5ecc4de13",
+  "prompts": {},
+  "sessions": {
+    "s_f7a4f77bbf858a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8eea-7d0c-77b2-8942-8719af456256",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
