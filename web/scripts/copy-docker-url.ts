@@ -5,9 +5,9 @@
 
 type Service = {
 	containerNamePart: string
-	containerPort: number
+	containerPort?: number
 	label: string
-	url(port: number): string
+	url(port?: number): string
 }
 
 const projectName = process.env.RAILWAY_PROJECT_NAME
@@ -15,22 +15,9 @@ const serviceArg = process.argv[2]?.toLowerCase()
 
 const services: Record<string, Service> = {
 	db: {
-		containerNamePart: '-db-',
-		containerPort: 5432,
-		label: 'Postgres',
-		url: (port) => `postgres://root:password@localhost:${port}/local`
-	},
-	pg: {
-		containerNamePart: '-db-',
-		containerPort: 5432,
-		label: 'Postgres',
-		url: (port) => `postgres://root:password@localhost:${port}/local`
-	},
-	postgres: {
-		containerNamePart: '-db-',
-		containerPort: 5432,
-		label: 'Postgres',
-		url: (port) => `postgres://root:password@localhost:${port}/local`
+		containerNamePart: '',
+		label: 'SQLite database file',
+		url: () => './db/data.sqlite'
 	},
 	redis: {
 		containerNamePart: '-redis-',
@@ -48,11 +35,8 @@ if (!projectName) {
 function printUsage() {
 	console.error('\x1b[31m✗ Choose a service to copy\x1b[0m')
 	console.error('\nUsage:')
-	console.error('  bun run docker:url pg')
-	console.error('  bun run docker:url redis')
-	console.error('\nShortcuts:')
-	console.error('  bun run db:url')
-	console.error('  bun run redis:url')
+	console.error('  bun run url:db')
+	console.error('  bun run url:redis')
 }
 
 async function getRunningContainers() {
@@ -101,6 +85,15 @@ async function main() {
 		process.exit(1)
 	}
 
+	if (serviceArg === 'db') {
+		const url = service.url()
+		await copyToClipboard(url)
+
+		console.log(`\x1b[32m✓ Copied ${service.label} to clipboard\x1b[0m`)
+		console.log(`  ${url}`)
+		return
+	}
+
 	const running = await getRunningContainers()
 	const projectContainers = running.filter((name) => name.startsWith(`${projectName}-`))
 
@@ -116,6 +109,10 @@ async function main() {
 		console.error(`\x1b[31m✗ Could not find ${service.label} container\x1b[0m`)
 		console.error('Found containers:', projectContainers)
 		process.exit(1)
+	}
+
+	if (!service.containerPort) {
+		throw new Error(`${service.label} does not expose a Docker port`)
 	}
 
 	const port = await getContainerPort(container, service.containerPort)

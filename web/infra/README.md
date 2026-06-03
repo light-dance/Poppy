@@ -18,7 +18,7 @@ This project is hosted on Railway with three environments:
 
 - `app` service (this SvelteKit project)
 - Redis
-- Postgres
+- SQLite file on the app service volume
 - `user-content` bucket
 - `posthog-reverse-proxy` service (Railway template)
 

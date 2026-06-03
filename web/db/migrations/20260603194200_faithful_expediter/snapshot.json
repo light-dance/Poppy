@@ -1,0 +1,88 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "id": "a9060526-9dc5-40aa-84cf-64e14e8e617a",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "name": "releases",
+      "entityType": "tables"
+    },
+    {
+      "type": "text",
+      "notNull": false,
+      "autoincrement": false,
+      "default": null,
+      "generated": null,
+      "name": "version",
+      "entityType": "columns",
+      "table": "releases"
+    },
+    {
+      "type": "text",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "''",
+      "generated": null,
+      "name": "changelog",
+      "entityType": "columns",
+      "table": "releases"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "published_at",
+      "entityType": "columns",
+      "table": "releases"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "table": "releases"
+    },
+    {
+      "type": "integer",
+      "notNull": true,
+      "autoincrement": false,
+      "default": "(unixepoch())",
+      "generated": null,
+      "name": "updated_at",
+      "entityType": "columns",
+      "table": "releases"
+    },
+    {
+      "columns": [
+        "version"
+      ],
+      "nameExplicit": false,
+      "name": "releases_pk",
+      "table": "releases",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        {
+          "value": "published_at",
+          "isExpression": false
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "origin": "manual",
+      "name": "releases_published_at_idx",
+      "entityType": "indexes",
+      "table": "releases"
+    }
+  ],
+  "renames": []
+}
