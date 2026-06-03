@@ -1,0 +1,32 @@
+web/db/migrations/20260603232643_broad_hemingway/migration.sql
+  s_f7a4f77bbf858a::t_6edd15faa4249b 1
+web/db/seed/index.ts
+  s_f7a4f77bbf858a::t_17cb0bda803793 29,36
+web/.env.example
+  s_f7a4f77bbf858a::t_17cb0bda803793 2
+web/src/lib/server/db/schema/releases.ts
+  s_f7a4f77bbf858a::t_248ec49d5c04d0 9
+web/db/migrations/20260603232643_broad_hemingway/snapshot.json
+  s_f7a4f77bbf858a::t_6edd15faa4249b 1-122
+web/src/routes/api/release/+server.ts
+  s_f7a4f77bbf858a::t_dbf3d0985004a0 3,44,50,61
+  s_f7a4f77bbf858a::t_fd86ccf9d807a2 46
+  s_f7a4f77bbf858a::t_17cb0bda803793 1-2,4-38,40-43,45,47-49,51-60,62-105
+  s_f7a4f77bbf858a::t_a99f84946758af 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e59b813c9a099cedc26fa393f5394106cff888f2",
+  "prompts": {},
+  "sessions": {
+    "s_f7a4f77bbf858a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8eea-7d0c-77b2-8942-8719af456256",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
