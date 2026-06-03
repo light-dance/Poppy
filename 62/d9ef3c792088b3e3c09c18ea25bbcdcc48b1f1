@@ -1,0 +1,19 @@
+app/scripts/release.sh
+  s_4140edd4fadcba::t_a3c8f3dbd9191d 105-107,132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "62d9ef3c792088b3e3c09c18ea25bbcdcc48b1f1",
+  "prompts": {},
+  "sessions": {
+    "s_4140edd4fadcba": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8e43-7e2c-75e0-8c07-d8aa46cdcda7",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
