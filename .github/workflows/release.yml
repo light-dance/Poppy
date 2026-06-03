@@ -86,3 +86,47 @@ jobs:
                   name: poppy-dmg
                   path: app/dist/*.dmg
                   if-no-files-found: error
+
+    upload-to-railway:
+        name: Upload to Railway Bucket
+        runs-on: blacksmith-2vcpu-ubuntu-2404
+        needs: release
+        permissions:
+            contents: read
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v6
+
+            - name: Set up Bun
+              uses: oven-sh/setup-bun@v2
+
+            - name: Download app ZIP artifact
+              uses: actions/download-artifact@v7
+              with:
+                  name: poppy-app-zip
+                  path: release-files
+
+            - name: Download DMG artifact
+              uses: actions/download-artifact@v7
+              with:
+                  name: poppy-dmg
+                  path: release-files
+
+            - name: Upload release files to Railway bucket
+              env:
+                  RAILWAY_BUCKET_ENDPOINT: ${{ secrets.RAILWAY_BUCKET_ENDPOINT }}
+                  RAILWAY_BUCKET_NAME: ${{ secrets.RAILWAY_BUCKET_NAME }}
+                  RAILWAY_BUCKET_ACCESS_KEY_ID: ${{ secrets.RAILWAY_BUCKET_ACCESS_KEY_ID }}
+                  RAILWAY_BUCKET_SECRET_ACCESS_KEY: ${{ secrets.RAILWAY_BUCKET_SECRET_ACCESS_KEY }}
+                  RAILWAY_BUCKET_REGION: ${{ vars.RAILWAY_BUCKET_REGION }}
+                  POPPY_VERSION: ${{ inputs.version }}
+              run: |
+                  prefix="releases"
+                  if [[ -n "${POPPY_VERSION:-}" ]]; then
+                    prefix="releases/$POPPY_VERSION"
+                  fi
+
+                  bun app/scripts/upload_railway_bucket.ts \
+                    --prefix "$prefix" \
+                    release-files/*.zip \
+                    release-files/*.dmg
