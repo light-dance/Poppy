@@ -103,7 +103,6 @@ archive_args=(
   -archivePath "$ARCHIVE_PATH"
   DEVELOPMENT_TEAM="$TEAM_ID"
   CODE_SIGN_STYLE=Automatic
-  CODE_SIGN_IDENTITY="$CODESIGN_IDENTITY"
 )
 
 if [[ -n "$VERSION" ]]; then
