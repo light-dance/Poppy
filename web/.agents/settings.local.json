@@ -1,0 +1,14 @@
+{
+	"permissions": {
+		"allow": [
+			"mcp__svelte__list-sections",
+			"mcp__svelte__get-documentation",
+			"WebSearch",
+			"WebFetch(domain:axiom.co)",
+			"mcp__plugin_context7_context7__query-docs",
+			"mcp__plugin_context7_context7__resolve-library-id"
+		]
+	},
+	"enableAllProjectMcpServers": true,
+	"enabledMcpjsonServers": ["svelte"]
+}

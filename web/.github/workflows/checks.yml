@@ -1,0 +1,86 @@
+name: Checks
+
+on:
+  push:
+    branches: [next]
+  pull_request:
+    branches: [next]
+
+jobs:
+  Lint:
+    runs-on: blacksmith-2vcpu-ubuntu-2404-arm
+    steps:
+      - name: Set Up Machine
+        uses: actions/checkout@v4
+
+      - name: Set Up Bun
+        uses: useblacksmith/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies with Socket Scan
+        run: bun ci
+
+      - name: Prettier
+        run: bun prettier --check .
+
+      - name: ESLint
+        if: always()
+        run: bun eslint .
+  Build:
+    runs-on: blacksmith-2vcpu-ubuntu-2404-arm
+    steps:
+      - name: Set Up Machine
+        uses: actions/checkout@v4
+
+      - name: Set Up Bun
+        uses: useblacksmith/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies with Socket Scan
+        run: bun ci
+
+      - name: Set Up Environment
+        run: cp .env.example .env
+
+      - name: Svelte Check
+        env:
+          NODE_ENV: production
+        run: bun run check:svelte
+
+      - name: Build
+        env:
+          NODE_ENV: production
+        run: bun run build
+
+      - name: Detect Drizzle Migrations
+        run: bun scripts/ci/check-drizzle-migrations.ts
+
+  Infra:
+    runs-on: blacksmith-2vcpu-ubuntu-2404-arm
+    steps:
+      - name: Set Up Machine
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set Up Bun
+        uses: useblacksmith/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies with Socket Scan
+        run: bun ci
+
+      - name: Set Up Environment
+        run: cp .env.example .env
+
+      - name: Detect Infra Migrations
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PUSH_BASE_SHA: ${{ github.event.before }}
+          PUSH_HEAD_SHA: ${{ github.sha }}
+        run: bun scripts/ci/check-infra-migrations.ts

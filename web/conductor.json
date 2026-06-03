@@ -1,0 +1,7 @@
+{
+	"scripts": {
+		"setup": "bun install && railway link -e dev -p budgeting -s vars && bun run update:env",
+		"run": "bun run dev",
+		"runScriptMode": "nonconcurrent"
+	}
+}

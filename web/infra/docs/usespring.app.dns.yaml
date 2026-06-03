@@ -1,0 +1,149 @@
+domain: usespring.app
+source: Cloudflare
+purpose: Exact DNS inventory for recovery/reference
+
+records:
+  - service: Cloudflare
+    type: SOA
+    name: "*"
+    ttl: 3600
+    value:
+      primary_nameserver: mustafa.ns.cloudflare.com
+      responsible_party: dns.cloudflare.com
+      serial: 2053108717
+      refresh: 10000
+      retry: 2400
+      expire: 604800
+      minimum: 3600
+    proxy: dns-only
+    note: Zone authority
+
+  - service: Cloudflare
+    type: NS
+    name: "*"
+    ttl: 86400
+    value: mustafa.ns.cloudflare.com
+    proxy: dns-only
+    note: Authoritative nameserver
+
+  - service: Cloudflare
+    type: NS
+    name: "*"
+    ttl: 86400
+    value: olga.ns.cloudflare.com
+    proxy: dns-only
+    note: Authoritative nameserver
+
+  - service: Railway
+    type: CNAME
+    name: "*"
+    ttl: auto
+    value: w4y61qrx.up.railway.app
+    proxy: proxied
+    note: Production app
+
+  - service: Railway
+    type: CNAME
+    name: next
+    ttl: auto
+    value: gsurgbx6.up.railway.app
+    proxy: proxied
+    note: Next environment
+
+  - service: Railway
+    type: TXT
+    name: _railway-verify.next
+    ttl: 3600
+    value: railway-verify=75517f0f1a33f5ed313b3ac27bf436f24660d3b1cad389901c87ace76ac4808f
+    proxy: dns-only
+    note: Next domain verification
+
+  - service: Cloudflare
+    type: CNAME
+    name: www
+    ttl: auto
+    value: usespring.app
+    proxy: proxied
+    note: Supports www to apex redirect
+
+  - service: Purelymail
+    type: MX
+    name: "*"
+    ttl: auto
+    priority: 50
+    value: mailserver.purelymail.com
+    proxy: dns-only
+    note: Mailbox hosting
+
+  - service: Purelymail
+    type: TXT
+    name: "*"
+    ttl: auto
+    value: purelymail_ownership_proof=b94c97446d471fcad451ccd0ab58fcf6c0413e56775d3dc6326d14c376b29593e5c2e050be8e83b03259cbe5ce2babccb31c750fcf7a684979fbb001bcea6137
+    proxy: dns-only
+    note: Ownership proof
+
+  - service: Purelymail
+    type: TXT
+    name: "*"
+    ttl: auto
+    value: v=spf1 include:_spf.purelymail.com ~all
+    proxy: dns-only
+    note: SPF
+
+  - service: Purelymail
+    type: CNAME
+    name: _dmarc
+    ttl: auto
+    value: dmarcroot.purelymail.com
+    proxy: dns-only
+    note: DMARC
+
+  - service: Purelymail
+    type: CNAME
+    name: purelymail1._domainkey
+    ttl: auto
+    value: key1.dkimroot.purelymail.com
+    proxy: dns-only
+    note: DKIM
+
+  - service: Purelymail
+    type: CNAME
+    name: purelymail2._domainkey
+    ttl: auto
+    value: key2.dkimroot.purelymail.com
+    proxy: dns-only
+    note: DKIM
+
+  - service: Purelymail
+    type: CNAME
+    name: purelymail3._domainkey
+    ttl: auto
+    value: key3.dkimroot.purelymail.com
+    proxy: dns-only
+    note: DKIM
+
+  - service: Resend
+    type: MX
+    name: send.resend
+    ttl: 3600
+    priority: 10
+    value: feedback-smtp.us-east-1.amazonses.com
+    proxy: dns-only
+    note: Bounce/feedback handling
+
+  - service: Resend
+    type: TXT
+    name: send.resend
+    ttl: 3600
+    value: v=spf1 include:amazonses.com ~all
+    proxy: dns-only
+    note: SPF
+
+  - service: Resend
+    type: TXT
+    name: resend._domainkey.resend
+    ttl: 3600
+    value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDHVdoHojv5fdGRcWnn88v22MVclH2v160fMLkoh+ZBFrpm/A0X7sjtoFTSqp1juspxkIsd+iCg2T+/BL+1q3iEhextXr0DlwD+y5mVRoFpUr98CBmcRzryDnHIlDmXceIV7FeD3gSiafyopQEzmrzVvRlGYhOgqnFjfXwaE/9TkwIDAQAB
+    proxy: dns-only
+    note: DKIM
