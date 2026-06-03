@@ -1,0 +1,4 @@
+{
+	"name": "poppy-app",
+	"script": "dev:app"
+}

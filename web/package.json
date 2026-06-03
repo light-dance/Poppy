@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"f": "bun scripts/fuzzy-bun-run.ts",
-		"dev": "bun run docker:check && portless spring bun --bun vite dev",
+		"dev": "bun run docker:check && portless",
+		"dev:app": "bun --bun vite dev",
 		"dev:host": "bun run docker:check && bun scripts/check-port.ts && bun --bun vite dev --host",
 		"dev:emails": "email dev --dir src/lib/server/email",
 		"update:env": "bun scripts/pull-env.ts",
