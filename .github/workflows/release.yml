@@ -73,12 +73,16 @@ jobs:
 
                   app/scripts/release.sh "${args[@]}"
 
-            - name: Upload release artifacts
+            - name: Upload app ZIP
               uses: actions/upload-artifact@v7
               with:
-                  name: poppy-release
-                  path: |
-                      app/dist/*.app
-                      app/dist/*.zip
-                      app/dist/*.dmg
+                  name: poppy-app-zip
+                  path: app/dist/*.zip
+                  if-no-files-found: error
+
+            - name: Upload DMG
+              uses: actions/upload-artifact@v7
+              with:
+                  name: poppy-dmg
+                  path: app/dist/*.dmg
                   if-no-files-found: error
