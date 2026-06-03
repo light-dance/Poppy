@@ -11,6 +11,7 @@ type Service = {
 }
 
 const projectName = process.env.RAILWAY_PROJECT_NAME
+const dockerProjectName = projectName?.toLowerCase()
 const serviceArg = process.argv[2]?.toLowerCase()
 
 const services: Record<string, Service> = {
@@ -95,7 +96,9 @@ async function main() {
 	}
 
 	const running = await getRunningContainers()
-	const projectContainers = running.filter((name) => name.startsWith(`${projectName}-`))
+	const projectContainers = running.filter((name) =>
+		name.toLowerCase().startsWith(`${dockerProjectName}-`)
+	)
 
 	if (projectContainers.length === 0) {
 		console.error(`\x1b[31m✗ No Docker containers running for ${projectName}\x1b[0m`)

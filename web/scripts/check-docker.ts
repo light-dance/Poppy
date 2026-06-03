@@ -8,6 +8,7 @@ import { join } from 'path'
 import { mkdir } from 'fs/promises'
 
 const projectName = process.env.RAILWAY_PROJECT_NAME
+const dockerProjectName = projectName?.toLowerCase()
 
 if (!projectName) {
 	console.error('\x1b[31m✗ RAILWAY_PROJECT_NAME not set in environment\x1b[0m')
@@ -54,8 +55,12 @@ REDIS_URL=redis://localhost:${redisPort}
 
 async function main() {
 	const running = await getRunningContainers()
-	const projectContainers = running.filter((name) => name.startsWith(`${projectName}-`))
-	const otherContainers = running.filter((name) => !name.startsWith(`${projectName}-`))
+	const projectContainers = running.filter((name) =>
+		name.toLowerCase().startsWith(`${dockerProjectName}-`)
+	)
+	const otherContainers = running.filter(
+		(name) => !name.toLowerCase().startsWith(`${dockerProjectName}-`)
+	)
 
 	if (projectContainers.length === 0) {
 		if (otherContainers.length > 0) {

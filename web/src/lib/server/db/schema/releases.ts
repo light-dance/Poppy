@@ -4,7 +4,8 @@ import { index, integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 export const releases = sqliteTable(
 	'releases',
 	{
-		version: text('version').primaryKey(),
+		buildNumber: integer('build_number').primaryKey(),
+		version: text('version').notNull(),
 		changelog: text('changelog').notNull().default(''),
 		publishedAt: integer('published_at', { mode: 'timestamp' })
 			.notNull()
@@ -16,5 +17,8 @@ export const releases = sqliteTable(
 			.notNull()
 			.default(sql`(unixepoch())`)
 	},
-	(table) => [index('releases_published_at_idx').on(table.publishedAt)]
+	(table) => [
+		index('releases_version_idx').on(table.version),
+		index('releases_published_at_idx').on(table.publishedAt)
+	]
 )
