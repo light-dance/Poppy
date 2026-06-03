@@ -8,7 +8,36 @@ Build the Xcode app target:
 xcodebuild -project Poppy.xcodeproj -scheme Poppy -configuration Debug build
 ```
 
-Open `Poppy.xcodeproj` in Xcode to run, archive, and manage signing.
+Open `Poppy.xcodeproj` in Xcode to run and debug locally.
+
+## Release
+
+The release pipeline archives the Release build, exports a Developer ID signed
+app with the hardened runtime enabled, notarizes and staples the `.app`, creates
+a distributable `.zip`, creates the drag-to-Applications `.dmg`, then signs,
+notarizes, and staples the `.dmg`.
+
+Run the same release path locally after storing notary credentials with
+`xcrun notarytool store-credentials`:
+
+```bash
+NOTARY_PROFILE=poppy-release \
+CODESIGN_IDENTITY="Developer ID Application: Your Name (TEAMID)" \
+./scripts/release.sh --version 1.0.0 --build-number 1
+```
+
+In GitHub Actions, run the `Release` workflow manually. It expects these
+repository secrets:
+
+```text
+MACOS_CERTIFICATE_P12_BASE64
+MACOS_CERTIFICATE_PASSWORD
+MACOS_KEYCHAIN_PASSWORD
+MACOS_CODESIGN_IDENTITY
+APP_STORE_CONNECT_API_KEY_P8_BASE64
+APP_STORE_CONNECT_KEY_ID
+APP_STORE_CONNECT_ISSUER_ID
+```
 
 ## DMG
 

@@ -1,0 +1,31 @@
+name: Build
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+
+jobs:
+    build:
+        name: Build Check
+        runs-on: blacksmith-6vcpu-macos-26
+        defaults:
+            run:
+                working-directory: app
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+
+            - name: Show Xcode version
+              run: xcodebuild -version
+
+            - name: Build Release
+              run: |
+                  xcodebuild \
+                    -project Poppy.xcodeproj \
+                    -scheme Poppy \
+                    -configuration Release \
+                    -destination 'generic/platform=macOS' \
+                    CODE_SIGNING_ALLOWED=NO \
+                    build

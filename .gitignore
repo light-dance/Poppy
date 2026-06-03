@@ -1,6 +1,7 @@
 .build/
 build/
 dist/
+certs/
 .DS_Store
 xcuserdata/
 *.xcuserstate
