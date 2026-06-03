@@ -1,0 +1,24 @@
+web/src/routes/api/release/+server.ts
+  s_f7a4f77bbf858a::t_17cb0bda803793 1-2,4-38,40-43,45,47-49,51-60,62-105
+  s_f7a4f77bbf858a::t_a99f84946758af 39
+  s_f7a4f77bbf858a::t_dbf3d0985004a0 3,44,50,61
+  s_f7a4f77bbf858a::t_fd86ccf9d807a2 46
+web/.env.example
+  s_f7a4f77bbf858a::t_17cb0bda803793 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "0bb49dea854c18edc09498fcddff6f15c8d07954",
+  "prompts": {},
+  "sessions": {
+    "s_f7a4f77bbf858a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8eea-7d0c-77b2-8942-8719af456256",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
