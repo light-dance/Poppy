@@ -1,7 +1,26 @@
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
+certs/
+
+#OS
+.DS_Store
+Thumbs.db
+
+# APP / XCODE
 .build/
 build/
 dist/
-certs/
-.DS_Store
 xcuserdata/
 *.xcuserstate
+
+# WEB
+node_modules
+web/.output
+web/.svelte-kit
+web/build
+web/db/*.sqlite*
+web/.eslintcache
+web/.spoon
