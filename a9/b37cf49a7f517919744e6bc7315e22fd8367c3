@@ -1,0 +1,57 @@
+web/drizzle.config.ts
+  s_f7a4f77bbf858a::t_9656f24629079d 8
+web/src/lib/server/db/index.ts
+  s_f7a4f77bbf858a::t_ec7cc5af6583a4 15
+  s_338ddf75081574::t_da2678dc3e6dc3 12-13
+  s_f7a4f77bbf858a::t_9656f24629079d 2-3
+web/README.md
+  s_f7a4f77bbf858a::t_8721b985d5b946 1,7
+web/src/lib/server/db/schema/index.ts
+  s_f7a4f77bbf858a::t_9656f24629079d 1
+web/src/lib/server/db/schema/releases.ts
+  s_f7a4f77bbf858a::t_ec7cc5af6583a4 2,7
+  s_f7a4f77bbf858a::t_9656f24629079d 3-6,8-18,20
+  s_f7a4f77bbf858a::t_ef807c1806a70b 19
+  s_f7a4f77bbf858a::t_7f3435d8d76b11 1
+web/db/migrations/20260603194200_faithful_expediter/snapshot.json
+  s_f7a4f77bbf858a::t_c4bc7f04f10663 1-88
+web/db/seed/index.ts
+  s_f7a4f77bbf858a::t_9656f24629079d 1-4,10-14,25-27,29-37,43
+  s_338ddf75081574::t_da2678dc3e6dc3 15
+  s_f7a4f77bbf858a::t_ec7cc5af6583a4 17,24,28
+web/scripts/copy-docker-url.ts
+  s_f7a4f77bbf858a::t_9ef839e091d45f 20
+  s_f7a4f77bbf858a::t_9656f24629079d 8,10,18-19,88-96,114-115
+  s_f7a4f77bbf858a::t_8721b985d5b946 38-39
+web/infra/README.md
+  s_f7a4f77bbf858a::t_8721b985d5b946 21
+web/scripts/check-docker.ts
+  s_f7a4f77bbf858a::t_9ef839e091d45f 45,86
+  s_f7a4f77bbf858a::t_9656f24629079d 8,43,46-47,75-76,83
+web/db/migrations/20260603194200_faithful_expediter/migration.sql
+  s_f7a4f77bbf858a::t_c4bc7f04f10663 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a9b37cf49a7f517919744e6bc7315e22fd8367c3",
+  "prompts": {},
+  "sessions": {
+    "s_338ddf75081574": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8f74-84e2-74f0-8d59-2811c6112692",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_f7a4f77bbf858a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e8eea-7d0c-77b2-8942-8719af456256",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
