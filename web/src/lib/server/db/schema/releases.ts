@@ -6,6 +6,7 @@ export const releases = sqliteTable(
 	{
 		buildNumber: integer('build_number').primaryKey(),
 		version: text('version').notNull(),
+		title: text('title').notNull().default(''),
 		changelog: text('changelog').notNull().default(''),
 		publishedAt: integer('published_at', { mode: 'timestamp' })
 			.notNull()

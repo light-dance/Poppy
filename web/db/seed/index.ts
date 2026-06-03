@@ -26,12 +26,14 @@ export async function seed() {
 			.values({
 				buildNumber: 0,
 				version: '0.0.0-dev',
+				title: 'Development release',
 				changelog: 'Local seed release for testing the download and changelog pages.'
 			})
 			.onConflictDoUpdate({
 				target: schema.releases.buildNumber,
 				set: {
 					version: '0.0.0-dev',
+					title: 'Development release',
 					changelog: 'Local seed release for testing the download and changelog pages.',
 					updatedAt: new Date()
 				}
