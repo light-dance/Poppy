@@ -102,7 +102,9 @@ archive_args=(
   -destination "generic/platform=macOS"
   -archivePath "$ARCHIVE_PATH"
   DEVELOPMENT_TEAM="$TEAM_ID"
-  CODE_SIGN_STYLE=Automatic
+  CODE_SIGN_STYLE=Manual
+  CODE_SIGN_IDENTITY="$CODESIGN_IDENTITY"
+  PROVISIONING_PROFILE_SPECIFIER=
 )
 
 if [[ -n "$VERSION" ]]; then
@@ -127,7 +129,7 @@ cat > "$EXPORT_OPTIONS_PLIST" <<PLIST
   <key>teamID</key>
   <string>$TEAM_ID</string>
   <key>signingStyle</key>
-  <string>automatic</string>
+  <string>manual</string>
   <key>signingCertificate</key>
   <string>Developer ID Application</string>
   <key>stripSwiftSymbols</key>
