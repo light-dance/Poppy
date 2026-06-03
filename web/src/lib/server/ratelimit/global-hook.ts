@@ -10,7 +10,7 @@ export const handleGlobalRatelimit: Handle = async ({ event, resolve }) => {
 
 	const ip = resolveClientAddress(event)
 
-	const rate = await limits.free.limit(ip)
+	const rate = await limits.general.limit(ip)
 
 	// If rate limit exceeded, send back error
 	if (!rate.success) {
