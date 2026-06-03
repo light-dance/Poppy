@@ -1,6 +1,9 @@
 name: Release
 
 on:
+    push:
+        tags:
+            - "v*"
     workflow_dispatch:
         inputs:
             version:
@@ -16,6 +19,7 @@ jobs:
     release:
         name: Build, Sign, Notarize, and Package
         runs-on: blacksmith-6vcpu-macos-26
+        environment: Release
         permissions:
             contents: read
         steps:
@@ -60,15 +64,20 @@ jobs:
                   APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
                   APP_STORE_CONNECT_API_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_KEY_ID }}.p8
                   CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
-                  POPPY_VERSION: ${{ inputs.version }}
-                  POPPY_BUILD_NUMBER: ${{ inputs.build_number }}
+                  POPPY_INPUT_VERSION: ${{ inputs.version }}
+                  POPPY_INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
               run: |
                   args=()
+                  POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
+                  if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
+                    POPPY_VERSION="${GITHUB_REF_NAME#v}"
+                  fi
+
                   if [[ -n "${POPPY_VERSION:-}" ]]; then
                     args+=(--version "$POPPY_VERSION")
                   fi
-                  if [[ -n "${POPPY_BUILD_NUMBER:-}" ]]; then
-                    args+=(--build-number "$POPPY_BUILD_NUMBER")
+                  if [[ -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
+                    args+=(--build-number "$POPPY_INPUT_BUILD_NUMBER")
                   fi
 
                   app/scripts/release.sh "${args[@]}"
@@ -119,8 +128,13 @@ jobs:
                   RAILWAY_BUCKET_ACCESS_KEY_ID: ${{ secrets.RAILWAY_BUCKET_ACCESS_KEY_ID }}
                   RAILWAY_BUCKET_SECRET_ACCESS_KEY: ${{ secrets.RAILWAY_BUCKET_SECRET_ACCESS_KEY }}
                   RAILWAY_BUCKET_REGION: ${{ vars.RAILWAY_BUCKET_REGION }}
-                  POPPY_VERSION: ${{ inputs.version }}
+                  POPPY_INPUT_VERSION: ${{ inputs.version }}
               run: |
+                  POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
+                  if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
+                    POPPY_VERSION="${GITHUB_REF_NAME#v}"
+                  fi
+
                   prefix="releases"
                   if [[ -n "${POPPY_VERSION:-}" ]]; then
                     prefix="releases/$POPPY_VERSION"
