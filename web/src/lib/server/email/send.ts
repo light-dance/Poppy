@@ -1,13 +1,13 @@
 import type { CreateEmailOptions } from 'resend'
 import { Resend } from 'resend'
 
+import { env } from '$env/dynamic/private'
 import { err, ok, type StructuredResult } from '$utils/structured-result'
-import { NODE_ENV, RESEND_AUTH, RESEND_FROM } from '$env/static/private'
 
-const IS_DEV = NODE_ENV === 'development'
+const IS_DEV = env.NODE_ENV === 'development'
 const SEND_IN_DEV = false // Set true to override and send emails in dev
 
-const resend = new Resend(RESEND_AUTH)
+const resend = new Resend(env.RESEND_AUTH)
 
 type SendEmailOptions = Omit<CreateEmailOptions, 'from'> & {
 	from?: CreateEmailOptions['from']
@@ -23,7 +23,7 @@ type SendEmailOptions = Omit<CreateEmailOptions, 'from'> & {
  */
 export async function sendEmail(options: SendEmailOptions, devMessage: string | undefined | null) {
 	// Apply module-level defaults, then allow callers to override specific fields.
-	const emailOptions = { from: RESEND_FROM, ...options } as CreateEmailOptions
+	const emailOptions = { from: env.RESEND_FROM, ...options } as CreateEmailOptions
 
 	// Skip external sends in development unless explicitly overridden above.
 	if (IS_DEV && !SEND_IN_DEV) {

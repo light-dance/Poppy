@@ -14,7 +14,7 @@ S3 file uploads and serving using Bun's S3Client and Redis. (Tested with Railway
 You should setup a remote function for each upload route.
 
 ```typescript
-// lib/remotes/storage/profile-pic.remote.ts
+// lib/remotes/storage/upload.remote.ts
 import { defineUpload } from '$lib/server/storage'
 
 const upload = defineUpload({
@@ -87,7 +87,7 @@ export const GET = serveProtected({
 Content routes live at `src/routes/content/` using route groups for organization:
 
 - `(public)/` - Publicly accessible files via `servePublic()`
-- `(protected)/` - Auth-required files via `serveProtected()`
+- `(protected)/` - Authorization-required files via `serveProtected()`
 
 ## Cleanup
 

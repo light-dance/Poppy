@@ -80,7 +80,7 @@ export function err<E>(error?: E) {
  * ```ts
  * const session = unwrap(await createSession()) // throws 500 on error
  * const user = unwrap(await getUser(), 401) // throws 401 on error
- * const passkey = unwrap(await getPasskey(), (e) => {
+ * const value = unwrap(await getValue(), (e) => {
  * 	throw error(500, String(e))
  * }) // custom error handling
  * ```
