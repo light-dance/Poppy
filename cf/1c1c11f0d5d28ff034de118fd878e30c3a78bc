@@ -1,0 +1,38 @@
+web/src/routes/download/latest/+server.ts
+  s_9911e710f1e469::t_e173c8ae7228ef 1-2
+web/src/routes/download/[version]/[format]/+server.ts
+  s_9911e710f1e469::t_3ce7c9e72a7e8f 1-2
+web/src/routes/content/(public)/[...path]/+server.ts
+  s_9911e710f1e469::t_c4f80ce4be385b 1-3
+web/src/lib/server/releases/index.ts
+  s_ef5401fe146913::t_50d705e899be07 71,76,93
+  s_ef5401fe146913::t_4c9d36a6e3ed13 1
+web/src/routes/download/latest/[format]/+server.ts
+  s_9911e710f1e469::t_63194725b84be2 1-2
+web/src/routes/download/[version]/+server.ts
+  s_9911e710f1e469::t_c68a1a85f2b8cf 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cf1c1c11f0d5d28ff034de118fd878e30c3a78bc",
+  "prompts": {},
+  "sessions": {
+    "s_9911e710f1e469": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e90fb-d8bd-74b1-9fd3-3ac7132fdcac",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_ef5401fe146913": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e90f3-bde1-7181-8e31-1c7f0954d1b1",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
