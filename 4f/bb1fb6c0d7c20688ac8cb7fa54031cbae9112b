@@ -1,0 +1,19 @@
+.github/workflows/build.yml
+  s_8b55e174b1a444::t_e2f576de162c5d 5-6,10-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "4fbb1fb6c0d7c20688ac8cb7fa54031cbae9112b",
+  "prompts": {},
+  "sessions": {
+    "s_8b55e174b1a444": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e90bc-d965-7753-93c9-4247d8b45fe2",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
