@@ -79,7 +79,6 @@ jobs:
         run: |
           set -euo pipefail
 
-          args=()
           POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
           if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
             POPPY_VERSION="${GITHUB_REF_NAME#v}"
@@ -104,14 +103,15 @@ jobs:
             fi
           fi
 
-          if [[ -n "${POPPY_VERSION:-}" ]]; then
-            args+=(--version "$POPPY_VERSION")
+          if [[ -n "${POPPY_VERSION:-}" && -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
+            app/scripts/release.sh --version "$POPPY_VERSION" --build-number "$POPPY_INPUT_BUILD_NUMBER"
+          elif [[ -n "${POPPY_VERSION:-}" ]]; then
+            app/scripts/release.sh --version "$POPPY_VERSION"
+          elif [[ -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
+            app/scripts/release.sh --build-number "$POPPY_INPUT_BUILD_NUMBER"
+          else
+            app/scripts/release.sh
           fi
-          if [[ -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
-            args+=(--build-number "$POPPY_INPUT_BUILD_NUMBER")
-          fi
-
-          app/scripts/release.sh "${args[@]}"
 
       - name: Upload app ZIP
         uses: actions/upload-artifact@v7

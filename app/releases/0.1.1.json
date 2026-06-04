@@ -1,0 +1,6 @@
+{
+	"version": "0.1.1",
+	"build_number": 1,
+	"title": "Test CI",
+	"changelog": "Release notes to publish on the web changelog."
+}
