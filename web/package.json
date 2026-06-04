@@ -86,8 +86,5 @@
 		"torph": "^0.0.9",
 		"ua-parser-js": "^2.0.10",
 		"valibot": "^1.4.1"
-	},
-	"patchedDependencies": {
-		"@sveltejs/kit@2.61.1": "patches/@sveltejs%2Fkit@2.61.1.patch"
 	}
 }
