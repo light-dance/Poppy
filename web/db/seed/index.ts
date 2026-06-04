@@ -24,15 +24,13 @@ export async function seed() {
 		await db
 			.insert(schema.releases)
 			.values({
-				buildNumber: 0,
-				version: '0.0.0-dev',
+				version: '0.0.0',
 				title: 'Development release',
 				changelog: 'Local seed release for testing the download and changelog pages.'
 			})
 			.onConflictDoUpdate({
-				target: schema.releases.buildNumber,
+				target: schema.releases.version,
 				set: {
-					version: '0.0.0-dev',
 					title: 'Development release',
 					changelog: 'Local seed release for testing the download and changelog pages.',
 					updatedAt: new Date()

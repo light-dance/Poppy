@@ -20,6 +20,7 @@
 		"db:gen": "bunx --bun drizzle-kit generate",
 		"db:migrate": "bunx --bun drizzle-kit migrate",
 		"db:push": "bunx --bun drizzle-kit push",
+		"db:reset": "bun scripts/reset-db.ts",
 		"db:seed": "bun db/seed/index.ts",
 		"db:upgrade": "bunx --bun drizzle-kit up",
 		"db:studio": "bunx --bun drizzle-kit studio",

@@ -1,105 +1,91 @@
-import { env } from '$env/dynamic/private'
+import { RELEASE_API_TOKEN } from '$env/static/private'
 import { error, json } from '@sveltejs/kit'
+import * as v from 'valibot'
 import type { RequestHandler } from './$types'
 
 import { db } from '$lib/server/db'
 import { releases } from '$lib/server/db/schema'
 
-interface ReleasePayload {
-	buildNumber?: unknown
-	version?: unknown
-	title?: unknown
-	changelog?: unknown
-}
+const releasePayloadSchema = v.object({
+	version: v.pipe(
+		v.string('version is required'),
+		v.trim(),
+		v.regex(/^\d+\.\d+\.\d+$/, 'version must use number.number.number format')
+	),
+	title: v.optional(
+		v.pipe(
+			v.string(),
+			v.trim(),
+			v.transform((value) => value || null)
+		)
+	),
+	changelog: v.pipe(
+		v.string('changelog is required'),
+		v.check((value) => value.trim() !== '', 'changelog is required')
+	)
+})
 
-function readBearerToken(request: Request) {
-	const authorization = request.headers.get('authorization')
-	const match = authorization?.match(/^Bearer\s+(.+)$/i)
-
-	return match?.[1] ?? request.headers.get('x-release-token')
-}
-
-function assertAuthorized(request: Request) {
-	if (!env.RELEASE_API_TOKEN) {
-		throw error(500, 'RELEASE_API_TOKEN is not configured')
+/**
+ * Parses the release request body as JSON and validates it against the release payload schema.
+ */
+async function parseRequest(request: Request) {
+	// Try to parse to JSON
+	let payload: unknown
+	try {
+		payload = await request.json()
+	} catch {
+		throw error(400, 'Request body must be valid JSON')
 	}
 
-	if (readBearerToken(request) !== env.RELEASE_API_TOKEN) {
+	const result = v.safeParse(releasePayloadSchema, payload)
+
+	if (!result.success) {
+		throw error(400, result.issues[0]?.message ?? 'Request body is invalid')
+	}
+
+	return result.output
+}
+
+/**
+ * Verifies the request token from either the bearer header or x-release-token header.
+ */
+function authorizeRequest(request: Request) {
+	const authorization = request.headers.get('authorization')
+	const bearer = authorization?.match(/^Bearer\s+(.+)$/i)
+	const token = bearer?.[1] ?? request.headers.get('x-release-token')
+
+	if (RELEASE_API_TOKEN !== token) {
 		throw error(401, 'Unauthorized')
 	}
 }
 
-function parseStringField(payload: ReleasePayload, field: 'version' | 'title' | 'changelog') {
-	const value = payload[field]
-
-	if (typeof value !== 'string' || value.trim() === '') {
-		throw error(400, `${field} is required`)
-	}
-
-	return field === 'changelog' ? value : value.trim()
-}
-
-function parseBuildNumber(payload: ReleasePayload) {
-	const value = payload.buildNumber
-	const buildNumber = typeof value === 'string' ? Number(value) : value
-
-	if (typeof buildNumber !== 'number' || !Number.isInteger(buildNumber) || buildNumber < 0) {
-		throw error(400, 'buildNumber must be a non-negative integer')
-	}
-
-	return buildNumber
-}
-
-async function readPayload(request: Request): Promise<ReleasePayload> {
-	try {
-		return (await request.json()) as ReleasePayload
-	} catch {
-		throw error(400, 'Request body must be valid JSON')
-	}
-}
-
+/**
+ * Publishes or updates release metadata for a version after authorization and validation.
+ */
 export const POST: RequestHandler = async ({ request }) => {
-	assertAuthorized(request)
+	authorizeRequest(request)
 
-	const payload = await readPayload(request)
-	const buildNumber = parseBuildNumber(payload)
-	const version = parseStringField(payload, 'version')
-	const title = parseStringField(payload, 'title')
-	const changelog = parseStringField(payload, 'changelog')
+	const release = await parseRequest(request)
 	const now = new Date()
 
 	await db
 		.insert(releases)
 		.values({
-			buildNumber,
-			version,
-			title,
-			changelog,
+			...release,
 			publishedAt: now,
 			updatedAt: now
 		})
 		.onConflictDoUpdate({
-			target: releases.buildNumber,
+			target: releases.version,
 			set: {
-				version,
-				title,
-				changelog,
+				title: release.title,
+				changelog: release.changelog,
 				updatedAt: now
 			}
 		})
 
 	return json({
-		release: {
-			buildNumber,
-			version,
-			title,
-			changelog
-		},
-		downloads: {
-			dmg: `/download/${version}/dmg`,
-			zip: `/download/${version}/zip`,
-			latestDmg: '/download/latest/dmg',
-			latestZip: '/download/latest/zip'
-		}
+		success: true,
+		release
 	})
 }
