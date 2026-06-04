@@ -4,8 +4,7 @@
 		"builder": "RAILPACK"
 	},
 	"deploy": {
-		"startCommand": "bun run start",
-		"preDeployCommand": "bun run db:migrate",
+		"startCommand": "bun run db:migrarte && bun run start",
 		"restartPolicyType": "ALWAYS",
 		"restartPolicyMaxRetries": 5,
 		"healthcheckPath": "/health"
