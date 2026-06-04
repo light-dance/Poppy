@@ -8,5 +8,5 @@ export async function GET({ params }) {
 		format: 'dmg'
 	})
 
-	throw redirect(302, `/content/${file}`)
+	throw redirect(302, `/${file}`)
 }
