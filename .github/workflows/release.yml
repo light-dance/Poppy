@@ -107,6 +107,70 @@ jobs:
           POPPY_BUILD_NUMBER="$(plutil -extract build_number raw "$metadata_path")"
           app/scripts/release.sh --version "$POPPY_VERSION" --build-number "$POPPY_BUILD_NUMBER"
 
+      - name: Sign Sparkle update ZIP
+        env:
+          POPPY_SPARKLE_PRIVATE_KEY: ${{ secrets.POPPY_SPARKLE_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          SPARKLE_VERSION="2.9.2"
+          SPARKLE_SHA256="1cb340cbbef04c6c0d162078610c25e2221031d794a3449d89f2f56f4df77c95"
+          SPARKLE_ARCHIVE="$RUNNER_TEMP/Sparkle-$SPARKLE_VERSION.tar.xz"
+          SPARKLE_DIR="$RUNNER_TEMP/Sparkle-$SPARKLE_VERSION"
+
+          if [[ -z "$POPPY_SPARKLE_PRIVATE_KEY" ]]; then
+            echo "Missing POPPY_SPARKLE_PRIVATE_KEY secret." >&2
+            exit 1
+          fi
+
+          curl -L \
+            -o "$SPARKLE_ARCHIVE" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
+
+          actual_sha256="$(shasum -a 256 "$SPARKLE_ARCHIVE" | awk '{print $1}')"
+          if [[ "$actual_sha256" != "$SPARKLE_SHA256" ]]; then
+            echo "Sparkle archive checksum mismatch: expected $SPARKLE_SHA256, got $actual_sha256" >&2
+            exit 1
+          fi
+
+          mkdir -p "$SPARKLE_DIR"
+          tar -xf "$SPARKLE_ARCHIVE" -C "$SPARKLE_DIR"
+
+          zip_count="$(find app/dist -maxdepth 1 -name "Poppy-*.zip" -print | wc -l | tr -d ' ')"
+          if [[ "$zip_count" != "1" ]]; then
+            echo "Expected exactly one Poppy ZIP in app/dist, found $zip_count" >&2
+            find app/dist -maxdepth 1 -name "Poppy-*.zip" -print >&2
+            exit 1
+          fi
+
+          zip_path="$(find app/dist -maxdepth 1 -name "Poppy-*.zip" -print -quit)"
+          zip_length="$(stat -f "%z" "$zip_path")"
+          zip_signature="$(printf '%s' "$POPPY_SPARKLE_PRIVATE_KEY" | "$SPARKLE_DIR/bin/sign_update" --ed-key-file - -p "$zip_path" | tr -d '\r\n')"
+
+          if [[ -z "$zip_signature" ]]; then
+            echo "Sparkle signing did not return a ZIP signature." >&2
+            exit 1
+          fi
+
+          mkdir -p app/build/release/sparkle
+          SPARKLE_ZIP_LENGTH="$zip_length" \
+          SPARKLE_ZIP_SIGNATURE="$zip_signature" \
+            python3 - <<'PY'
+          import json
+          import os
+
+          with open("app/build/release/sparkle/sparkle-release.json", "w", encoding="utf-8") as file:
+              json.dump(
+                  {
+                      "sparkleZipLength": int(os.environ["SPARKLE_ZIP_LENGTH"]),
+                      "sparkleZipSignature": os.environ["SPARKLE_ZIP_SIGNATURE"],
+                  },
+                  file,
+                  indent=2,
+              )
+              file.write("\n")
+          PY
+
       - name: Upload app ZIP
         uses: actions/upload-artifact@v7
         with:
@@ -119,6 +183,13 @@ jobs:
         with:
           name: poppy-dmg
           path: app/dist/*.dmg
+          if-no-files-found: error
+
+      - name: Upload Sparkle metadata
+        uses: actions/upload-artifact@v7
+        with:
+          name: poppy-sparkle-metadata
+          path: app/build/release/sparkle/sparkle-release.json
           if-no-files-found: error
 
   publish-to-web:
@@ -147,6 +218,12 @@ jobs:
         with:
           name: poppy-dmg
           path: release-files
+
+      - name: Download Sparkle metadata artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: poppy-sparkle-metadata
+          path: release-metadata
 
       - name: Upload release files to web bucket
         env:
@@ -199,4 +276,5 @@ jobs:
           POPPY_RELEASE_API_URL: ${{ secrets.POPPY_RELEASE_API_URL }}
           POPPY_RELEASE_API_TOKEN: ${{ secrets.POPPY_RELEASE_API_TOKEN }}
           POPPY_INPUT_VERSION: ${{ inputs.version }}
+          POPPY_SPARKLE_METADATA_PATH: release-metadata/sparkle-release.json
         run: bun app/scripts/publish_web_release.ts

@@ -13,6 +13,34 @@ type ReleaseMetadata = {
   changelog: string;
 };
 
+type SparkleMetadata = {
+  sparkleZipLength: number;
+  sparkleZipSignature: string;
+};
+
+function positiveInteger(value: unknown, fieldName: string): number {
+  const numberValue =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number(value)
+        : Number.NaN;
+
+  if (!Number.isInteger(numberValue) || numberValue < 1) {
+    throw new Error(`${fieldName} must be a positive integer.`);
+  }
+
+  return numberValue;
+}
+
+function nonEmptyString(value: unknown, fieldName: string): string {
+  if (typeof value !== "string" || !value.trim()) {
+    throw new Error(`${fieldName} must be a non-empty string.`);
+  }
+
+  return value.trim();
+}
+
 function isReleaseVersion(version: string): boolean {
   return /^\d+\.\d+\.\d+$/.test(version);
 }
@@ -112,6 +140,47 @@ async function readReleaseMetadata(version: string): Promise<ReleaseMetadata> {
   };
 }
 
+async function readSparkleMetadata(): Promise<SparkleMetadata | null> {
+  const path = process.env.POPPY_SPARKLE_METADATA_PATH?.trim();
+
+  if (!path) {
+    return null;
+  }
+
+  const file = Bun.file(path);
+  if (!(await file.exists())) {
+    throw new Error(`Missing Sparkle metadata file: ${path}.`);
+  }
+
+  let metadata: unknown;
+  try {
+    metadata = JSON.parse(await file.text());
+  } catch (error) {
+    throw new Error(
+      `Invalid Sparkle metadata JSON in ${path}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  if (!metadata || typeof metadata !== "object") {
+    throw new Error(`Invalid Sparkle metadata in ${path}: expected an object.`);
+  }
+
+  const sparkle = metadata as Partial<SparkleMetadata>;
+
+  return {
+    sparkleZipLength: positiveInteger(
+      sparkle.sparkleZipLength,
+      "sparkleZipLength",
+    ),
+    sparkleZipSignature: nonEmptyString(
+      sparkle.sparkleZipSignature,
+      "sparkleZipSignature",
+    ),
+  };
+}
+
 async function resolveVersion(): Promise<string> {
   const inputVersion = process.env.POPPY_INPUT_VERSION?.trim();
   if (inputVersion) {
@@ -135,6 +204,7 @@ async function resolveVersion(): Promise<string> {
 async function resolveMetadata() {
   const version = await resolveVersion();
   const metadata = await readReleaseMetadata(version);
+  const sparkleMetadata = await readSparkleMetadata();
 
   if (
     process.env.GITHUB_REF_TYPE === "tag" &&
@@ -151,6 +221,7 @@ async function resolveMetadata() {
     build: metadata.build_number,
     title: metadata.title,
     changelog: metadata.changelog,
+    ...sparkleMetadata,
   };
 }
 
@@ -164,6 +235,8 @@ async function main() {
         version: release.version,
         build: release.build,
         changelog: release.changelog,
+        sparkleZipLength: release.sparkleZipLength,
+        sparkleZipSignature: release.sparkleZipSignature,
       };
 
   const response = await fetch(endpoint, {
