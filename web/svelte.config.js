@@ -12,9 +12,7 @@ const config = {
 	kit: {
 		adapter: adapter(),
 		experimental: {
-			remoteFunctions: true,
-			tracing: { server: true },
-			instrumentation: { server: true }
+			remoteFunctions: true
 		},
 		alias: {
 			$remotes: 'src/lib/remotes',
