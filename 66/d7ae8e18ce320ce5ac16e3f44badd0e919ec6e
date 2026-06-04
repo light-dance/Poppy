@@ -1,0 +1,9 @@
+web/railway.json
+  ai_agent 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "66d7ae8e18ce320ce5ac16e3f44badd0e919ec6e",
+  "prompts": {}
+}
