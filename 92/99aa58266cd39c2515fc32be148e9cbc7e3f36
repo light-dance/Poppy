@@ -1,0 +1,19 @@
+web/src/routes/(releases)/changelog/+server.ts
+  s_09e1f3daf8a401::t_dd3c1bde126406 1-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "9299aa58266cd39c2515fc32be148e9cbc7e3f36",
+  "prompts": {},
+  "sessions": {
+    "s_09e1f3daf8a401": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9370-50cb-7d61-9f48-e5e9889bca45",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
