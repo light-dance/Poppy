@@ -1,0 +1,30 @@
+web/src/routes/(releases)/download/+page.svelte
+  s_e3d81b799acf3c::t_a675447e5caac4 3,14-16,18
+  s_4dbaf16794e51f::t_049d38fb56e11d 1,10-11,29-30,35-37
+  s_e3d81b799acf3c::t_c4063b30df7fd7 2,4-9,31,33
+  s_4dbaf16794e51f::t_002436f88589da 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "1fd1a62a439a6137d725b34de7808bdbf26ad216",
+  "prompts": {},
+  "sessions": {
+    "s_4dbaf16794e51f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9432-3a6a-7ad0-a223-f7213c9f821a",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_e3d81b799acf3c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9438-02f9-7902-bfb6-0e543b6d4295",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
