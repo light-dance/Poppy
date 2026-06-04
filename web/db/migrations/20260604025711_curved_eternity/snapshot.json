@@ -1,9 +1,9 @@
 {
   "version": "7",
   "dialect": "sqlite",
-  "id": "4a428cfd-9fa8-4171-b426-44072cef01a8",
+  "id": "a029d9ab-4bc6-45fc-b9da-826f0583530c",
   "prevIds": [
-    "aa742db0-8441-455d-b8d0-71ae501d46ab"
+    "00000000-0000-0000-0000-000000000000"
   ],
   "ddl": [
     {
@@ -11,18 +11,8 @@
       "entityType": "tables"
     },
     {
-      "type": "integer",
-      "notNull": false,
-      "autoincrement": false,
-      "default": null,
-      "generated": null,
-      "name": "build_number",
-      "entityType": "columns",
-      "table": "releases"
-    },
-    {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
       "default": null,
       "generated": null,
@@ -32,9 +22,9 @@
     },
     {
       "type": "text",
-      "notNull": true,
+      "notNull": false,
       "autoincrement": false,
-      "default": "''",
+      "default": null,
       "generated": null,
       "name": "title",
       "entityType": "columns",
@@ -82,26 +72,12 @@
     },
     {
       "columns": [
-        "build_number"
+        "version"
       ],
       "nameExplicit": false,
       "name": "releases_pk",
       "table": "releases",
       "entityType": "pks"
-    },
-    {
-      "columns": [
-        {
-          "value": "version",
-          "isExpression": false
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "origin": "manual",
-      "name": "releases_version_idx",
-      "entityType": "indexes",
-      "table": "releases"
     },
     {
       "columns": [
