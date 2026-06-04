@@ -9,6 +9,7 @@ struct SettingsView: View {
     @Binding var automaticallyInstallDetectedApplications: Bool
     @Binding var notificationPosition: NotificationPosition
     @Binding var notificationDismissalDelay: NotificationDismissalDelay
+    @Binding var automaticallyChecksForUpdates: Bool
 
     var body: some View {
         Form {
@@ -53,6 +54,10 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 }
+            }
+
+            Section("Updates") {
+                Toggle("Check for Updates Automatically", isOn: $automaticallyChecksForUpdates)
             }
 
             Section("Appearance") {

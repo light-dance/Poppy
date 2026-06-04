@@ -1,10 +1,16 @@
 import AppKit
+import Sparkle
 import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let lifecycle = AppLifecycleController()
     private let panelController = FloatingInstallPanelController()
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
     private var aboutWindowController: NSWindowController?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -28,6 +34,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor
     func setNotificationPosition(_ position: NotificationPosition) {
         panelController.setNotificationPosition(position)
+    }
+
+    var canCheckForUpdates: Bool {
+        updaterController.updater.canCheckForUpdates
+    }
+
+    var automaticallyChecksForUpdates: Bool {
+        get {
+            updaterController.updater.automaticallyChecksForUpdates
+        }
+        set {
+            updaterController.updater.automaticallyChecksForUpdates = newValue
+        }
+    }
+
+    @MainActor
+    func checkForUpdates() {
+        updaterController.checkForUpdates(nil)
     }
 
     @MainActor
@@ -115,6 +139,11 @@ struct PoppyApp: App {
                 Button("About Poppy") {
                     appDelegate.showAboutWindow()
                 }
+
+                Button("Check for Updates...") {
+                    appDelegate.checkForUpdates()
+                }
+                .disabled(!appDelegate.canCheckForUpdates)
             }
             CommandGroup(replacing: .newItem) {
                 Button(store.isWatching ? "Pause Watching" : "Start Watching") {
@@ -303,6 +332,10 @@ struct PoppyApp: App {
                 notificationDismissalDelay: Binding(
                     get: { notificationDismissalDelay },
                     set: { notificationDismissalDelayValue = $0.rawValue }
+                ),
+                automaticallyChecksForUpdates: Binding(
+                    get: { appDelegate.automaticallyChecksForUpdates },
+                    set: { appDelegate.automaticallyChecksForUpdates = $0 }
                 )
             )
             .background {
