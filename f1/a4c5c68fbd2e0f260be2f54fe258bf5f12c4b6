@@ -1,0 +1,24 @@
+.github/workflows/release.yml
+  s_09e1f3daf8a401::t_4ec0febc465203 121-125,227
+  s_09e1f3daf8a401::t_c62d214763b437 156-172
+  s_09e1f3daf8a401::t_069fa28f038c1c 110-120,126-155,173,188-194,222-226,279
+app/scripts/publish_web_release.ts
+  s_09e1f3daf8a401::t_dee7ee245a932e 167
+  s_09e1f3daf8a401::t_94bf580d5b427b 16-43,143-166,168-183,207,224,238-239
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "f1a4c5c68fbd2e0f260be2f54fe258bf5f12c4b6",
+  "prompts": {},
+  "sessions": {
+    "s_09e1f3daf8a401": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9370-50cb-7d61-9f48-e5e9889bca45",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
