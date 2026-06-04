@@ -148,6 +148,7 @@ async function resolveMetadata() {
 
   return {
     version: metadata.version,
+    build: metadata.build_number,
     title: metadata.title,
     changelog: metadata.changelog,
   };
@@ -161,6 +162,7 @@ async function main() {
     ? release
     : {
         version: release.version,
+        build: release.build,
         changelog: release.changelog,
       };
 

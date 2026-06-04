@@ -12,6 +12,12 @@ const releasePayloadSchema = v.object({
 		v.trim(),
 		v.regex(/^\d+\.\d+\.\d+$/, 'version must use number.number.number format')
 	),
+	build: v.pipe(
+		v.union([v.number(), v.string()], 'build is required'),
+		v.transform((value) => Number(value)),
+		v.integer('build must be an integer'),
+		v.minValue(1, 'build must be at least 1')
+	),
 	title: v.optional(
 		v.pipe(
 			v.string(),
@@ -22,6 +28,21 @@ const releasePayloadSchema = v.object({
 	changelog: v.pipe(
 		v.string('changelog is required'),
 		v.check((value) => value.trim() !== '', 'changelog is required')
+	),
+	sparkleZipLength: v.optional(
+		v.pipe(
+			v.union([v.number(), v.string()]),
+			v.transform((value) => Number(value)),
+			v.integer('sparkleZipLength must be an integer'),
+			v.minValue(1, 'sparkleZipLength must be at least 1')
+		)
+	),
+	sparkleZipSignature: v.optional(
+		v.pipe(
+			v.string(),
+			v.trim(),
+			v.transform((value) => value || null)
+		)
 	)
 })
 
@@ -78,8 +99,11 @@ export const POST: RequestHandler = async ({ request }) => {
 		.onConflictDoUpdate({
 			target: releases.version,
 			set: {
+				build: release.build,
 				title: release.title,
 				changelog: release.changelog,
+				sparkleZipLength: release.sparkleZipLength,
+				sparkleZipSignature: release.sparkleZipSignature,
 				updatedAt: now
 			}
 		})
