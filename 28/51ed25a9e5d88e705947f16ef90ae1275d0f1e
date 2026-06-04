@@ -1,0 +1,35 @@
+web/src/routes/(releases)/releases/appcast.xml/+server.ts
+  s_09e1f3daf8a401::t_a6acd11f4a9eae 1-59
+web/src/lib/server/releases/index.ts
+  s_09e1f3daf8a401::t_0dce53355a5a68 17-26,130-153
+  s_731ccbf7d5c497::t_86b9c8938aa760 88,154-157
+web/src/routes/(releases)/releases/[version]/+page.server.ts
+  s_731ccbf7d5c497::t_86b9c8938aa760 1,11-12
+  s_731ccbf7d5c497::t_5e8cbd6ce4e103 5-8
+web/src/routes/(releases)/releases/[version]/+page.svelte
+  s_731ccbf7d5c497::t_86b9c8938aa760 34-41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "2851ed25a9e5d88e705947f16ef90ae1275d0f1e",
+  "prompts": {},
+  "sessions": {
+    "s_09e1f3daf8a401": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9370-50cb-7d61-9f48-e5e9889bca45",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_731ccbf7d5c497": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e93b9-2ecf-7002-bb45-29e22f2cc93f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
