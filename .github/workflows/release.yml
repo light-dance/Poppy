@@ -7,20 +7,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Marketing version, for example 1.0.1
+        description: Release metadata version, for example 0.1.0. Defaults to the latest app/releases/*.json file.
         required: false
-        type: string
-      build_number:
-        description: Build number
-        required: false
-        type: string
-      title:
-        description: Optional release title
-        required: false
-        type: string
-      changelog:
-        description: Release changelog
-        required: true
         type: string
 
 jobs:
@@ -75,43 +63,49 @@ jobs:
           APP_STORE_CONNECT_API_KEY_PATH: ${{ runner.temp }}/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_KEY_ID }}.p8
           CODESIGN_IDENTITY: ${{ secrets.MACOS_CODESIGN_IDENTITY }}
           POPPY_INPUT_VERSION: ${{ inputs.version }}
-          POPPY_INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           set -euo pipefail
+
+          latest_release_version() {
+            find app/releases -maxdepth 1 -name "*.json" -print \
+              | sed -e 's#^app/releases/##' -e 's#\.json$##' \
+              | awk '/^[0-9]+\.[0-9]+\.[0-9]+$/' \
+              | sort -t. -k1,1n -k2,2n -k3,3n \
+              | tail -n 1
+          }
 
           POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
           if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
             POPPY_VERSION="${GITHUB_REF_NAME#v}"
           fi
-
-          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-            metadata_path="app/releases/$POPPY_VERSION.json"
-            if [[ ! -f "$metadata_path" ]]; then
-              echo "Missing release metadata file: $metadata_path" >&2
-              echo "Tag releases must commit app/releases/<version>.json with version, build_number, title, and changelog." >&2
-              exit 1
-            fi
-
-            metadata_version="$(plutil -extract version raw "$metadata_path")"
-            if [[ "$metadata_version" != "$POPPY_VERSION" ]]; then
-              echo "Release metadata version ($metadata_version) does not match tag version ($POPPY_VERSION)." >&2
-              exit 1
-            fi
-
-            if [[ -z "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
-              POPPY_INPUT_BUILD_NUMBER="$(plutil -extract build_number raw "$metadata_path")"
-            fi
+          if [[ -z "$POPPY_VERSION" ]]; then
+            POPPY_VERSION="$(latest_release_version)"
+          fi
+          if [[ -z "$POPPY_VERSION" ]]; then
+            echo "Missing release version. Add app/releases/<version>.json or pass workflow input version." >&2
+            exit 1
           fi
 
-          if [[ -n "${POPPY_VERSION:-}" && -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
-            app/scripts/release.sh --version "$POPPY_VERSION" --build-number "$POPPY_INPUT_BUILD_NUMBER"
-          elif [[ -n "${POPPY_VERSION:-}" ]]; then
-            app/scripts/release.sh --version "$POPPY_VERSION"
-          elif [[ -n "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
-            app/scripts/release.sh --build-number "$POPPY_INPUT_BUILD_NUMBER"
-          else
-            app/scripts/release.sh
+          metadata_path="app/releases/$POPPY_VERSION.json"
+          if [[ ! -f "$metadata_path" ]]; then
+            echo "Missing release metadata file: $metadata_path" >&2
+            echo "Release runs must commit app/releases/<version>.json with version, build_number, title, and changelog." >&2
+            exit 1
           fi
+
+          metadata_version="$(plutil -extract version raw "$metadata_path")"
+          if [[ "$metadata_version" != "$POPPY_VERSION" ]]; then
+            echo "Release metadata version ($metadata_version) does not match resolved version ($POPPY_VERSION)." >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$POPPY_VERSION" ]]; then
+            echo "Tag name ($GITHUB_REF_NAME) does not match release metadata version ($POPPY_VERSION)." >&2
+            exit 1
+          fi
+
+          POPPY_BUILD_NUMBER="$(plutil -extract build_number raw "$metadata_path")"
+          app/scripts/release.sh --version "$POPPY_VERSION" --build-number "$POPPY_BUILD_NUMBER"
 
       - name: Upload app ZIP
         uses: actions/upload-artifact@v7
@@ -165,20 +159,35 @@ jobs:
         run: |
           set -euo pipefail
 
+          latest_release_version() {
+            find app/releases -maxdepth 1 -name "*.json" -print \
+              | sed -e 's#^app/releases/##' -e 's#\.json$##' \
+              | awk '/^[0-9]+\.[0-9]+\.[0-9]+$/' \
+              | sort -t. -k1,1n -k2,2n -k3,3n \
+              | tail -n 1
+          }
+
           POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
           if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
             POPPY_VERSION="${GITHUB_REF_NAME#v}"
           fi
-
-          if [[ "$GITHUB_REF_TYPE" == "tag" && ! -f "app/releases/$POPPY_VERSION.json" ]]; then
+          if [[ -z "$POPPY_VERSION" ]]; then
+            POPPY_VERSION="$(latest_release_version)"
+          fi
+          if [[ -z "$POPPY_VERSION" ]]; then
+            echo "Missing release version. Add app/releases/<version>.json or pass workflow input version." >&2
+            exit 1
+          fi
+          if [[ ! -f "app/releases/$POPPY_VERSION.json" ]]; then
             echo "Missing release metadata file: app/releases/$POPPY_VERSION.json" >&2
             exit 1
           fi
-
-          prefix="releases"
-          if [[ -n "${POPPY_VERSION:-}" ]]; then
-            prefix="releases/$POPPY_VERSION"
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" != "v$POPPY_VERSION" ]]; then
+            echo "Tag name ($GITHUB_REF_NAME) does not match release metadata version ($POPPY_VERSION)." >&2
+            exit 1
           fi
+
+          prefix="releases/$POPPY_VERSION"
 
           bun app/scripts/upload_railway_bucket.ts \
             --prefix "$prefix" \
@@ -190,6 +199,4 @@ jobs:
           POPPY_RELEASE_API_URL: ${{ secrets.POPPY_RELEASE_API_URL }}
           POPPY_RELEASE_API_TOKEN: ${{ secrets.POPPY_RELEASE_API_TOKEN }}
           POPPY_INPUT_VERSION: ${{ inputs.version }}
-          POPPY_RELEASE_TITLE: ${{ inputs.title }}
-          POPPY_RELEASE_CHANGELOG: ${{ inputs.changelog }}
         run: bun app/scripts/publish_web_release.ts

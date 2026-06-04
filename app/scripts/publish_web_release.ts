@@ -13,8 +13,44 @@ type ReleaseMetadata = {
   changelog: string;
 };
 
+function isReleaseVersion(version: string): boolean {
+  return /^\d+\.\d+\.\d+$/.test(version);
+}
+
+function compareReleaseVersions(left: string, right: string): number {
+  const leftParts = left.split(".").map(Number);
+  const rightParts = right.split(".").map(Number);
+
+  for (let index = 0; index < 3; index += 1) {
+    const difference = leftParts[index] - rightParts[index];
+    if (difference !== 0) {
+      return difference;
+    }
+  }
+
+  return 0;
+}
+
 function releaseMetadataPath(version: string): string {
   return `app/releases/${version}.json`;
+}
+
+async function latestReleaseVersion(): Promise<string | null> {
+  const releasesDirectory = "app/releases";
+  const directory = new Bun.Glob("*.json").scan({
+    cwd: releasesDirectory,
+    onlyFiles: true,
+  });
+  const versions: string[] = [];
+
+  for await (const filename of directory) {
+    const version = filename.replace(/\.json$/, "");
+    if (isReleaseVersion(version)) {
+      versions.push(version);
+    }
+  }
+
+  return versions.sort(compareReleaseVersions).at(-1) ?? null;
 }
 
 async function readReleaseMetadata(version: string): Promise<ReleaseMetadata> {
@@ -23,7 +59,7 @@ async function readReleaseMetadata(version: string): Promise<ReleaseMetadata> {
 
   if (!(await file.exists())) {
     throw new Error(
-      `Missing release metadata file: ${path}. Tag releases must commit app/releases/<version>.json with version, build_number, title, and changelog.`,
+      `Missing release metadata file: ${path}. Release runs must commit app/releases/<version>.json with version, build_number, title, and changelog.`,
     );
   }
 
@@ -86,33 +122,35 @@ async function resolveVersion(): Promise<string> {
     return process.env.GITHUB_REF_NAME.replace(/^v/, "");
   }
 
+  const latestVersion = await latestReleaseVersion();
+  if (latestVersion) {
+    return latestVersion;
+  }
+
   throw new Error(
-    "Missing release version. Pass workflow input version or push a v* tag.",
+    "Missing release version. Add app/releases/<version>.json or pass workflow input version.",
   );
 }
 
 async function resolveMetadata() {
   const version = await resolveVersion();
-  let title = process.env.POPPY_RELEASE_TITLE?.trim() || null;
-  let changelog = process.env.POPPY_RELEASE_CHANGELOG?.trim() || "";
+  const metadata = await readReleaseMetadata(version);
 
   if (
-    (!title || !changelog) &&
     process.env.GITHUB_REF_TYPE === "tag" &&
-    process.env.GITHUB_REF_NAME
+    process.env.GITHUB_REF_NAME &&
+    process.env.GITHUB_REF_NAME !== `v${metadata.version}`
   ) {
-    const metadata = await readReleaseMetadata(version);
-    title ||= metadata.title;
-    changelog ||= metadata.changelog;
-  }
-
-  if (!changelog) {
     throw new Error(
-      "Missing release changelog. Provide the workflow changelog input or commit app/releases/<version>.json for tag releases.",
+      `Tag name (${process.env.GITHUB_REF_NAME}) does not match release metadata version (${metadata.version}).`,
     );
   }
 
-  return { version, title, changelog };
+  return {
+    version: metadata.version,
+    title: metadata.title,
+    changelog: metadata.changelog,
+  };
 }
 
 async function main() {
