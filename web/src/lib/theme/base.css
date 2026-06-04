@@ -3,7 +3,7 @@
 		@apply h-full;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
-		font-family: 'Inter Variable';
+		font-family: var(--font-sans);
 		background-color: var(--html-bg-color, unset);
 	}
 	body {

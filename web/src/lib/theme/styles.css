@@ -1,10 +1,8 @@
 @theme inline {
 	--font-sans:
-		'Inter Variable', 'Inter V', 'Inter Var', 'Inter', ui-sans-serif, system-ui, sans-serif,
-		'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-	--font-runde:
-		'Open Runde', 'Inter Variable', 'Inter V', 'Inter Var', 'Inter', ui-sans-serif, system-ui,
-		sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+		'Open Runde', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+		'Segoe UI Symbol', 'Noto Color Emoji';
+	--font-runde: var(--font-sans);
 	--font-mono:
 		'--default-mono-font-family', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas',
 		'"Liberation Mono"', '"Courier New"', 'monospace';

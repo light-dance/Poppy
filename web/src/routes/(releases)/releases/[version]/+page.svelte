@@ -19,15 +19,17 @@
 		</a>
 	</div>
 
-	<article class="flex flex-col gap-5">
-		<div class="flex flex-col gap-2">
-			<p class="text-sm font-medium text-neutral-500">
-				{data.release.publishedDate} · Version {data.release.version} · Build {data.release.build}
+	<article class="flex flex-col gap-3">
+		<div class="flex gap-2 items-baseline">
+			<h1 class="text-[1.25rem] font-semibold">{data.release.version}</h1>
+			<p class="text-[0.93rem] font-medium text-neutral-600">
+				Released {data.release.publishedDate}
 			</p>
-			<h1 class="text-2xl font-semibold tracking-normal text-neutral-950">{data.release.title}</h1>
 		</div>
 
-		<div class="border-t border-neutral-200 pt-5">
+		<div class="border-t border-neutral-400/30 pt-5">
+			<h1 class="text-xl font-semibold tracking-normal text-neutral-700">{data.release.title}</h1>
+
 			<p class="whitespace-pre-line text-[0.92rem]/6 font-medium text-neutral-600">
 				{data.release.changelog}
 			</p>

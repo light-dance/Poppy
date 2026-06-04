@@ -3,6 +3,7 @@ import { desc, eq } from 'drizzle-orm'
 
 import { db } from '$lib/server/db'
 import { releases } from '$lib/server/db/schema'
+import { formatDate } from '$lib/utils/datetime'
 
 export type ReleaseNotes = {
 	version: string
@@ -14,11 +15,7 @@ export type ReleaseNotes = {
 }
 
 function formatReleaseDate(date: Date) {
-	return new Intl.DateTimeFormat('en', {
-		month: 'long',
-		day: 'numeric',
-		year: 'numeric'
-	}).format(date)
+	return formatDate(date, { dayOrdinal: false }).date.relative
 }
 
 function toReleaseNotes(release: typeof releases.$inferSelect): ReleaseNotes {

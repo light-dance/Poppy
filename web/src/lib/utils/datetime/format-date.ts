@@ -48,6 +48,8 @@ export function formatDate(date: Date, options: FormatDateOptions = {}) {
 	const now = new Date()
 	const localDayDiff = getLocalCalendarDayDiff(date, now)
 	const includeYear = year === 'always' || date.getFullYear() !== now.getFullYear()
+	const isToday = localDayDiff === 0
+	const isYesterday = localDayDiff === -1
 	const isWithinLastWeek = localDayDiff <= 0 && localDayDiff > -7
 
 	const shortDate = formatMonthDay(date, {
@@ -60,7 +62,13 @@ export function formatDate(date: Date, options: FormatDateOptions = {}) {
 		includeWeekdayPrefix: weekday,
 		dayOrdinal
 	})
-	const relativeDate = isWithinLastWeek ? formatWeekday(date, 'long') : shortDate
+	const relativeDate = formatRelativeDate({
+		date,
+		fallback: shortDate,
+		isToday,
+		isYesterday,
+		isWithinLastWeek
+	})
 
 	return {
 		date: {
@@ -73,6 +81,26 @@ export function formatDate(date: Date, options: FormatDateOptions = {}) {
 			long: formatTime(date, 'long')
 		}
 	}
+}
+
+function formatRelativeDate({
+	date,
+	fallback,
+	isToday,
+	isYesterday,
+	isWithinLastWeek
+}: {
+	date: Date
+	fallback: string
+	isToday: boolean
+	isYesterday: boolean
+	isWithinLastWeek: boolean
+}) {
+	if (isToday) return 'Today'
+	if (isYesterday) return 'Yesterday'
+	if (isWithinLastWeek) return formatWeekday(date, 'long')
+
+	return fallback
 }
 
 /**

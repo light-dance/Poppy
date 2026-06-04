@@ -1,6 +1,6 @@
 <script lang="ts">
 	import '$theme/app.css'
-	import '@fontsource-variable/inter/wght.css'
+	import '@fontsource/open-runde/latin.css'
 	import favicon from '$lib/assets/favicon.svg'
 
 	import { SeoTags } from '@opensky/seo'
