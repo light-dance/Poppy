@@ -20,14 +20,28 @@
 	</div>
 
 	<article class="flex flex-col gap-3">
-		<div class="flex gap-2 items-baseline">
-			<h1 class="text-[1.25rem] font-semibold">{data.release.version}</h1>
-			<p class="text-[0.93rem] font-medium text-neutral-600">
-				Released {data.release.publishedDate}
-			</p>
+		<div
+			class="flex gap-2 items-center bg-neutral-200/60 py-2 rounded-2xl px-[0.75rem] w-breakout-[0.75rem]"
+		>
+			<div class="flex items-baseline gap-2">
+				<h1 class="text-[1.25rem] font-semibold">{data.release.version}</h1>
+				<p class="text-[0.93rem] font-medium text-neutral-600">
+					Released {data.release.publishedDate}
+				</p>
+			</div>
+			<div class="grow"></div>
+
+			{#if data.isLatest}
+				<!-- Latest Tag -->
+				<p
+					class="bg-sky-400 tracking-tight text-sky-50 px-3 py-0.5 rounded-full text-sm font-semibold"
+				>
+					Latest
+				</p>
+			{/if}
 		</div>
 
-		<div class="border-t border-neutral-400/30 pt-5">
+		<div class="pt-3">
 			<h1 class="text-xl font-semibold tracking-normal text-neutral-700">{data.release.title}</h1>
 
 			<p class="whitespace-pre-line text-[0.92rem]/6 font-medium text-neutral-600">

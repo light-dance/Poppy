@@ -14,6 +14,16 @@ export type ReleaseNotes = {
 	publishedDate: string
 }
 
+export type AppcastRelease = {
+	version: string
+	build: number
+	title: string
+	changelog: string
+	publishedAt: Date
+	sparkleZipLength: number
+	sparkleZipSignature: string
+}
+
 function formatReleaseDate(date: Date) {
 	return formatDate(date, { dayOrdinal: false }).date.relative
 }
@@ -75,7 +85,7 @@ export function validateFormat(format: string): 'dmg' | 'zip' {
  * @returns The version string for the newest release.
  * @throws A 404 response when no release exists.
  */
-async function getLatestVersion() {
+export async function getLatestVersion() {
 	// Get newest release from db by published at datetime
 	const [latestRelease] = await db
 		.select({ version: releases.version })
@@ -115,6 +125,36 @@ export async function getReleaseNotes(version: string) {
 	}
 
 	return toReleaseNotes(release)
+}
+
+/**
+ * Lists releases with signed ZIP metadata for the Sparkle appcast.
+ */
+export async function listAppcastReleases(): Promise<AppcastRelease[]> {
+	const rows = await db
+		.select()
+		.from(releases)
+		.orderBy(desc(releases.publishedAt), desc(releases.updatedAt))
+
+	return rows.flatMap((release) => {
+		if (!release.sparkleZipLength || !release.sparkleZipSignature) {
+			return []
+		}
+
+		return {
+			version: release.version,
+			build: release.build,
+			title: release.title ?? `Version ${release.version}`,
+			changelog: release.changelog,
+			publishedAt: release.publishedAt,
+			sparkleZipLength: release.sparkleZipLength,
+			sparkleZipSignature: release.sparkleZipSignature
+		}
+	})
+}
+
+export async function isLatestRelease(version: string) {
+	return version === (await getLatestVersion())
 }
 
 /**
