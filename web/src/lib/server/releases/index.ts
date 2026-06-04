@@ -1,8 +1,36 @@
 import { error } from '@sveltejs/kit'
-import { desc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 
 import { db } from '$lib/server/db'
 import { releases } from '$lib/server/db/schema'
+
+export type ReleaseNotes = {
+	version: string
+	build: number
+	title: string
+	changelog: string
+	publishedAt: string
+	publishedDate: string
+}
+
+function formatReleaseDate(date: Date) {
+	return new Intl.DateTimeFormat('en', {
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric'
+	}).format(date)
+}
+
+function toReleaseNotes(release: typeof releases.$inferSelect): ReleaseNotes {
+	return {
+		version: release.version,
+		build: release.build,
+		title: release.title ?? `Version ${release.version}`,
+		changelog: release.changelog,
+		publishedAt: release.publishedAt.toISOString(),
+		publishedDate: formatReleaseDate(release.publishedAt)
+	}
+}
 
 /**
  * Checks whether a string matches the app release version format.
@@ -65,6 +93,31 @@ async function getLatestVersion() {
 	}
 
 	return latestRelease.version
+}
+
+/**
+ * Lists published releases newest-first for changelog and appcast surfaces.
+ */
+export async function listReleaseNotes() {
+	const rows = await db
+		.select()
+		.from(releases)
+		.orderBy(desc(releases.publishedAt), desc(releases.updatedAt))
+
+	return rows.map(toReleaseNotes)
+}
+
+/**
+ * Resolves a single release by marketing version.
+ */
+export async function getReleaseNotes(version: string) {
+	const [release] = await db.select().from(releases).where(eq(releases.version, version)).limit(1)
+
+	if (!release) {
+		throw error(404, 'Release Not Found')
+	}
+
+	return toReleaseNotes(release)
 }
 
 /**
