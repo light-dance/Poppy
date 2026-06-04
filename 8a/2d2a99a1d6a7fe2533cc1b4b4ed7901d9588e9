@@ -1,0 +1,38 @@
+web/src/routes/(releases)/releases/changelog/+page.svelte
+  s_731ccbf7d5c497::t_38119007ea3367 25-48,51-56,58
+web/src/lib/theme/styles.css
+  s_8358351a7072c7::t_c7d83bfe7bdec1 3-5
+web/src/routes/+layout.svelte
+  s_8358351a7072c7::t_34d34fec77fa34 3
+web/src/lib/theme/base.css
+  s_8358351a7072c7::t_34d34fec77fa34 6
+web/src/lib/utils/datetime/format-date.ts
+  s_731ccbf7d5c497::t_5747a26a8c8edf 51
+  s_731ccbf7d5c497::t_08d1f56b84e630 52,65-71,86-103
+web/src/lib/server/releases/index.ts
+  s_731ccbf7d5c497::t_5747a26a8c8edf 6,18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "8a2d2a99a1d6a7fe2533cc1b4b4ed7901d9588e9",
+  "prompts": {},
+  "sessions": {
+    "s_731ccbf7d5c497": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e93b9-2ecf-7002-bb45-29e22f2cc93f",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_8358351a7072c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e93c3-dab9-7c00-808b-e284c989fc0a",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
