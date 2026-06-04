@@ -1,0 +1,19 @@
+web/package.json
+  s_acb8c720f2682e::t_8ff1a8f918f2fb 91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "32ced0e475c8deb83baacab091d01f7e8e9e4f53",
+  "prompts": {},
+  "sessions": {
+    "s_acb8c720f2682e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e93aa-c339-7a11-9d0d-a5b8e56cc3fe",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
