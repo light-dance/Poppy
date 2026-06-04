@@ -1,0 +1,19 @@
+web/.agents/rules/prefs-project.md
+  s_782f14e2e5b2a3::t_21292c81d0d0d4 7-12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "75d5e33775dd1184bd6f957dee7a1c576d93dace",
+  "prompts": {},
+  "sessions": {
+    "s_782f14e2e5b2a3": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9393-7492-7b01-9c93-c4b5299eac04",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
