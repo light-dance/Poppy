@@ -122,24 +122,6 @@
       "name": "releases_published_at_idx",
       "entityType": "indexes",
       "table": "releases"
-    },
-    {
-      "columns": [
-        {
-          "value": "version",
-          "isExpression": false
-        },
-        {
-          "value": "build",
-          "isExpression": false
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "origin": "manual",
-      "name": "releases_version_build_idx",
-      "entityType": "indexes",
-      "table": "releases"
     }
   ],
   "renames": []
