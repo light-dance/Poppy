@@ -90,5 +90,5 @@ export async function resolveDownload({
 		resolvedVersion = version
 	}
 
-	return `releases/${resolvedVersion}/Poppy-${resolvedVersion}.${format}`
+	return `download/s3/releases/${resolvedVersion}/Poppy-${resolvedVersion}.${format}`
 }
