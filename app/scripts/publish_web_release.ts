@@ -6,26 +6,74 @@ function requiredEnv(name: string): string {
   return value;
 }
 
-async function gitTagContents(tag: string): Promise<string> {
-  const proc = Bun.spawn(
-    ["git", "for-each-ref", `refs/tags/${tag}`, "--format=%(contents)"],
-    {
-      stdout: "pipe",
-      stderr: "pipe",
-    },
-  );
+type ReleaseMetadata = {
+  version: string;
+  build_number: string | number;
+  title: string;
+  changelog: string;
+};
 
-  const [stdout, stderr] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-  ]);
-  const exitCode = await proc.exited;
+function releaseMetadataPath(version: string): string {
+  return `app/releases/${version}.json`;
+}
 
-  if (exitCode !== 0) {
-    throw new Error(`Failed to read tag contents: ${stderr.trim()}`);
+async function readReleaseMetadata(version: string): Promise<ReleaseMetadata> {
+  const path = releaseMetadataPath(version);
+  const file = Bun.file(path);
+
+  if (!(await file.exists())) {
+    throw new Error(
+      `Missing release metadata file: ${path}. Tag releases must commit app/releases/<version>.json with version, build_number, title, and changelog.`,
+    );
   }
 
-  return stdout.trim();
+  let metadata: unknown;
+  try {
+    metadata = JSON.parse(await file.text());
+  } catch (error) {
+    throw new Error(
+      `Invalid release metadata JSON in ${path}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  if (!metadata || typeof metadata !== "object") {
+    throw new Error(`Invalid release metadata in ${path}: expected an object.`);
+  }
+
+  const release = metadata as Partial<ReleaseMetadata>;
+  const metadataVersion = release.version?.trim();
+  const title = release.title?.trim();
+  const changelog = release.changelog?.trim();
+
+  if (!metadataVersion) {
+    throw new Error(`Missing release metadata field: version in ${path}.`);
+  }
+  if (metadataVersion !== version) {
+    throw new Error(
+      `Release metadata version (${metadataVersion}) does not match release version (${version}).`,
+    );
+  }
+  if (
+    release.build_number === undefined ||
+    `${release.build_number}`.trim() === ""
+  ) {
+    throw new Error(`Missing release metadata field: build_number in ${path}.`);
+  }
+  if (!title) {
+    throw new Error(`Missing release metadata field: title in ${path}.`);
+  }
+  if (!changelog) {
+    throw new Error(`Missing release metadata field: changelog in ${path}.`);
+  }
+
+  return {
+    version: metadataVersion,
+    build_number: release.build_number,
+    title,
+    changelog,
+  };
 }
 
 async function resolveVersion(): Promise<string> {
@@ -49,20 +97,18 @@ async function resolveMetadata() {
   let changelog = process.env.POPPY_RELEASE_CHANGELOG?.trim() || "";
 
   if (
-    !changelog &&
+    (!title || !changelog) &&
     process.env.GITHUB_REF_TYPE === "tag" &&
     process.env.GITHUB_REF_NAME
   ) {
-    const tagContents = await gitTagContents(process.env.GITHUB_REF_NAME);
-    const [tagTitle, ...tagBody] = tagContents.split(/\r?\n/);
-
-    title ||= tagTitle?.trim() || null;
-    changelog = tagBody.join("\n").trim() || tagContents;
+    const metadata = await readReleaseMetadata(version);
+    title ||= metadata.title;
+    changelog ||= metadata.changelog;
   }
 
   if (!changelog) {
     throw new Error(
-      "Missing release changelog. Provide the workflow changelog input or use an annotated tag message.",
+      "Missing release changelog. Provide the workflow changelog input or commit app/releases/<version>.json for tag releases.",
     );
   }
 

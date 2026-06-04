@@ -77,10 +77,31 @@ jobs:
           POPPY_INPUT_VERSION: ${{ inputs.version }}
           POPPY_INPUT_BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
+          set -euo pipefail
+
           args=()
           POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
           if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
             POPPY_VERSION="${GITHUB_REF_NAME#v}"
+          fi
+
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            metadata_path="app/releases/$POPPY_VERSION.json"
+            if [[ ! -f "$metadata_path" ]]; then
+              echo "Missing release metadata file: $metadata_path" >&2
+              echo "Tag releases must commit app/releases/<version>.json with version, build_number, title, and changelog." >&2
+              exit 1
+            fi
+
+            metadata_version="$(plutil -extract version raw "$metadata_path")"
+            if [[ "$metadata_version" != "$POPPY_VERSION" ]]; then
+              echo "Release metadata version ($metadata_version) does not match tag version ($POPPY_VERSION)." >&2
+              exit 1
+            fi
+
+            if [[ -z "${POPPY_INPUT_BUILD_NUMBER:-}" ]]; then
+              POPPY_INPUT_BUILD_NUMBER="$(plutil -extract build_number raw "$metadata_path")"
+            fi
           fi
 
           if [[ -n "${POPPY_VERSION:-}" ]]; then
@@ -142,9 +163,16 @@ jobs:
           RAILWAY_BUCKET_REGION: ${{ vars.RAILWAY_BUCKET_REGION }}
           POPPY_INPUT_VERSION: ${{ inputs.version }}
         run: |
+          set -euo pipefail
+
           POPPY_VERSION="${POPPY_INPUT_VERSION:-}"
           if [[ -z "$POPPY_VERSION" && "$GITHUB_REF_TYPE" == "tag" ]]; then
             POPPY_VERSION="${GITHUB_REF_NAME#v}"
+          fi
+
+          if [[ "$GITHUB_REF_TYPE" == "tag" && ! -f "app/releases/$POPPY_VERSION.json" ]]; then
+            echo "Missing release metadata file: app/releases/$POPPY_VERSION.json" >&2
+            exit 1
           fi
 
           prefix="releases"
