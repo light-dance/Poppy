@@ -1,4 +1,4 @@
-import { error, json } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import { desc } from 'drizzle-orm'
 
 import { db } from '$lib/server/db'
@@ -22,7 +22,6 @@ function isVersion(version: string) {
  * Throws a 404 when the version string does not match that shape.
  */
 export function validateVersion(version: string): string {
-	console.log('smoke')
 	if (isVersion(version)) {
 		return version
 	}
@@ -51,7 +50,7 @@ export function validateFormat(format: string): 'dmg' | 'zip' {
  * @returns The version string for the newest release.
  * @throws A 404 response when no release exists.
  */
-async function getLatestReleaseVersion() {
+async function getLatestVersion() {
 	// Get newest release from db by published at datetime
 	const [latestRelease] = await db
 		.select({ version: releases.version })
@@ -69,14 +68,14 @@ async function getLatestReleaseVersion() {
 }
 
 /**
- * Creates the download response for a requested release asset.
+ * Resolves the storage key for a requested release asset.
  *
  * @param options - The requested download target.
  * @param options.version - A concrete version string or `latest`.
  * @param options.format - The requested asset format.
- * @returns A JSON response containing the resolved version and format.
+ * @returns The public storage key for the requested release asset.
  */
-export async function getDownloadURL({
+export async function resolveDownload({
 	version,
 	format
 }: {
@@ -86,15 +85,10 @@ export async function getDownloadURL({
 	let resolvedVersion: string
 
 	if (version === 'latest') {
-		resolvedVersion = await getLatestReleaseVersion()
+		resolvedVersion = await getLatestVersion()
 	} else {
 		resolvedVersion = version
 	}
 
-	console.log(resolvedVersion)
-
-	return json({
-		version: resolvedVersion,
-		format
-	})
+	return `releases/${resolvedVersion}/Poppy-${resolvedVersion}.${format}`
 }

@@ -1,8 +1,12 @@
-import { getDownloadURL, validateVersion } from '$lib/server/releases'
+import { redirect } from '@sveltejs/kit'
+
+import { resolveDownload, validateVersion } from '$lib/server/releases'
 
 export async function GET({ params }) {
-	return await getDownloadURL({
+	const file = await resolveDownload({
 		version: validateVersion(params.version),
 		format: 'dmg'
 	})
+
+	throw redirect(302, `/content/${file}`)
 }
