@@ -1,0 +1,46 @@
+I want to work on building the marketing site for a mac app ive been working on. So the app watches your downloads folder and pops up a notification when an app is downloaded so you can one click install it into your applications folder. It deals with zips and dmg's and cleans everything up after installing. 
+
+So. It's called poppy and the site is svelte and i want a nice clean site. I will tell you what to build so dont go off adding things I dont ask for. I want to start on the home page. 
+On the page i want to first focus on the hero section (that is the full browser view when the page first loads) so i want it to be using F7F7F7 for the background and actually to have a gradient that is a little darker at the top and that color at the bottom and the rest of the page. set the body and html color to that color so everything is correct and add an overscroll top for the top gradient color so it looks correct when overscrolling (all of those color utils are build into the project, use that rather than craft your own solutions)
+
+and then lets just have some big bold text "Poppy for Mac" and "Installing apps on Mac can be a breeze!"
+I want that text to use clamp to scale nicely depending on screen size so min/max in rems but main size in vw
+
+The home page should have nothing else but these elements for now
+
+---
+
+# In app browser:
+- The user has the in-app browser open.
+- Current URL: https://poppy-app.test/
+
+## My request for Codex:
+3:20:24 PM [vite] (ssr) Error when evaluating SSR module /src/lib/theme/app.css?inline: Vite module runner has been closed.
+      at getModuleInformation (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1194:26)
+      at cachedModule (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1176:18)
+      at import (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1119:34)
+      at instantiateModule (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/chunks/node.js:10819:23)
+      at processTicksAndRejections (native:7:39)
+
+---
+
+# In app browser:
+- The user has the in-app browser open.
+- Current URL: https://poppy-app.test/
+
+## My request for Codex:
+3:20:24 PM [vite] (ssr) Error when evaluating SSR module /src/lib/theme/app.css?inline: Vite module runner has been closed.
+      at getModuleInformation (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1194:26)
+      at cachedModule (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1176:18)
+      at import (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/module-runner.js:1119:34)
+      at instantiateModule (/Users/jake/Development/apps/Poppy/web/node_modules/vite/dist/node/chunks/node.js:10819:23)
+      at processTicksAndRejections (native:7:39)
+
+---
+
+# In app browser:
+- The user has the in-app browser open.
+- Current URL: https://poppy-app.test/
+
+## My request for Codex:
+okay, i fixed the portless situation and i can see the site now. just focus on editing the code dont worry about validating anything, ill let you know if anything goes wrong. so for that second color at the top, can you make it about 10% darker and have that gradient cover 50% of the hero viewport height. also that secondary text can you make it a bit smaller and for both text use tracking-tight-md. also for secondary text make it neutral-700
