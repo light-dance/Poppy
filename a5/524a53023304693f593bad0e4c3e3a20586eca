@@ -1,0 +1,21 @@
+web/src/routes/+page.svelte
+  s_c2eba67510ad0f::t_46a1a53f6277b4 5,15,18,22
+  s_c2eba67510ad0f::t_75d66af4c6ec61 11,14
+  s_c2eba67510ad0f::t_2c966f400c41f5 2-4,8-10,13,16-17,19-20,23-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "a5524a53023304693f593bad0e4c3e3a20586eca",
+  "prompts": {},
+  "sessions": {
+    "s_c2eba67510ad0f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e9937-dfe6-74f0-9d01-f2ece46aa09d",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
