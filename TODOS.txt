@@ -1,8 +1,9 @@
+dmg icon
+move check for updates to bottom
+check for updates defaults on
+empty state design
 
-app icon
-install dmg background (big orange poppy and maybe text like "one last time")
-publish app flow
-update app flow (and infra)
+website content
 
 marketing:
 - video showcase
