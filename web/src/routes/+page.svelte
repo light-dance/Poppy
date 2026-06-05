@@ -1,19 +1,26 @@
 <script lang="ts">
-	import { Button } from '$ui/input'
+	import { Color } from '$ui/color'
+
+	const PAGE_BACKGROUND = '#F7F7F7'
+	const HERO_TOP_BACKGROUND = '#D4D4D4'
 </script>
 
-<div class="mx-auto flex min-h-full max-w-160 flex-col gap-2 bg-neutral-50 px-6 py-8">
-	<div class="flex w-full justify-end">
-		<Button href="/download" style="primary" rounded="full" class="w-fit bg-neutral-600">
-			Download
-		</Button>
-	</div>
+<Color.HTMLBackground color={PAGE_BACKGROUND} />
+<Color.BodyBackground color={PAGE_BACKGROUND} />
 
-	<h1 class="text-lg font-medium">Poppy</h1>
+<div class="overscroll-top" style:background-color={HERO_TOP_BACKGROUND}></div>
 
-	<div
-		class="flex flex-col gap-2 py-3 text-[0.92rem]/5 font-medium tracking-[-0.01em] text-neutral-600"
-	>
-		<p>A small macOS utility for handling downloaded app installers.</p>
-	</div>
-</div>
+<main
+	class="flex min-h-screen items-center justify-center px-6"
+	style:background={`linear-gradient(to bottom, ${HERO_TOP_BACKGROUND}, ${PAGE_BACKGROUND} 50%, ${PAGE_BACKGROUND})`}
+>
+	<section class="mx-auto flex max-w-7xl flex-col items-center gap-8 text-center text-neutral-950">
+		<h1 class="text-[clamp(4rem,12vw,11rem)] leading-[0.86] font-bold tracking-tight-md">
+			Poppy for Mac
+		</h1>
+
+		<p class="max-w-6xl text-[clamp(1.8rem,4.8vw,5rem)] leading-[0.92] font-bold tracking-tight-md text-neutral-700">
+			Installing apps on Mac can be a breeze!
+		</p>
+	</section>
+</main>
