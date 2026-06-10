@@ -5,6 +5,7 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let lifecycle = AppLifecycleController()
+    private let loginItemController = LoginItemController()
     private let panelController = FloatingInstallPanelController()
     private let updaterController = SPUStandardUpdaterController(
         startingUpdater: true,
@@ -16,6 +17,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
         lifecycle.applicationDidFinishLaunching()
+    }
+
+    @discardableResult
+    func configureLaunchAtLogin(_ isEnabled: Bool, showsAlert: Bool = false) -> Bool {
+        do {
+            try loginItemController.configureLaunchAtLogin(isEnabled)
+            return true
+        } catch {
+            NSLog("Failed to update launch at login: \(error.localizedDescription)")
+            if showsAlert {
+                showLaunchAtLoginError(error)
+            }
+            return false
+        }
+    }
+
+    private func showLaunchAtLoginError(_ error: Error) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Could Not Update Launch at Login"
+        alert.informativeText = error.localizedDescription
+        alert.addButton(withTitle: "OK")
+        alert.runModal()
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
@@ -87,6 +111,7 @@ struct PoppyApp: App {
     @Environment(\.openSettings) private var openSettings
     @AppStorage(AppLifecycleController.hideInDockKey) private var hideInDock = true
     @AppStorage(AppLifecycleController.hideInMenuBarKey) private var hideInMenuBar = false
+    @AppStorage(LoginItemController.launchAtLoginKey) private var launchAtLogin = true
     @AppStorage(DeleteAfterInstall.storageKey) private var deleteAfterInstall = true
     @AppStorage(AutoInstallDetectedApplications.storageKey) private var automaticallyInstallDetectedApplications = false
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
@@ -122,6 +147,7 @@ struct PoppyApp: App {
                     }
                     appDelegate.lifecycle.setHideInDock(hideInDock)
                     appDelegate.lifecycle.setHideInMenuBar(hideInMenuBar)
+                    appDelegate.configureLaunchAtLogin(launchAtLogin)
                     appDelegate.setNotificationPosition(notificationPosition)
                     appDelegate.bind(to: store)
                     store.start()
@@ -318,6 +344,16 @@ struct PoppyApp: App {
                     set: { newValue in
                         hideInMenuBar = newValue
                         appDelegate.lifecycle.setHideInMenuBar(newValue)
+                    }
+                ),
+                launchAtLogin: Binding(
+                    get: { launchAtLogin },
+                    set: { newValue in
+                        let previousValue = launchAtLogin
+                        launchAtLogin = newValue
+                        if !appDelegate.configureLaunchAtLogin(newValue, showsAlert: true) {
+                            launchAtLogin = previousValue
+                        }
                     }
                 ),
                 deleteAfterInstall: $deleteAfterInstall,

@@ -1,0 +1,6 @@
+{
+	"version": "0.3.0",
+	"build_number": 1,
+	"title": "Open at Login",
+	"changelog": "Allow the app to open at login."
+}
