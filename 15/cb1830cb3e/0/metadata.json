@@ -1,0 +1,83 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "15cb1830cb3e",
+  "session_id": "019eb28b-05d8-7510-a7ed-6160a0468808",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-10T17:30:37.061662Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "app/scripts/build.sh"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "06700575b831",
+  "token_usage": {
+    "input_tokens": 142042,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1000192,
+    "output_tokens": 5904,
+    "api_call_count": 26
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-10T17:30:37.044684Z",
+    "agent_lines": 15,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 15,
+    "total_lines_changed": 15,
+    "agent_percentage": 100,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 153,
+      "user_lines_removed": 2,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/Poppy/App/PoppyApp.swift": 36,
+        "app/Poppy/Support/LoginItemController.swift": 29,
+        "app/Poppy/Views/SettingsView.swift": 3,
+        "web/src/routes/+page.svelte": 85
+      },
+      "user_removed_per_file": {
+        "web/src/routes/+page.svelte": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 153,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 163,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 168,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 178,
+      "agent_lines_removed": 6
+    }
+  ]
+}

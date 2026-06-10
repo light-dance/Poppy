@@ -1,0 +1,17 @@
+I used to have a build and run script in the app/scripts folder but that has either moved or is gone? where is it now?
+
+---
+
+Create a new build script that will run that xcode build command so i dont have to type that every time
+
+---
+
+i dont think it runs it once built...
+
+---
+
+Update the version number and update the version json to say that the update is to Allow the app to open at login. Minor version bump I mean
+
+---
+
+no build 1. build numbers are for inter version bumps
