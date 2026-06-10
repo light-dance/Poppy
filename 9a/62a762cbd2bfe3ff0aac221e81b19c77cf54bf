@@ -1,0 +1,38 @@
+app/releases/0.3.0.json
+  s_f70e5a1671fdae::t_13b9ff8dddb1ef 1-2,4-6
+  s_f70e5a1671fdae::t_80372bac2aad43 3
+app/Poppy/App/PoppyApp.swift
+  s_de48d28b7c7302::t_c82834ef27d179 8,24-25,27-28,33,43-44,114,150,349-351,353
+  s_de48d28b7c7302::t_f0a99f81a8924f 22-23,26,29-32,34-42,352,354-356
+app/Poppy/Support/LoginItemController.swift
+  s_de48d28b7c7302::t_ed45685230f2da 1-29
+app/Poppy/Views/SettingsView.swift
+  s_de48d28b7c7302::t_36e01af9399fd2 8,46-47
+app/Poppy.xcodeproj/project.pbxproj
+  s_f70e5a1671fdae::t_13b9ff8dddb1ef 288,318
+  s_f70e5a1671fdae::t_80372bac2aad43 277,307
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "9a62a762cbd2bfe3ff0aac221e81b19c77cf54bf",
+  "prompts": {},
+  "sessions": {
+    "s_de48d28b7c7302": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb283-3e14-7e90-9bd1-a8a9f68f5004",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    },
+    "s_f70e5a1671fdae": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb28b-05d8-7510-a7ed-6160a0468808",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
