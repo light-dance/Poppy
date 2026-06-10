@@ -1,0 +1,21 @@
+app/Poppy.xcodeproj/project.pbxproj
+  s_f12d5e5db3c28d::t_cccc8009bc642a 277,288,307,318
+app/releases/0.3.1.json
+  s_f12d5e5db3c28d::t_cccc8009bc642a 1-6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "b6b7ba38bcbe6c2ec38115a10a067f332d74f66c",
+  "prompts": {},
+  "sessions": {
+    "s_f12d5e5db3c28d": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019eb29a-b9d4-7c31-902d-0076e0c13934",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Jake Go <jake@notnotjake.com>"
+    }
+  }
+}
