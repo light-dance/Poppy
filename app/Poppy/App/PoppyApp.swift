@@ -4,6 +4,8 @@ import SwiftUI
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    static let showsDebugMenuKey = "ShowsDebugMenu"
+
     let lifecycle = AppLifecycleController()
     private let loginItemController = LoginItemController()
     private let panelController = FloatingInstallPanelController()
@@ -13,10 +15,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         userDriverDelegate: nil
     )
     private var aboutWindowController: NSWindowController?
+    private var debugMenuShortcutMonitor: Any?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSWindow.allowsAutomaticWindowTabbing = false
         lifecycle.applicationDidFinishLaunching()
+        installDebugMenuShortcutMonitor()
+    }
+
+    func applicationWillTerminate(_ notification: Notification) {
+        if let debugMenuShortcutMonitor {
+            NSEvent.removeMonitor(debugMenuShortcutMonitor)
+        }
     }
 
     @discardableResult
@@ -100,6 +110,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         controller.showWindow(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
+
+    private func installDebugMenuShortcutMonitor() {
+        debugMenuShortcutMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard event.keyCode == 47 else {
+                return event
+            }
+
+            let requiredModifiers: NSEvent.ModifierFlags = [.command, .shift]
+            let activeModifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+            guard activeModifiers.isSuperset(of: requiredModifiers) else {
+                return event
+            }
+
+            self?.toggleDebugMenu()
+            return nil
+        }
+    }
+
+    private func toggleDebugMenu() {
+        let showsDebugMenu = UserDefaults.standard.bool(forKey: Self.showsDebugMenuKey)
+        UserDefaults.standard.set(!showsDebugMenu, forKey: Self.showsDebugMenuKey)
+    }
 }
 
 @main
@@ -117,6 +149,7 @@ struct PoppyApp: App {
     @AppStorage(NotificationPosition.storageKey) private var notificationPositionValue = NotificationPosition.topRight.rawValue
     @AppStorage(NotificationDismissalDelay.storageKey) private var notificationDismissalDelayValue = NotificationDismissalDelay.after15Seconds.rawValue
     @AppStorage(HiddenItemsVisibility.storageKey) private var showsHiddenItems = false
+    @AppStorage(AppDelegate.showsDebugMenuKey) private var showsDebugMenu = false
     @StateObject private var store = InstallStore()
 
     var body: some Scene {
@@ -171,6 +204,13 @@ struct PoppyApp: App {
                 }
                 .disabled(!appDelegate.canCheckForUpdates)
             }
+            CommandGroup(after: .appInfo) {
+                Button("Toggle Debug Menu") {
+                    showsDebugMenu.toggle()
+                }
+                .keyboardShortcut(".", modifiers: [.command, .shift])
+                .hidden()
+            }
             CommandGroup(replacing: .newItem) {
                 Button(store.isWatching ? "Pause Watching" : "Start Watching") {
                     store.isWatching ? store.stop() : store.start()
@@ -184,12 +224,14 @@ struct PoppyApp: App {
                 } label: {
                     Label("Open Watching Folder in Finder", systemImage: "folder")
                 }
+                .keyboardShortcut("o")
 
                 Button {
                     store.openInstallFolder()
                 } label: {
                     Label("Open Install Folder in Finder", systemImage: "folder")
                 }
+                .keyboardShortcut("o", modifiers: [.command, .shift])
 
                 Divider()
 
@@ -209,48 +251,50 @@ struct PoppyApp: App {
             CommandGroup(replacing: .windowSize) {}
             CommandGroup(replacing: .windowArrangement) {}
 
-            CommandMenu("Debug") {
-                Button("Open Logs") {
-                    openWindow(id: "logs")
-                }
-                .keyboardShortcut("l", modifiers: [.command, .option])
+            if showsDebugMenu {
+                CommandMenu("Debug") {
+                    Button("Open Logs") {
+                        openWindow(id: "logs")
+                    }
+                    .keyboardShortcut("l", modifiers: [.command, .option])
 
-                Divider()
+                    Divider()
 
-                Button("Notification: Approval") {
-                    store.simulateNotification(.awaitingApproval)
-                }
+                    Button("Notification: Approval") {
+                        store.simulateNotification(.awaitingApproval)
+                    }
 
-                Button("Notification: Installing") {
-                    store.simulateNotification(.installing("Copying ExampleApp"))
-                }
+                    Button("Notification: Installing") {
+                        store.simulateNotification(.installing("Copying ExampleApp"))
+                    }
 
-                Button("Notification: Installed") {
-                    store.simulateNotification(
-                        .installed(appURL: store.installFolderURL.appendingPathComponent("ExampleApp.app", isDirectory: true))
-                    )
-                }
+                    Button("Notification: Installed") {
+                        store.simulateNotification(
+                            .installed(appURL: store.installFolderURL.appendingPathComponent("ExampleApp.app", isDirectory: true))
+                        )
+                    }
 
-                Button("Notification: Failed") {
-                    store.simulateNotification(
-                        .failed("Check install folder permissions.")
-                    )
-                }
+                    Button("Notification: Failed") {
+                        store.simulateNotification(
+                            .failed("Check install folder permissions.")
+                        )
+                    }
 
-                Divider()
+                    Divider()
 
-                Button("Populate App Item Samples") {
-                    store.populateDebugAppItems()
-                }
+                    Button("Populate App Item Samples") {
+                        store.populateDebugAppItems()
+                    }
 
-                Button("Clear App Item Samples") {
-                    store.clearDebugAppItems()
-                }
+                    Button("Clear App Item Samples") {
+                        store.clearDebugAppItems()
+                    }
 
-                Divider()
+                    Divider()
 
-                Button("Dismiss Notification") {
-                    store.dismissSimulatedNotification()
+                    Button("Dismiss Notification") {
+                        store.dismissSimulatedNotification()
+                    }
                 }
             }
         }
@@ -268,7 +312,6 @@ struct PoppyApp: App {
             } label: {
                 Label("Open Poppy", systemImage: "sidebar.left")
             }
-            .keyboardShortcut("o")
 
             if store.isWatching || !store.readyItems.isEmpty {
                 Divider()

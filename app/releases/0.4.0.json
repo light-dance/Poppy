@@ -1,6 +1,6 @@
 {
 	"version": "0.4.0",
 	"build_number": 5,
-	"title": "Refinements",
-	"changelog": "Added a new empty state visual for the Available section.\n\nImproved hidden item handling so hidden installers stay hidden after restarting the app.\n\nUpdated the Available section count so hidden items are listed separately and no longer change the available item total."
+	"title": "App Refinements",
+	"changelog": "Added shortcuts to open 'Watching' and 'Install To' folders.\n\nAdded new empty state visual.\n\nImproved hidden item handling.\n\nFixed metadata for .app bundles.\n\nFixed Available items count.\n\nReorganized and refined the settings screen.\n\nHid the Debug menu."
 }

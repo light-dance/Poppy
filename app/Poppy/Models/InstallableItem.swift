@@ -30,6 +30,8 @@ struct InstallableItem: Identifiable, Equatable {
     let url: URL
     let kind: InstallableKind
     let status: Status
+    let metadataDate: Date?
+    let sizeBytes: Int64?
 
     var displayName: String {
         url.deletingPathExtension().lastPathComponent

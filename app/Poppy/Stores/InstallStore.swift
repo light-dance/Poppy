@@ -26,6 +26,8 @@ final class InstallStore: ObservableObject {
     private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
     private var zipInspectionTasks = Set<URL>()
     private var zipRetryStates = [URL: ZipRetryState]()
+    private var appBundleSizeCache = [URL: AppBundleSizeCacheEntry]()
+    private var appBundleSizeTasks = Set<URL>()
     private let maxInstallReadinessStableRetries = 5
     private let modelContext: ModelContext?
 
@@ -635,6 +637,8 @@ final class InstallStore: ObservableObject {
         zipInstallableCache = zipInstallableCache.filter { currentURLSet.contains($0.key) }
         zipInspectionTasks.formIntersection(currentURLSet)
         zipRetryStates = zipRetryStates.filter { currentURLSet.contains($0.key) }
+        appBundleSizeCache = appBundleSizeCache.filter { currentURLSet.contains($0.key) }
+        appBundleSizeTasks.formIntersection(currentURLSet)
 
         let items: [InstallableItem] = urls
             .filter { shouldShowInstallable($0) }
@@ -645,11 +649,131 @@ final class InstallStore: ObservableObject {
             }
             .compactMap { url in
                 guard let kind = InstallableKind(url: url) else { return nil }
-                return InstallableItem(url: url, kind: kind, status: status(for: url, kind: kind))
+                let metadata = metadata(for: url, kind: kind)
+                return InstallableItem(
+                    url: url,
+                    kind: kind,
+                    status: status(for: url, kind: kind),
+                    metadataDate: metadata.date,
+                    sizeBytes: metadata.sizeBytes
+                )
             }
 
         installableItems = items.filter { !isHiddenInstallable($0.url) }
         hiddenInstallableItems = items.filter { isHiddenInstallable($0.url) }
+    }
+
+    private func metadata(for url: URL, kind: InstallableKind) -> (date: Date?, sizeBytes: Int64?) {
+        let values = try? url.resourceValues(forKeys: [
+            .addedToDirectoryDateKey,
+            .creationDateKey,
+            .contentModificationDateKey,
+            .fileSizeKey,
+            .totalFileSizeKey,
+            .totalFileAllocatedSizeKey
+        ])
+        let date = metadataDate(for: url, values: values)
+
+        guard kind == .appBundle else {
+            return (date, fileSize(from: values))
+        }
+
+        if let totalSize = fileSize(from: values) {
+            return (date, totalSize)
+        }
+
+        guard let fingerprint = appBundleFingerprint(for: url, values: values) else {
+            return (date, nil)
+        }
+
+        if let cachedEntry = appBundleSizeCache[url], cachedEntry.fingerprint == fingerprint {
+            return (date, cachedEntry.sizeBytes)
+        }
+
+        loadAppBundleSize(for: url, fingerprint: fingerprint)
+        return (date, nil)
+    }
+
+    private func metadataDate(for url: URL, values: URLResourceValues?) -> Date? {
+        if let date = values?.addedToDirectoryDate ?? values?.creationDate ?? values?.contentModificationDate {
+            return date
+        }
+
+        guard let attributes = try? FileManager.default.attributesOfItem(atPath: url.path) else {
+            return nil
+        }
+
+        return attributes[.creationDate] as? Date ?? attributes[.modificationDate] as? Date
+    }
+
+    private func fileSize(from values: URLResourceValues?) -> Int64? {
+        if let totalFileSize = values?.totalFileSize {
+            return Int64(totalFileSize)
+        }
+
+        if let totalFileAllocatedSize = values?.totalFileAllocatedSize {
+            return Int64(totalFileAllocatedSize)
+        }
+
+        return values?.fileSize.map(Int64.init)
+    }
+
+    private func appBundleFingerprint(for url: URL, values: URLResourceValues?) -> AppBundleSizeFingerprint? {
+        let contentModificationDate = values?.contentModificationDate
+            ?? ((try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date)
+
+        guard contentModificationDate != nil else {
+            return nil
+        }
+
+        return AppBundleSizeFingerprint(contentModificationDate: contentModificationDate)
+    }
+
+    private func loadAppBundleSize(for url: URL, fingerprint: AppBundleSizeFingerprint) {
+        guard !appBundleSizeTasks.contains(url) else { return }
+        appBundleSizeTasks.insert(url)
+
+        Task { [weak self] in
+            let result: Result<Int64, Error>
+            do {
+                let shellResult = try await Shell.run("/usr/bin/du", arguments: ["-sk", url.path])
+                if shellResult.status == 0,
+                   let kilobytesText = shellResult.output.split(whereSeparator: \.isWhitespace).first,
+                   let kilobytes = Int64(kilobytesText) {
+                    result = .success(kilobytes * 1024)
+                } else {
+                    result = .failure(NSError(
+                        domain: "Poppy.AppBundleSize",
+                        code: Int(shellResult.status),
+                        userInfo: [NSLocalizedDescriptionKey: shellResult.error]
+                    ))
+                }
+            } catch {
+                result = .failure(error)
+            }
+
+            await MainActor.run {
+                guard let self else { return }
+                self.appBundleSizeTasks.remove(url)
+
+                guard self.appBundleFingerprint(for: url, values: nil) == fingerprint else {
+                    self.appBundleSizeCache.removeValue(forKey: url)
+                    self.scanWatchedFolder()
+                    return
+                }
+
+                switch result {
+                case .success(let sizeBytes):
+                    self.appBundleSizeCache[url] = AppBundleSizeCacheEntry(
+                        fingerprint: fingerprint,
+                        sizeBytes: sizeBytes
+                    )
+                    self.scanWatchedFolder()
+                case .failure(let error):
+                    self.addDiagnosticLog("App bundle size lookup failed for \(url.lastPathComponent): \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     private func shouldShowInstallable(_ url: URL) -> Bool {
@@ -839,6 +963,15 @@ private struct ZipFileFingerprint: Equatable {
 private struct ZipInstallableCacheEntry {
     let fingerprint: ZipFileFingerprint
     let containsApp: Bool
+}
+
+private struct AppBundleSizeFingerprint: Equatable {
+    let contentModificationDate: Date?
+}
+
+private struct AppBundleSizeCacheEntry {
+    let fingerprint: AppBundleSizeFingerprint
+    let sizeBytes: Int64
 }
 
 private struct ZipRetryState {

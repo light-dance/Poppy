@@ -14,7 +14,7 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Locations") {
+            Section("Install Options") {
                 SettingsFolderRow(
                     title: "Watching",
                     url: store.watchedFolderURL,
@@ -42,12 +42,20 @@ struct SettingsView: View {
                 }
             }
 
-            Section("General") {
-                Toggle("Launch at Login", isOn: $launchAtLogin)
+            Section {
+                Toggle(isOn: $deleteAfterInstall) {
+                    SettingsToggleLabel(
+                        title: "Delete after Install",
+                        info: "Removes DMG and ZIP install files from downloads after app is successfully installed."
+                    )
+                }
 
-                Toggle("Delete after Install", isOn: $deleteAfterInstall)
-
-                Toggle("Install Automatically", isOn: autoInstallBinding)
+                Toggle(isOn: autoInstallBinding) {
+                    SettingsToggleLabel(
+                        title: "Install Automatically",
+                        info: "Start installing downloaded apps immediately when detected. A notification will give you a chance to cancel."
+                    )
+                }
 
                 if automaticallyInstallDetectedApplications {
                     Label(
@@ -57,10 +65,6 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 }
-            }
-
-            Section("Updates") {
-                Toggle("Check for Updates Automatically", isOn: $automaticallyChecksForUpdates)
             }
 
             Section("Appearance") {
@@ -86,6 +90,12 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 }
+            }
+
+            Section("General") {
+                Toggle("Launch at Login", isOn: $launchAtLogin)
+
+                Toggle("Check for Updates Automatically", isOn: $automaticallyChecksForUpdates)
             }
         }
         .formStyle(.grouped)
@@ -120,6 +130,45 @@ struct SettingsView: View {
         alert.addButton(withTitle: "Turn On Auto Install")
         alert.addButton(withTitle: "Cancel")
         return alert.runModal() == .alertFirstButtonReturn
+    }
+}
+
+private struct SettingsToggleLabel: View {
+    let title: String
+    let info: String
+
+    var body: some View {
+        HStack(spacing: 5) {
+            Text(title)
+
+            SettingsInfoButton(text: info)
+        }
+    }
+}
+
+private struct SettingsInfoButton: View {
+    let text: String
+
+    @State private var isPresented = false
+
+    var body: some View {
+        Button {
+            isPresented.toggle()
+        } label: {
+            Image(systemName: "info.circle")
+                .font(.system(size: 12, weight: .regular))
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .help("More Info")
+        .popover(isPresented: $isPresented, arrowEdge: .trailing) {
+            Text(text)
+                .font(.callout)
+                .foregroundStyle(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(12)
+                .frame(width: 280, alignment: .leading)
+        }
     }
 }
 

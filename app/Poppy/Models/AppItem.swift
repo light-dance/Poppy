@@ -48,11 +48,6 @@ struct AppItem: Identifiable, Equatable {
     }
 
     init(installableItem item: InstallableItem, isHidden: Bool = false) {
-        let values = try? item.url.resourceValues(forKeys: [
-            .creationDateKey,
-            .contentModificationDateKey,
-            .fileSizeKey
-        ])
         let state: State
         let appURL: URL?
         let createdDate: Date?
@@ -61,24 +56,24 @@ struct AppItem: Identifiable, Equatable {
         if isHidden {
             state = .hidden
             appURL = nil
-            createdDate = values?.creationDate ?? values?.contentModificationDate
+            createdDate = item.metadataDate
             installStartedDate = nil
         } else {
             switch item.status {
             case .ready:
                 state = .ready
                 appURL = nil
-                createdDate = values?.creationDate ?? values?.contentModificationDate
+                createdDate = item.metadataDate
                 installStartedDate = nil
             case .installing(let step, let startedAt):
                 state = .installing(step)
                 appURL = nil
-                createdDate = values?.creationDate ?? values?.contentModificationDate
+                createdDate = item.metadataDate
                 installStartedDate = startedAt
             case .installed(let installedAppURL, let installedAt):
                 state = .installedNeedsCleanup(appURL: installedAppURL)
                 appURL = installedAppURL
-                createdDate = installedAt ?? values?.creationDate ?? values?.contentModificationDate
+                createdDate = installedAt ?? item.metadataDate
                 installStartedDate = nil
             }
         }
@@ -93,7 +88,7 @@ struct AppItem: Identifiable, Equatable {
             state: state,
             createdDate: createdDate,
             installStartedDate: installStartedDate,
-            sizeBytes: values?.fileSize.map(Int64.init),
+            sizeBytes: item.sizeBytes,
             isDebugSample: false
         )
     }

@@ -238,12 +238,20 @@ struct MainWindowView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundStyle(.secondary)
 
-            Text(itemCountText(for: hiddenAppItems.count))
-                .font(.caption.weight(.semibold))
-                .foregroundStyle(.tertiary)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.secondary.opacity(0.08), in: Capsule())
+            HStack(spacing: 6) {
+                Text(itemCountText(for: hiddenAppItems.count))
+
+                Rectangle()
+                    .fill(.secondary.opacity(0.35))
+                    .frame(width: 1, height: 11)
+
+                Text(totalSizeText(for: hiddenAppItems))
+            }
+            .font(.caption.weight(.medium))
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 7)
+            .padding(.vertical, 3)
+            .background(.secondary.opacity(0.08), in: Capsule())
 
             Spacer()
 
@@ -553,6 +561,7 @@ private struct AvailableAppsEmptyState: View {
 
 private struct AppIconStackEmptyStateGraphic: View {
     private let iconSize: CGFloat = 74
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         iconGroup
@@ -615,14 +624,14 @@ private struct AppIconStackEmptyStateGraphic: View {
 
     private var frontIcon: some View {
         RoundedRectangle(cornerRadius: 18, style: .continuous)
-            .fill(Color(nsColor: .windowBackgroundColor).opacity(0.82))
+            .fill(frontBaseFill)
             .overlay {
                 RoundedRectangle(cornerRadius: 18, style: .continuous)
                     .fill(
                         LinearGradient(
                             colors: [
-                                Color.secondary.opacity(0.18),
-                                Color.secondary.opacity(0.06)
+                                Color.secondary.opacity(frontFillTopOpacity),
+                                Color.secondary.opacity(frontFillBottomOpacity)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -634,8 +643,8 @@ private struct AppIconStackEmptyStateGraphic: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                Color.orange.opacity(0.20),
-                                Color.orange.opacity(0.06),
+                                Color.orange.opacity(orangeGlowCoreOpacity),
+                                Color.orange.opacity(orangeGlowFalloffOpacity),
                                 Color.clear
                             ],
                             center: UnitPoint(x: 0.76, y: 0.22),
@@ -650,6 +659,30 @@ private struct AppIconStackEmptyStateGraphic: View {
             }
             .frame(width: iconSize, height: iconSize)
             .opacity(0.84)
+    }
+
+    private var frontBaseFill: Color {
+        if colorScheme == .light {
+            return Color(nsColor: .windowBackgroundColor).opacity(0.4)
+        }
+
+        return Color(nsColor: .windowBackgroundColor).opacity(0.82)
+    }
+
+    private var frontFillTopOpacity: Double {
+        colorScheme == .light ? 0.08 : 0.18
+    }
+
+    private var frontFillBottomOpacity: Double {
+        colorScheme == .light ? 0.02 : 0.06
+    }
+
+    private var orangeGlowCoreOpacity: Double {
+        colorScheme == .light ? 0.3 : 0.20
+    }
+
+    private var orangeGlowFalloffOpacity: Double {
+        colorScheme == .light ? 0.05 : 0.06
     }
 }
 
