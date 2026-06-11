@@ -1,0 +1,1 @@
+we previously had a build and run script for the app. it was deleted sometime in the past of the git repo. can you look at that script and its implementation and see what it was doing in terms of how it would terminate the previous build before running the new one? i am trying to figure out how it was doing that before so i can fix something somewhere else

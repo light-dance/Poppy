@@ -3,7 +3,7 @@
   "checkpoint_id": "0f91b22a4999",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 12,
+  "checkpoints_count": 13,
   "files_touched": [
     "app/Poppy.xcodeproj/project.pbxproj",
     "app/Poppy/Views/MainWindowView.swift",
@@ -27,13 +27,19 @@
       "transcript": "/0f/91b22a4999/2/full.jsonl",
       "content_hash": "/0f/91b22a4999/2/content_hash.txt",
       "prompt": "/0f/91b22a4999/2/prompt.txt"
+    },
+    {
+      "metadata": "/0f/91b22a4999/3/metadata.json",
+      "transcript": "/0f/91b22a4999/3/full.jsonl",
+      "content_hash": "/0f/91b22a4999/3/content_hash.txt",
+      "prompt": "/0f/91b22a4999/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 505063,
+    "input_tokens": 544317,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 5182976,
-    "output_tokens": 29841,
-    "api_call_count": 88
+    "cache_read_tokens": 5325696,
+    "output_tokens": 32069,
+    "api_call_count": 93
   }
 }

@@ -1,0 +1,57 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0f91b22a4999",
+  "session_id": "019eb478-b7e0-7963-a794-7ff649bf3d95",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-11T02:43:59.194537Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/Poppy/Views/MainWindowView.swift",
+    "app/Poppy/Views/SettingsView.swift"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "7295b42c0624",
+  "token_usage": {
+    "input_tokens": 39254,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 142720,
+    "output_tokens": 2228,
+    "api_call_count": 5
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-11T02:43:59.184389Z",
+    "agent_lines": 10,
+    "agent_removed": 5,
+    "human_added": 44,
+    "human_modified": 6,
+    "human_removed": 0,
+    "total_committed": 60,
+    "total_lines_changed": 74,
+    "agent_percentage": 20.27027027027027,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 196,
+      "user_lines_removed": 8,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/Poppy/Views/MainWindowView.swift": 110,
+        "app/Poppy/Views/SettingsView.swift": 1,
+        "web/src/routes/+page.svelte": 85
+      },
+      "user_removed_per_file": {
+        "app/Poppy/Views/MainWindowView.swift": 5,
+        "app/Poppy/Views/SettingsView.swift": 1,
+        "web/src/routes/+page.svelte": 2
+      }
+    }
+  ]
+}
