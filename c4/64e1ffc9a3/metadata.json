@@ -3,8 +3,9 @@
   "checkpoint_id": "c464e1ffc9a3",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 15,
+  "checkpoints_count": 17,
   "files_touched": [
+    "app/Poppy/App/PoppyApp.swift",
     "app/Poppy/Models/AppItem.swift",
     "app/Poppy/Models/InstallableItem.swift",
     "app/Poppy/Stores/InstallStore.swift",
@@ -36,13 +37,19 @@
       "transcript": "/c4/64e1ffc9a3/3/full.jsonl",
       "content_hash": "/c4/64e1ffc9a3/3/content_hash.txt",
       "prompt": "/c4/64e1ffc9a3/3/prompt.txt"
+    },
+    {
+      "metadata": "/c4/64e1ffc9a3/4/metadata.json",
+      "transcript": "/c4/64e1ffc9a3/4/full.jsonl",
+      "content_hash": "/c4/64e1ffc9a3/4/content_hash.txt",
+      "prompt": "/c4/64e1ffc9a3/4/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 773768,
+    "input_tokens": 909926,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 5761664,
-    "output_tokens": 24620,
-    "api_call_count": 83
+    "cache_read_tokens": 6611072,
+    "output_tokens": 31919,
+    "api_call_count": 99
   }
 }

@@ -1,0 +1,6 @@
+we currently have a debug menu. that should be off by default but toggleable by a secret keyboard shortcut or maybe secret url? i think a keyboard shortcut is probably the right move. something like `command shift .` maybe?
+also add command o for opening watching folder, and command shift o to open install to location
+
+---
+
+command shift . for debug menu does not work. nothing happens
