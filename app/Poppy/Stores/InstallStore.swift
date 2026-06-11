@@ -7,6 +7,7 @@ import SwiftData
 final class InstallStore: ObservableObject {
     private static let watchedFolderPathKey = "watchedFolderPath"
     private static let installFolderPathKey = "installFolderPath"
+    private static let hiddenInstallablePathsKey = "hiddenInstallablePaths"
 
     @Published var currentJob: InstallJob?
     @Published private(set) var installableItems: [InstallableItem] = []
@@ -62,6 +63,7 @@ final class InstallStore: ObservableObject {
             installFolderURL = Self.defaultInstallFolderURL
         }
 
+        hiddenInstallableURLs = Self.loadHiddenInstallableURLs()
         records = Self.loadRecords(from: modelContext)
     }
 
@@ -194,7 +196,7 @@ final class InstallStore: ObservableObject {
         }
 
         let latestInstallable = urls
-            .filter { shouldShowInstallable($0) && !hiddenInstallableURLs.contains($0) }
+            .filter { shouldShowInstallable($0) && !isHiddenInstallable($0) }
             .sorted {
                 let lhsDate = (try? $0.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
                 let rhsDate = (try? $1.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate) ?? .distantPast
@@ -218,14 +220,14 @@ final class InstallStore: ObservableObject {
 
     func installNow(sourceURL: URL) {
         guard !isInstalling(sourceURL) else { return }
-        hiddenInstallableURLs.remove(sourceURL)
+        removeHiddenInstallable(sourceURL)
         install(job: InstallJob(sourceURL: sourceURL, appName: nil, state: .installing("Preparing")))
     }
 
     func cleanup(_ item: InstallableItem) {
         do {
             try FileManager.default.trashItem(at: item.url, resultingItemURL: nil)
-            hiddenInstallableURLs.remove(item.url)
+            removeHiddenInstallable(item.url)
             removePendingJobs(for: item.url)
             addRecord(
                 appName: item.displayName,
@@ -246,13 +248,13 @@ final class InstallStore: ObservableObject {
 
     func hide(_ item: InstallableItem) {
         guard !isInstalling(item.url) else { return }
-        hiddenInstallableURLs.insert(item.url)
+        insertHiddenInstallable(item.url)
         removePendingJobs(for: item.url)
         scanWatchedFolder()
     }
 
     func unhide(_ item: InstallableItem) {
-        hiddenInstallableURLs.remove(item.url)
+        removeHiddenInstallable(item.url)
         scanWatchedFolder()
     }
 
@@ -436,7 +438,7 @@ final class InstallStore: ObservableObject {
         _ sourceURL: URL,
         approvalBehavior: InstallJob.ApprovalBehavior = .manual
     ) {
-        guard !hiddenInstallableURLs.contains(sourceURL) else { return }
+        guard !isHiddenInstallable(sourceURL) else { return }
         addDiagnosticLog("Queuing detected installer: \(sourceURL.lastPathComponent)")
         let job = InstallJob(
             sourceURL: sourceURL,
@@ -582,6 +584,34 @@ final class InstallStore: ObservableObject {
         }
     }
 
+    private static func loadHiddenInstallableURLs() -> Set<URL> {
+        let paths = UserDefaults.standard.stringArray(forKey: hiddenInstallablePathsKey) ?? []
+        return Set(paths.map { URL(fileURLWithPath: $0).standardizedFileURL })
+    }
+
+    private func insertHiddenInstallable(_ url: URL) {
+        hiddenInstallableURLs.insert(persistableURL(for: url))
+        saveHiddenInstallableURLs()
+    }
+
+    private func removeHiddenInstallable(_ url: URL) {
+        hiddenInstallableURLs.remove(persistableURL(for: url))
+        saveHiddenInstallableURLs()
+    }
+
+    private func isHiddenInstallable(_ url: URL) -> Bool {
+        hiddenInstallableURLs.contains(persistableURL(for: url))
+    }
+
+    private func saveHiddenInstallableURLs() {
+        let paths = hiddenInstallableURLs.map(\.path).sorted()
+        UserDefaults.standard.set(paths, forKey: Self.hiddenInstallablePathsKey)
+    }
+
+    private func persistableURL(for url: URL) -> URL {
+        url.standardizedFileURL
+    }
+
     private func scanWatchedFolder() {
         guard
             let urls = try? FileManager.default.contentsOfDirectory(
@@ -596,7 +626,12 @@ final class InstallStore: ObservableObject {
         }
 
         let currentURLSet = Set(urls)
-        hiddenInstallableURLs.formIntersection(currentURLSet)
+        let currentPersistableURLSet = Set(urls.map(persistableURL))
+        let previousHiddenInstallableURLs = hiddenInstallableURLs
+        hiddenInstallableURLs.formIntersection(currentPersistableURLSet)
+        if hiddenInstallableURLs != previousHiddenInstallableURLs {
+            saveHiddenInstallableURLs()
+        }
         zipInstallableCache = zipInstallableCache.filter { currentURLSet.contains($0.key) }
         zipInspectionTasks.formIntersection(currentURLSet)
         zipRetryStates = zipRetryStates.filter { currentURLSet.contains($0.key) }
@@ -613,8 +648,8 @@ final class InstallStore: ObservableObject {
                 return InstallableItem(url: url, kind: kind, status: status(for: url, kind: kind))
             }
 
-        installableItems = items.filter { !hiddenInstallableURLs.contains($0.url) }
-        hiddenInstallableItems = items.filter { hiddenInstallableURLs.contains($0.url) }
+        installableItems = items.filter { !isHiddenInstallable($0.url) }
+        hiddenInstallableItems = items.filter { isHiddenInstallable($0.url) }
     }
 
     private func shouldShowInstallable(_ url: URL) -> Bool {

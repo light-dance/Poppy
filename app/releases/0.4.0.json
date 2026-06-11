@@ -1,0 +1,6 @@
+{
+	"version": "0.4.0",
+	"build_number": 5,
+	"title": "Refinements",
+	"changelog": "Added a new empty state visual for the Available section.\n\nImproved hidden item handling so hidden installers stay hidden after restarting the app.\n\nUpdated the Available section count so hidden items are listed separately and no longer change the available item total."
+}

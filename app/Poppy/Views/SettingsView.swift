@@ -241,7 +241,7 @@ private struct NotificationPositionPicker: View {
 private struct TopRoundedRectangle: Shape {
     let radius: CGFloat
 
-    func path(in rect: CGRect) -> Path {
+    nonisolated func path(in rect: CGRect) -> Path {
         let radius = min(radius, rect.width / 2, rect.height / 2)
         var path = Path()
 

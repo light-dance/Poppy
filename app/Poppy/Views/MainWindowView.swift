@@ -194,15 +194,15 @@ struct MainWindowView: View {
         VStack(alignment: .leading, spacing: 12) {
             appItemSectionHeader(
                 title: "Available",
-                items: availableHeaderItems,
+                items: availableAppItems,
                 showsHiddenToggle: true
             )
 
-            if availableAppItems.isEmpty && (!showsHiddenItems || hiddenAppItems.isEmpty) {
-                Label("No apps ready to install", systemImage: "tray")
-                    .foregroundStyle(.secondary)
-                    .padding(.vertical, 8)
-            } else {
+            if availableAppItems.isEmpty {
+                AvailableAppsEmptyState()
+            }
+
+            if !availableAppItems.isEmpty || (showsHiddenItems && !hiddenAppItems.isEmpty) {
                 VStack(spacing: 0) {
                     ForEach(Array(availableAppItems.enumerated()), id: \.element.id) { index, item in
                         AppItemElement(item: item, showsSeparator: showsAvailableSeparator(after: index), actions: {
@@ -226,10 +226,6 @@ struct MainWindowView: View {
                 }
             }
         }
-    }
-
-    private var availableHeaderItems: [AppItem] {
-        showsHiddenItems ? availableAppItems + hiddenAppItems : availableAppItems
     }
 
     private func showsAvailableSeparator(after index: Int) -> Bool {
@@ -534,6 +530,126 @@ struct MainWindowView: View {
 
     private func installableItem(for appItem: AppItem) -> InstallableItem? {
         (store.installableItems + store.hiddenInstallableItems).first { $0.id == appItem.id }
+    }
+}
+
+private struct AvailableAppsEmptyState: View {
+    var body: some View {
+        VStack(spacing: 4) {
+            AppIconStackEmptyStateGraphic()
+
+            Text("Apps you download will show up here")
+                .font(.system(size: 14, weight: .medium, design: .rounded))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .padding(.top, 12)
+        .padding(.bottom, 18)
+        .frame(maxWidth: .infinity, alignment: .center)
+        .accessibilityElement(children: .combine)
+    }
+}
+
+private struct AppIconStackEmptyStateGraphic: View {
+    private let iconSize: CGFloat = 74
+
+    var body: some View {
+        iconGroup
+            .frame(width: 240, height: 94)
+            .mask {
+                LinearGradient(
+                    stops: [
+                        .init(color: .black, location: 0),
+                        .init(color: .black, location: 0.48),
+                        .init(color: .clear, location: 0.78)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+    }
+
+    private var iconGroup: some View {
+        ZStack {
+            emptyIcon(offsetX: -63, offsetY: 17, rotation: -10, opacity: 0.46, lineOpacity: 0.34)
+                .zIndex(0)
+
+            emptyIcon(offsetX: 63, offsetY: 17, rotation: 10, opacity: 0.46, lineOpacity: 0.34)
+                .zIndex(0)
+
+            frontIcon
+                .zIndex(1)
+        }
+    }
+
+    private func emptyIcon(
+        offsetX: CGFloat,
+        offsetY: CGFloat,
+        rotation: Double,
+        opacity: Double,
+        lineOpacity: Double
+    ) -> some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.secondary.opacity(0.16),
+                        Color.secondary.opacity(0.05)
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color.secondary.opacity(lineOpacity), lineWidth: 3)
+            }
+            .frame(width: iconSize, height: iconSize)
+            .opacity(opacity)
+            .rotationEffect(.degrees(rotation))
+            .offset(x: offsetX, y: offsetY)
+    }
+
+    private var frontIcon: some View {
+        RoundedRectangle(cornerRadius: 18, style: .continuous)
+            .fill(Color(nsColor: .windowBackgroundColor).opacity(0.82))
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.secondary.opacity(0.18),
+                                Color.secondary.opacity(0.06)
+                            ],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color.orange.opacity(0.20),
+                                Color.orange.opacity(0.06),
+                                Color.clear
+                            ],
+                            center: UnitPoint(x: 0.76, y: 0.22),
+                            startRadius: 2,
+                            endRadius: 56
+                        )
+                    )
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(Color.secondary.opacity(0.56), lineWidth: 3)
+            }
+            .frame(width: iconSize, height: iconSize)
+            .opacity(0.84)
     }
 }
 
