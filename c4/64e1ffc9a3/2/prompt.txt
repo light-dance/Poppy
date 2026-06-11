@@ -1,0 +1,10 @@
+it seems that .app's dont show their size or date? i have a .app in available that does not show its size or date
+
+---
+
+does that mean when we see a .app we are running code that recursively looks through it and compiles the size? that's retarded if so. the system has the size. if i do get info i can see it. and on the command line i can just do `du` 
+so there has to be a better way. also what was the deal with dates?
+
+---
+
+id rather use date added instead of date the file was created. can we use that date as primary?
