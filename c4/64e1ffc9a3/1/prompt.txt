@@ -1,0 +1,29 @@
+I want to work on our settings screen organization. 
+So i think we should swap the locations section title to "Installations" and then move the Delete after Install and Install Automatically into that section. I think those two toggles we put at the bottom after the location rows.
+
+And then the appearance section as is. And then a General section right after that with Launch at Login and Check for Updates Automatically
+
+I think that will make more sense
+
+---
+
+Okay lets move the delete after install and install automatically into a separate group/section but without a separate title. Because it looks weird currently with them both in the same section as their text is not aligned the same way
+
+---
+
+nice. and lets change the section title from "Installations" to "Install Options"
+also for Delete after Install and Install Automatically, lets have a i button just right of the label that you can click to get more info on them. clicking should open a small popover/tooltip component that will say a sentence or two about the feature.
+
+---
+
+"Removes DMG and ZIP install files from downloads after app is successfully installed"
+
+"Start installing downloaded apps immediately when detected. A notification will give you a chance to cancel."
+
+---
+
+update the latest release version json to say that settings screen has been reorganized and refined
+
+---
+
+remove the "so install appearance..." thats a stupid thing to put in changelog
