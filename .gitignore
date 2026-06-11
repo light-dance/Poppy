@@ -12,6 +12,7 @@ Thumbs.db
 # APP / XCODE
 .build/
 build/
+.dinggy/
 dist/
 xcuserdata/
 *.xcuserstate
