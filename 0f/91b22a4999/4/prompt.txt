@@ -1,0 +1,10 @@
+In the app, we have an available section and we can hide items. But this hidden state does not persist app restart. Can you make that persisted. Either in a db/swiftdata or in some other json or similar. I dont remember how we are doing persistence already for other features...
+
+---
+
+good that works. now, in the app, when there are hidden items, available count shows 0 items when empty but then if you click to show hidden and we show the hidden section, the available count shows the count of available plus the hidden items so it may go from 0 to 1 when you show hidden items. 
+available count should only show available and not hidden.
+
+---
+
+okay lets update our release notes, this will be 0.4.0 i think and increment the build num too. probably title it like Refinements and then lets start listing the changes so we created a new empty state visual, we updated hidden item handling.
