@@ -1,0 +1,1 @@
+hidden section shows item count but does not show total size like other sections do
