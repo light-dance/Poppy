@@ -1,0 +1,94 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "c464e1ffc9a3",
+  "session_id": "019eb469-f2b9-7912-9d77-8639d23da5f6",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-11T17:03:09.026814Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "app/Poppy/Views/MainWindowView.swift",
+    "app/Poppy/Views/SettingsView.swift",
+    "app/releases/0.4.0.json"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "7c1783e8af52",
+  "checkpoint_transcript_start": 309,
+  "transcript_lines_at_start": 309,
+  "token_usage": {
+    "input_tokens": 227920,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 1410176,
+    "output_tokens": 4516,
+    "api_call_count": 15
+  },
+  "session_metrics": {
+    "turn_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-11T17:03:08.989829Z",
+    "agent_lines": 32,
+    "agent_removed": 11,
+    "human_added": 126,
+    "human_modified": 12,
+    "human_removed": 0,
+    "total_committed": 170,
+    "total_lines_changed": 182,
+    "agent_percentage": 23.626373626373624,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 145,
+      "user_lines_removed": 13,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".codex/environments/environment.toml": 1,
+        "app/Poppy/Views/SettingsView.swift": 59,
+        "web/src/routes/+page.svelte": 85
+      },
+      "user_removed_per_file": {
+        ".codex/environments/environment.toml": 1,
+        "app/Poppy/Views/SettingsView.swift": 10,
+        "web/src/routes/+page.svelte": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 172,
+      "agent_lines_removed": 19
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 176,
+      "agent_lines_removed": 19
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 176,
+      "agent_lines_removed": 19
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 2,
+      "user_lines_removed": 2,
+      "agent_lines_added": 176,
+      "agent_lines_removed": 19,
+      "user_added_per_file": {
+        "app/releases/0.4.0.json": 2
+      },
+      "user_removed_per_file": {
+        "app/releases/0.4.0.json": 2
+      }
+    }
+  ]
+}
