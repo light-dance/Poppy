@@ -1,0 +1,87 @@
+{
+  "cli_version": "0.7.5",
+  "checkpoint_id": "0f91b22a4999",
+  "session_id": "019eb29a-b9d4-7c31-902d-0076e0c13934",
+  "strategy": "manual-commit",
+  "created_at": "2026-06-11T02:43:57.462883Z",
+  "branch": "main",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "app/Poppy.xcodeproj/project.pbxproj"
+  ],
+  "agent": "Codex",
+  "model": "gpt-5.5",
+  "turn_id": "baefa8817ce2",
+  "token_usage": {
+    "input_tokens": 166947,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 691968,
+    "output_tokens": 8723,
+    "api_call_count": 18
+  },
+  "session_metrics": {
+    "turn_count": 6
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-06-11T02:43:57.437622Z",
+    "agent_lines": 0,
+    "agent_removed": 4,
+    "human_added": 51,
+    "human_modified": 4,
+    "human_removed": 0,
+    "total_committed": 55,
+    "total_lines_changed": 69,
+    "agent_percentage": 5.797101449275362,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 85,
+      "user_lines_removed": 2,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "web/src/routes/+page.svelte": 85
+      },
+      "user_removed_per_file": {
+        "web/src/routes/+page.svelte": 2
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 85,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 85,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 85,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 85,
+      "agent_lines_removed": 2
+    },
+    {
+      "checkpoint_number": 6,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 85,
+      "agent_lines_removed": 2
+    }
+  ]
+}

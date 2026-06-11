@@ -1,0 +1,47 @@
+how does the app currently check for updates? is it like polling or on what schedule does it update automatically?
+
+---
+
+I know that. So how does Sparkle's automatic updating work?
+
+---
+
+hmm. i just published an update but when i go to check for updates in the app, it says im already up to date. so it isn't seeing the newer update. what can cause this?
+
+additionally in CI i saw this error:
+```
+{
+  "installation_id": "11597",
+  "record_id": "28232b0b-f084-43a6-870d-c673bef7b696",
+  "record_name": "Sign Sparkle update ZIP",
+  "record_type": "step",
+  "record_order": 8,
+  "job_id": "80621525422",
+  "job_name": "Build, Sign, Notarize, and Package",
+  "job_display_name": "Build, Sign, Notarize, and Package",
+  "repo": "light-dance/Poppy",
+  "workflow": "Release",
+  "branch": "v0.3.0",
+  "pull_request_number": null,
+  "run_id": "27293923578",
+  "run_attempt": 1,
+  "vm_id": "REDACTED",
+  "sender": "notnotjake",
+  "log_timestamp": "2026-06-10T17:33:06.023Z",
+  "message": "\u001b[36;1m  echo \"Sparkle archive checksum mismatch: expected $SPARKLE_SHA256, got $actual_sha256\" >&2\u001b[0m",
+  "log_line_number": 20,
+  "level": "error"
+}
+```
+
+---
+
+wait. i thought build numbers were for builds between version nums? Are you saying that build numbers are supposed to strictly increment always?
+
+---
+
+That is new to me. Do they have to be numbers or have i also seen them be strings?
+
+---
+
+Okay, update the version to 0.3.1 and build 4 and then make the title Bug Fixes and say something vague in the description.
