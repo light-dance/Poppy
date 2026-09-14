@@ -1,5 +1,5 @@
 import { includeIgnoreFile } from '@eslint/compat'
-import { defineConfig } from 'eslint/config'
+import { defineConfig, globalIgnores } from 'eslint/config'
 import { fileURLToPath } from 'node:url'
 
 import js from '@eslint/js'
@@ -13,11 +13,19 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url))
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
+	globalIgnores(['.svelte-kit/**', 'build/**']),
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
 	prettier,
 	...svelte.configs.prettier,
+	{
+		files: ['src/lib/components/adapt/{reveal,swap,switch}.svelte'],
+		rules: {
+			// These callbacks are read by parents through $bindable props
+			'no-useless-assignment': 'off'
+		}
+	},
 	{
 		languageOptions: {
 			globals: { ...globals.browser, ...globals.node }

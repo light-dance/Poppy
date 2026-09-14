@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths'
 	import { IconChevronRightFilled } from '@tabler/icons-svelte'
 	let { data } = $props()
 </script>
@@ -9,8 +10,13 @@
 
 <div class="mx-auto flex min-h-full max-w-160 flex-col gap-7 bg-neutral-50 px-6 py-8">
 	<div class="flex items-center justify-between gap-4">
-		<a href="/" class="text-sm font-medium text-neutral-500 hover:text-neutral-800">Poppy</a>
-		<a href="/download" class="text-sm font-medium text-neutral-500 hover:text-neutral-800">
+		<a href={resolve('/')} class="text-sm font-medium text-neutral-500 hover:text-neutral-800"
+			>Poppy</a
+		>
+		<a
+			href={resolve('/download')}
+			class="text-sm font-medium text-neutral-500 hover:text-neutral-800"
+		>
 			Download
 		</a>
 	</div>
@@ -26,7 +32,10 @@
 				<div class="flex flex-col gap-1">
 					<!-- Release Title Row -->
 					<div class="flex justify-between items-baseline">
-						<a href={`/releases/${release.version}`} class="group flex items-center">
+						<a
+							href={resolve('/(releases)/releases/[version]', { version: release.version })}
+							class="group flex items-center"
+						>
 							<div class="text-base font-semibold">
 								<span
 									class="text-black text-[1.1rem] pr-1 group-hover:text-blue-600 transition-colors"
