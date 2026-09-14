@@ -31,15 +31,13 @@
 		></video>
 	</div>
 
-	<section
-		class="debug relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-4 text-center"
-	>
-		<h1
-			class="text-[clamp(3rem,9vw,6rem)] font-bold tracking-tight-md text-black/70 mix-blend-darken"
-		>
-			Poppy for Mac
-		</h1>
+	<!-- Title Badge -->
+	<h1 class="absolute inset-x-0 top-2 z-10 flex flex-col items-center gap-2">
+		<span class="title-badge -rotate-2 text-2xl font-medium">Poppy</span>
+		<span class="text-lg font-semibold text-black/60">for Mac</span>
+	</h1>
 
+	<section class="relative z-10 mx-auto flex max-w-7xl flex-col items-center gap-4 text-center">
 		<!-- Download Button -->
 		<a
 			class="bg-black/50 bg-blend-darken rounded-full pl-4 backdrop-blur-md px-6 py-3 flex items-center justify-center hover:bg-[#007AFF] transition-colors"
@@ -61,6 +59,18 @@
 </div>
 
 <style>
+	/* Blue badge: flat fill with a soft light inner glow around the edge (sampled from reference) */
+	.title-badge {
+		display: inline-block;
+		padding: 0.5rem 1.5rem 0.55rem;
+		border-radius: 1.25rem;
+		color: white;
+		background: #3c84f7;
+		box-shadow:
+			inset 0 0 6px rgb(255 255 255 / 0.55),
+			inset 0 0 16px rgb(255 255 255 / 0.3);
+	}
+
 	.hero-video-shell {
 		position: absolute;
 		inset: 48% auto auto 50%;
