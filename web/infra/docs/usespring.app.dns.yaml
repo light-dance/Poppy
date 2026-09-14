@@ -5,7 +5,7 @@ purpose: Exact DNS inventory for recovery/reference
 records:
   - service: Cloudflare
     type: SOA
-    name: "*"
+    name: '*'
     ttl: 3600
     value:
       primary_nameserver: mustafa.ns.cloudflare.com
@@ -20,7 +20,7 @@ records:
 
   - service: Cloudflare
     type: NS
-    name: "*"
+    name: '*'
     ttl: 86400
     value: mustafa.ns.cloudflare.com
     proxy: dns-only
@@ -28,7 +28,7 @@ records:
 
   - service: Cloudflare
     type: NS
-    name: "*"
+    name: '*'
     ttl: 86400
     value: olga.ns.cloudflare.com
     proxy: dns-only
@@ -36,7 +36,7 @@ records:
 
   - service: Railway
     type: CNAME
-    name: "*"
+    name: '*'
     ttl: auto
     value: w4y61qrx.up.railway.app
     proxy: proxied
@@ -68,7 +68,7 @@ records:
 
   - service: Purelymail
     type: MX
-    name: "*"
+    name: '*'
     ttl: auto
     priority: 50
     value: mailserver.purelymail.com
@@ -77,7 +77,7 @@ records:
 
   - service: Purelymail
     type: TXT
-    name: "*"
+    name: '*'
     ttl: auto
     value: purelymail_ownership_proof=b94c97446d471fcad451ccd0ab58fcf6c0413e56775d3dc6326d14c376b29593e5c2e050be8e83b03259cbe5ce2babccb31c750fcf7a684979fbb001bcea6137
     proxy: dns-only
@@ -85,7 +85,7 @@ records:
 
   - service: Purelymail
     type: TXT
-    name: "*"
+    name: '*'
     ttl: auto
     value: v=spf1 include:_spf.purelymail.com ~all
     proxy: dns-only

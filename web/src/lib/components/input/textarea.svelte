@@ -24,5 +24,4 @@
 	class={createClass('w-full resize-none', classProp)}
 	bind:this={el}
 	bind:value
-	{placeholder}
-></textarea>
+	{placeholder}></textarea>

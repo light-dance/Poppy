@@ -45,8 +45,8 @@ Cloudflare controls the domain and the DNS layer that points users and email pro
 
 **Registration**
 
-| Domain | Account | Renewal | Billing |
-| --- | --- | --- | --- |
+| Domain          | Account               | Renewal      | Billing       |
+| --------------- | --------------------- | ------------ | ------------- |
 | `usespring.app` | `jake@notnotjake.com` | July 1, 2027 | Business card |
 
 **Zone settings**
@@ -71,37 +71,37 @@ Readable service map below. Exact DNS values live in [usespring.app.dns.yaml](./
 
 **Railway**
 
-| Type | Name | Target / Value | Proxy | Note |
-| --- | --- | --- | --- | --- |
-| `CNAME` | `*` | `w4y61qrx.up.railway.app` | Proxied | Production app |
-| `CNAME` | `next` | `gsurgbx6.up.railway.app` | Proxied | Next environment |
-| `TXT` | `_railway-verify.next` | `railway-verify=...` | DNS-only | Domain verification |
+| Type    | Name                   | Target / Value            | Proxy    | Note                |
+| ------- | ---------------------- | ------------------------- | -------- | ------------------- |
+| `CNAME` | `*`                    | `w4y61qrx.up.railway.app` | Proxied  | Production app      |
+| `CNAME` | `next`                 | `gsurgbx6.up.railway.app` | Proxied  | Next environment    |
+| `TXT`   | `_railway-verify.next` | `railway-verify=...`      | DNS-only | Domain verification |
 
 **Cloudflare**
 
-| Type | Name | Target / Value | Proxy | Note |
-| --- | --- | --- | --- | --- |
+| Type    | Name  | Target / Value  | Proxy   | Note                            |
+| ------- | ----- | --------------- | ------- | ------------------------------- |
 | `CNAME` | `www` | `usespring.app` | Proxied | Supports `www` to apex redirect |
 
 **Purelymail**
 
-| Type | Name | Target / Value | Proxy | Note |
-| --- | --- | --- | --- | --- |
-| `MX` | `*` | `50 mailserver.purelymail.com` | DNS-only | Mailbox hosting |
-| `TXT` | `*` | `purelymail_ownership_proof=...` | DNS-only | Ownership proof |
-| `TXT` | `*` | `v=spf1 include:_spf.purelymail.com ~all` | DNS-only | SPF |
-| `CNAME` | `_dmarc` | `dmarcroot.purelymail.com` | DNS-only | DMARC |
-| `CNAME` | `purelymail1._domainkey` | `key1.dkimroot.purelymail.com` | DNS-only | DKIM |
-| `CNAME` | `purelymail2._domainkey` | `key2.dkimroot.purelymail.com` | DNS-only | DKIM |
-| `CNAME` | `purelymail3._domainkey` | `key3.dkimroot.purelymail.com` | DNS-only | DKIM |
+| Type    | Name                     | Target / Value                            | Proxy    | Note            |
+| ------- | ------------------------ | ----------------------------------------- | -------- | --------------- |
+| `MX`    | `*`                      | `50 mailserver.purelymail.com`            | DNS-only | Mailbox hosting |
+| `TXT`   | `*`                      | `purelymail_ownership_proof=...`          | DNS-only | Ownership proof |
+| `TXT`   | `*`                      | `v=spf1 include:_spf.purelymail.com ~all` | DNS-only | SPF             |
+| `CNAME` | `_dmarc`                 | `dmarcroot.purelymail.com`                | DNS-only | DMARC           |
+| `CNAME` | `purelymail1._domainkey` | `key1.dkimroot.purelymail.com`            | DNS-only | DKIM            |
+| `CNAME` | `purelymail2._domainkey` | `key2.dkimroot.purelymail.com`            | DNS-only | DKIM            |
+| `CNAME` | `purelymail3._domainkey` | `key3.dkimroot.purelymail.com`            | DNS-only | DKIM            |
 
 **Resend**
 
-| Type | Name | Target / Value | Proxy | Note |
-| --- | --- | --- | --- | --- |
-| `MX` | `send.resend` | `10 feedback-smtp.us-east-1.amazonses.com` | DNS-only | Bounce/feedback |
-| `TXT` | `send.resend` | `v=spf1 include:amazonses.com ~all` | DNS-only | SPF |
-| `TXT` | `resend._domainkey.resend` | `p=...` | DNS-only | DKIM |
+| Type  | Name                       | Target / Value                             | Proxy    | Note            |
+| ----- | -------------------------- | ------------------------------------------ | -------- | --------------- |
+| `MX`  | `send.resend`              | `10 feedback-smtp.us-east-1.amazonses.com` | DNS-only | Bounce/feedback |
+| `TXT` | `send.resend`              | `v=spf1 include:amazonses.com ~all`        | DNS-only | SPF             |
+| `TXT` | `resend._domainkey.resend` | `p=...`                                    | DNS-only | DKIM            |
 
 ## Recovery
 
