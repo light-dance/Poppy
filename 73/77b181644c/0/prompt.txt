@@ -1,0 +1,21 @@
+okay. is that not something in a config file somewhere you could have edited?
+
+---
+
+okay now lets deal with cubic. whats gotta happen for that?
+
+---
+
+i did not do anything for cubic. how do i auth?
+
+---
+
+i opened the link and hit approve: [http://127.0.0.1:34327/callback/jZv2WgUHALXa?code=d4639d53-eb6c-4f66-aaa3-b6c3073f14a1&state=Snxz7pfLDO767g5Gi3MoFg](http://127.0.0.1:34327/callback/jZv2WgUHALXa?code=d4639d53-eb6c-4f66-aaa3-b6c3073f14a1\&state=Snxz7pfLDO767g5Gi3MoFg)
+
+---
+
+you do that
+
+---
+
+what can you do with the mcp?

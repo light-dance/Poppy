@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.10.6",
+  "checkpoint_id": "7377b181644c",
+  "strategy": "manual-commit",
+  "branch": "feat/homepage-title-badge",
+  "checkpoints_count": 6,
+  "files_touched": [
+    "web/src/routes/+page.svelte"
+  ],
+  "sessions": [
+    {
+      "metadata": "/73/77b181644c/0/metadata.json",
+      "transcript": "/73/77b181644c/0/full.jsonl",
+      "compact_transcript": "/73/77b181644c/0/transcript.jsonl",
+      "content_hash": "/73/77b181644c/0/content_hash.txt",
+      "prompt": "/73/77b181644c/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 93028,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 2085376,
+    "output_tokens": 4363,
+    "api_call_count": 32
+  }
+}
