@@ -1,6 +1,6 @@
 {
 	"version": "0.5.0",
 	"build_number": 6,
-	"title": "App Refinements",
-	"changelog": "Improved app organization.\n\nFixed bugs with Hide in Dock option.\n\nImproved hidden item handling.\n\nFixed metadata for .app bundles.\n\nFixed Available items count.\n\nReorganized and refined the settings screen.\n\nHid the Debug menu."
+	"title": "Install Reliability",
+	"changelog": "Installs no longer freeze the app while copying large apps.\n\nInstalling a second app now waits for the current install instead of interrupting it.\n\nApps from ZIP archives keep their code signature and are checked by Gatekeeper.\n\nAn existing app is only replaced once the new copy is ready.\n\nPoppy now picks the right app from disk images that include uninstallers or extras.\n\nClearer messages when an app is running or can't be replaced.\n\nCleanup problems after a successful install no longer show as a failed install.\n\nImproved app organization.\n\nFixed bugs with Hide in Dock option.\n\nImproved hidden item handling.\n\nFixed metadata for .app bundles.\n\nFixed Available items count.\n\nReorganized and refined the settings screen.\n\nHid the Debug menu."
 }

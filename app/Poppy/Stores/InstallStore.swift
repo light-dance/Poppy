@@ -21,6 +21,7 @@ final class InstallStore: ObservableObject {
 
     private var queuedJobs: [InstallJob] = []
     private var activeInstallTask: Task<Void, Never>?
+    private var activeInstallJobID: UUID?
     private var watcher: DownloadsWatcher?
     private var hiddenInstallableURLs = Set<URL>()
     private var zipInstallableCache = [URL: ZipInstallableCacheEntry]()
@@ -81,6 +82,7 @@ final class InstallStore: ObservableObject {
                 )
             },
             onChanged: { [weak self] in
+                self?.removeJobsForMissingInstallers()
                 self?.scanWatchedFolder()
             },
             onLog: { [weak self] message in
@@ -126,8 +128,8 @@ final class InstallStore: ObservableObject {
         UserDefaults.standard.set(folderURL.path, forKey: Self.watchedFolderPathKey)
         queuedJobs.removeAll()
         currentJob = nil
+        // The cancelled task clears the active install when it actually stops, so nothing overlaps with it.
         activeInstallTask?.cancel()
-        activeInstallTask = nil
         scanWatchedFolder()
 
         if wasWatching {
@@ -209,7 +211,7 @@ final class InstallStore: ObservableObject {
     }
 
     func approveCurrentInstall() {
-        guard let job = currentJob else { return }
+        guard let job = currentJob, job.state == .awaitingApproval, activeInstallJobID == nil else { return }
         install(job: job)
     }
 
@@ -218,9 +220,30 @@ final class InstallStore: ObservableObject {
     }
 
     func installNow(sourceURL: URL) {
-        guard !isInstalling(sourceURL) else { return }
+        guard !isInstalling(sourceURL), !isQueuedToInstall(sourceURL) else { return }
         removeHiddenInstallable(sourceURL)
-        install(job: InstallJob(sourceURL: sourceURL, appName: nil, state: .installing("Preparing")))
+        queuedJobs.removeAll { $0.sourceURL == sourceURL }
+        let job = InstallJob(
+            sourceURL: sourceURL,
+            appName: nil,
+            state: .awaitingApproval,
+            approvalBehavior: .startImmediately
+        )
+
+        if activeInstallJobID != nil {
+            // Wait for the running install instead of cancelling it.
+            let insertIndex = queuedJobs.firstIndex { $0.approvalBehavior != .startImmediately } ?? queuedJobs.endIndex
+            queuedJobs.insert(job, at: insertIndex)
+            addDiagnosticLog("Queued install for \(sourceURL.lastPathComponent)")
+            scanWatchedFolder()
+            return
+        }
+
+        if let currentJob, currentJob.state == .awaitingApproval, currentJob.sourceURL != sourceURL {
+            // Show the pending approval again once this install finishes.
+            queuedJobs.insert(currentJob, at: 0)
+        }
+        install(job: job)
     }
 
     func cleanup(_ item: InstallableItem) {
@@ -308,6 +331,8 @@ final class InstallStore: ObservableObject {
         installingJob.state = .installing("Preparing")
         installingJob.startedAt = Date()
         currentJob = installingJob
+        let jobID = job.id
+        activeInstallJobID = jobID
         let installDirectory = installFolderURL
         let deleteAfterInstall = DeleteAfterInstall.isEnabled
         addDiagnosticLog("Starting install for \(job.sourceURL.lastPathComponent)")
@@ -315,6 +340,8 @@ final class InstallStore: ObservableObject {
 
         activeInstallTask?.cancel()
         activeInstallTask = Task {
+            var shouldAdvance = false
+            var didFail = false
             do {
                 let result = try await installWithReadinessRetries(
                     job: installingJob,
@@ -323,16 +350,18 @@ final class InstallStore: ObservableObject {
                 )
                 let appName = result.appURL.deletingPathExtension().lastPathComponent
                 addDiagnosticLog("Installed \(appName)")
-                updateCurrentJob(appName: appName, state: .installed(appURL: result.appURL))
+                for warning in result.warnings {
+                    addDiagnosticLog("Install warning for \(appName): \(warning)")
+                }
+                updateJob(jobID, appName: appName, state: .installed(appURL: result.appURL))
                 addRecord(
                     appName: appName,
                     sourceName: job.sourceURL.lastPathComponent,
                     appURL: result.appURL,
                     result: .success,
-                    detail: "Installed into \(installDirectory.path)"
+                    detail: (["Installed into \(installDirectory.path)"] + result.warnings).joined(separator: " ")
                 )
-                scanWatchedFolder()
-            } catch InstallServiceError.cancelled {
+            } catch where Self.isCancellation(error) {
                 addDiagnosticLog("Install cancelled for \(job.sourceURL.lastPathComponent)")
                 addRecord(
                     appName: job.displayName,
@@ -340,23 +369,47 @@ final class InstallStore: ObservableObject {
                     result: .cancelled,
                     detail: "Install cancelled"
                 )
-                advanceToNextJob()
-                scanWatchedFolder()
+                shouldAdvance = currentJob?.id == jobID
             } catch {
                 addDiagnosticLog("Install failed for \(job.sourceURL.lastPathComponent): \(error.localizedDescription)")
                 let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-                updateCurrentJobState(.failed(notificationFailureDescription(for: error)))
+                updateJob(jobID, state: .failed(notificationFailureDescription(for: error)))
+                didFail = true
                 addRecord(
                     appName: job.displayName,
                     sourceName: job.sourceURL.lastPathComponent,
                     result: .failed,
                     detail: message
                 )
-                scanWatchedFolder()
             }
 
+            // A newer install (or a folder change) may have taken over; leave its state alone.
+            guard activeInstallJobID == jobID else { return }
             activeInstallTask = nil
+            activeInstallJobID = nil
+            if shouldAdvance || currentJob == nil {
+                advanceToNextJob()
+            } else if !didFail {
+                // Keep failures on screen; queued installs start once the failure is dismissed.
+                startNextApprovedJobIfNeeded()
+            }
+            scanWatchedFolder()
         }
+    }
+
+    private func startNextApprovedJobIfNeeded() {
+        guard activeInstallJobID == nil, queuedJobs.first?.approvalBehavior == .startImmediately else { return }
+        install(job: queuedJobs.removeFirst())
+    }
+
+    private static func isCancellation(_ error: Error) -> Bool {
+        if error is CancellationError {
+            return true
+        }
+        if case .cancelled = error as? InstallServiceError {
+            return true
+        }
+        return false
     }
 
     private func installWithReadinessRetries(
@@ -376,7 +429,7 @@ final class InstallStore: ObservableObject {
                     installDirectory: installDirectory,
                     deleteAfterInstall: deleteAfterInstall
                 ) { [weak self] message in
-                    self?.updateCurrentJobState(.installing(message))
+                    self?.updateJob(job.id, state: .installing(message))
                 }
             } catch {
                 guard shouldRetryInstallReadinessError(error) else {
@@ -385,7 +438,7 @@ final class InstallStore: ObservableObject {
 
                 try checkCancellation()
                 addDiagnosticLog("Install read failed for \(job.sourceURL.lastPathComponent): \(error.localizedDescription)")
-                updateCurrentJobState(.installing("Installer may still be downloading. Retrying in 1s"))
+                updateJob(job.id, state: .installing("Installer may still be downloading. Retrying in 1s"))
                 try await Task.sleep(for: .seconds(1))
                 try checkCancellation()
 
@@ -393,7 +446,7 @@ final class InstallStore: ObservableObject {
                 if currentSize != lastObservedSize {
                     stableFailureCount = 0
                     addDiagnosticLog("Installer size changed; continuing retries for \(job.sourceURL.lastPathComponent)")
-                    updateCurrentJobState(.installing("Download is still changing. Retrying install"))
+                    updateJob(job.id, state: .installing("Download is still changing. Retrying install"))
                 } else {
                     stableFailureCount += 1
                     guard stableFailureCount <= maxInstallReadinessStableRetries else {
@@ -424,6 +477,7 @@ final class InstallStore: ObservableObject {
     }
 
     func dismissCurrentJob() {
+        guard let job = currentJob, job.state != .awaitingApproval, !isInstalling(job.sourceURL) else { return }
         advanceToNextJob()
     }
 
@@ -437,7 +491,11 @@ final class InstallStore: ObservableObject {
         _ sourceURL: URL,
         approvalBehavior: InstallJob.ApprovalBehavior = .manual
     ) {
-        guard !isHiddenInstallable(sourceURL) else { return }
+        guard !isHiddenInstallable(sourceURL), FileManager.default.fileExists(atPath: sourceURL.path) else { return }
+        guard !isPendingOrInstalling(sourceURL) else {
+            addDiagnosticLog("Ignoring duplicate detection: \(sourceURL.lastPathComponent)")
+            return
+        }
         addDiagnosticLog("Queuing detected installer: \(sourceURL.lastPathComponent)")
         let job = InstallJob(
             sourceURL: sourceURL,
@@ -454,7 +512,42 @@ final class InstallStore: ObservableObject {
     }
 
     private func advanceToNextJob() {
-        currentJob = queuedJobs.isEmpty ? nil : queuedJobs.removeFirst()
+        guard !queuedJobs.isEmpty else {
+            currentJob = nil
+            return
+        }
+
+        let nextJob = queuedJobs.removeFirst()
+        if nextJob.approvalBehavior == .startImmediately, activeInstallJobID == nil {
+            install(job: nextJob)
+        } else {
+            currentJob = nextJob
+        }
+    }
+
+    private func isPendingOrInstalling(_ sourceURL: URL) -> Bool {
+        if queuedJobs.contains(where: { $0.sourceURL == sourceURL }) {
+            return true
+        }
+        guard let currentJob, currentJob.sourceURL == sourceURL else { return false }
+        return currentJob.state == .awaitingApproval || isInstalling(sourceURL)
+    }
+
+    private func isQueuedToInstall(_ sourceURL: URL) -> Bool {
+        queuedJobs.contains { $0.sourceURL == sourceURL && $0.approvalBehavior == .startImmediately }
+    }
+
+    /// Drops prompts for installers that were deleted or moved out of the watched folder.
+    private func removeJobsForMissingInstallers() {
+        let fileManager = FileManager.default
+        queuedJobs.removeAll { !fileManager.fileExists(atPath: $0.sourceURL.path) }
+
+        if let currentJob,
+           currentJob.state == .awaitingApproval,
+           !fileManager.fileExists(atPath: currentJob.sourceURL.path) {
+            addDiagnosticLog("Installer disappeared before approval: \(currentJob.sourceURL.lastPathComponent)")
+            advanceToNextJob()
+        }
     }
 
     private func removePendingJobs(for sourceURL: URL) {
@@ -469,7 +562,12 @@ final class InstallStore: ObservableObject {
     }
 
     private func updateCurrentJobState(_ state: InstallJob.State) {
-        guard var job = currentJob else { return }
+        guard let job = currentJob else { return }
+        updateJob(job.id, state: state)
+    }
+
+    private func updateJob(_ jobID: UUID, state: InstallJob.State) {
+        guard var job = currentJob, job.id == jobID else { return }
         job.state = state
         currentJob = job
         scanWatchedFolder()
@@ -491,10 +589,14 @@ final class InstallStore: ObservableObject {
             return "Could not open the disk image."
         case .noAppFound:
             return "No app was found."
-        case .copyFailed:
+        case .installFolderNotWritable:
             return "Check install folder permissions."
-        case .detachFailed, .deleteFailed:
-            return "Installed, but cleanup failed."
+        case .appRunning:
+            return "Quit the app and try again."
+        case .replaceFailed:
+            return "Could not replace the existing app."
+        case .copyFailed:
+            return "Could not copy the app."
         }
     }
 
@@ -506,7 +608,7 @@ final class InstallStore: ObservableObject {
         switch installError {
         case .attachFailed, .archiveReadFailed, .archiveExtractFailed, .noMountPoint:
             return true
-        case .missingFile, .cancelled, .noAppFound, .copyFailed, .detachFailed, .deleteFailed:
+        case .missingFile, .cancelled, .noAppFound, .installFolderNotWritable, .appRunning, .replaceFailed, .copyFailed:
             return false
         }
     }
@@ -521,8 +623,8 @@ final class InstallStore: ObservableObject {
         }
     }
 
-    private func updateCurrentJob(appName: String, state: InstallJob.State) {
-        guard var job = currentJob else { return }
+    private func updateJob(_ jobID: UUID, appName: String, state: InstallJob.State) {
+        guard var job = currentJob, job.id == jobID else { return }
         job.appName = appName
         job.state = state
         currentJob = job
@@ -650,7 +752,7 @@ final class InstallStore: ObservableObject {
                 return InstallableItem(
                     url: url,
                     kind: kind,
-                    status: status(for: url, kind: kind),
+                    status: status(for: url, kind: kind, installerDate: metadata.date),
                     metadataDate: metadata.date,
                     sizeBytes: metadata.sizeBytes
                 )
@@ -875,12 +977,16 @@ final class InstallStore: ObservableObject {
         )
     }
 
-    private func status(for sourceURL: URL, kind: InstallableKind) -> InstallableItem.Status {
+    private func status(for sourceURL: URL, kind: InstallableKind, installerDate: Date?) -> InstallableItem.Status {
         if let installingStatus = installingStatus(for: sourceURL) {
             return installingStatus
         }
 
-        if let installedAppURL = installedAppURL(for: sourceURL, kind: kind) {
+        if isQueuedToInstall(sourceURL) {
+            return .installing("Waiting to install", startedAt: nil)
+        }
+
+        if let installedAppURL = installedAppURL(for: sourceURL, kind: kind, installerDate: installerDate) {
             return .installed(appURL: installedAppURL, installedAt: installedDate(for: sourceURL))
         }
 
@@ -908,12 +1014,28 @@ final class InstallStore: ObservableObject {
         return false
     }
 
-    private func installedAppURL(for sourceURL: URL, kind: InstallableKind) -> URL? {
+    private func installedAppURL(for sourceURL: URL, kind: InstallableKind, installerDate: Date?) -> URL? {
+        // Prefer what Poppy actually installed from this file; app names often differ from installer names.
+        if let record = records.first(where: {
+            $0.result == .success && $0.sourceName == sourceURL.lastPathComponent && $0.appURL != nil
+        }),
+            let appURL = record.appURL,
+            installerDate.map({ record.date >= $0 }) ?? true,
+            FileManager.default.fileExists(atPath: appURL.path) {
+            return appURL
+        }
+
         for name in appNameCandidates(for: sourceURL, kind: kind) {
             let appURL = installFolderURL.appendingPathComponent(name).appendingPathExtension("app")
-            if FileManager.default.fileExists(atPath: appURL.path) {
-                return appURL
+            guard FileManager.default.fileExists(atPath: appURL.path) else { continue }
+
+            // An app that was already there before this download is an older copy, not this installer.
+            if let installerDate,
+               let appAddedDate = (try? appURL.resourceValues(forKeys: [.addedToDirectoryDateKey]))?.addedToDirectoryDate,
+               appAddedDate < installerDate {
+                continue
             }
+            return appURL
         }
         return nil
     }

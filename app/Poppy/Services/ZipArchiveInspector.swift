@@ -1,6 +1,7 @@
 import Foundation
 
-enum ZipArchiveInspector {
+nonisolated enum ZipArchiveInspector {
+    /// Returns the archive path of the shallowest `.app` bundle, ignoring AppleDouble metadata.
     static func findAppEntry(in zipURL: URL) async throws -> String? {
         let result = try await Shell.run("/usr/bin/zipinfo", arguments: ["-1", zipURL.path])
         guard result.status == 0 else {
@@ -11,6 +12,7 @@ enum ZipArchiveInspector {
             throw InstallServiceError.archiveReadFailed(message)
         }
 
+        var bestEntry: (path: String, depth: Int)?
         for line in result.output.split(separator: "\n") {
             let entry = String(line)
             guard !entry.hasPrefix("__MACOSX/") else { continue }
@@ -20,12 +22,12 @@ enum ZipArchiveInspector {
 
             if let appIndex = components.firstIndex(where: {
                 URL(fileURLWithPath: $0).pathExtension.lowercased() == "app"
-            }) {
-                return components[...appIndex].joined(separator: "/")
+            }), appIndex < (bestEntry?.depth ?? .max) {
+                bestEntry = (components[...appIndex].joined(separator: "/"), appIndex)
             }
         }
 
-        return nil
+        return bestEntry?.path
     }
 
     static func containsAppBundle(_ zipURL: URL) async -> Bool {

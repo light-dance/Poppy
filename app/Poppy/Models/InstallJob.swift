@@ -11,6 +11,8 @@ struct InstallJob: Identifiable, Equatable {
     enum ApprovalBehavior: Equatable {
         case manual
         case autoInstall(afterSeconds: Int)
+        /// The user already chose to install; start as soon as the running install finishes.
+        case startImmediately
     }
 
     let id = UUID()
