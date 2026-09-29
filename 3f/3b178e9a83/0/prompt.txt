@@ -1,0 +1,47 @@
+Use computer use to test Poppy like a real user would. Poppy is a macOS app that watches my Downloads folder for app installers (.dmg, .zip, .app), shows a floating "Install Downloaded App?" panel, and installs the app. A build with new install fixes is already running (look for it in the menu bar or its main window). Its currently setup to watch ~/Library/Mobile Documents/com~apple~CloudDocs/Downloads and install into ~/Applications.
+To use the menu bar and the popup notifications you will need to use the full screen not applescript style control over a specific window
+
+Download real, small, well-known free Mac apps from their official sites or GitHub releases using the browser. Don't change or delete anything I didn't ask for, and don't modify any code. Remove the apps you install when you're done.
+
+Run these checks:
+
+1. Download a normal .dmg app. The Poppy panel should ask to install it. Click Install. Progress should show, then "Installed" with an Open button. Open works, and the disk image isn't left mounted.
+2. Start installing one app. While it's still installing, click Install on a second one in Poppy's main window. The first install shouldn't be interrupted. The second should show as waiting, then install on its own.
+3. Open an app Poppy installed, download it again, and install it while it's running. Poppy should say to quit the app and try again, and that message should stay on screen. Quit the app and install again. It should succeed.
+4. Install an app that ships as a .zip (an Electron app is a good test). It should launch normally, with no "app is damaged" error.
+5. In Poppy's Settings, turn on auto-install. Download an app and don't click anything. It should count down and install by itself. Turn auto-install back off afterwards.
+6. In Poppy's main window, check that installed items show as installed, including one whose download file name differs from the app name (e.g. googlechrome.dmg installs Google Chrome.app).
+
+Also watch for anything broken: panels that don't show up, spinners that never stop, the app freezing during large installs, or wrong text.
+
+Report pass or fail for each check with what you saw, then list any bugs with steps to reproduce.
+
+---
+
+there is a "Rectangle is an app downloaded from the internet. Are you sure you want to open it" dialog on my screen that you've caused. Are you aware of this popup and are you going to deal with it?
+
+---
+
+why cant you just look at the full screen like i can?
+
+---
+
+what the fuck thats not how you uninstall apps on mac. jesus fuck. what are you doing this is going really bad
+
+---
+
+ugh what the fuck. 
+
+so what the fuck did you do and what do i need to do to clean this shit up
+
+---
+
+i already had rectangle pro installed so did what you just did fuck up my existing install and setup????
+
+---
+
+okay. what about our testing? did we find out everything we needed? if so write a very brief writeup against your initial prompt and test plan
+
+---
+
+fuck you seriously

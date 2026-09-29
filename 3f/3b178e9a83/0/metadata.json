@@ -1,0 +1,94 @@
+{
+  "cli_version": "0.11.3",
+  "checkpoint_id": "3f3b178e9a83",
+  "session_id": "01a0eb09-b283-7160-9544-efffb5b458e4",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-29T02:59:53.532876Z",
+  "branch": "main",
+  "checkpoints_count": 5,
+  "save_step_count": 5,
+  "files_touched": [
+    "app/Poppy/Models/InstallJob.swift",
+    "app/Poppy/Services/InstallService.swift",
+    "app/Poppy/Services/Shell.swift",
+    "app/Poppy/Services/ZipArchiveInspector.swift",
+    "app/Poppy/Stores/InstallStore.swift"
+  ],
+  "agent": "Codex",
+  "model": "gpt-6-astra",
+  "turn_id": "bcbd4a1c0150",
+  "compact_transcript_start": 0,
+  "token_usage": {
+    "input_tokens": 142099,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7721984,
+    "output_tokens": 9636,
+    "api_call_count": 90,
+    "subagent_tokens_complete": true
+  },
+  "session_metrics": {
+    "turn_count": 5
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-29T02:59:53.463253Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 8,
+    "human_removed": 175,
+    "total_committed": 0,
+    "total_lines_changed": 189,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 460,
+      "user_lines_removed": 178,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        "app/Poppy/Models/InstallJob.swift": 2,
+        "app/Poppy/Services/InstallService.swift": 243,
+        "app/Poppy/Services/Shell.swift": 57,
+        "app/Poppy/Services/ZipArchiveInspector.swift": 6,
+        "app/Poppy/Stores/InstallStore.swift": 152
+      },
+      "user_removed_per_file": {
+        "app/Poppy/Services/InstallService.swift": 127,
+        "app/Poppy/Services/Shell.swift": 17,
+        "app/Poppy/Services/ZipArchiveInspector.swift": 4,
+        "app/Poppy/Stores/InstallStore.swift": 30
+      }
+    },
+    {
+      "checkpoint_number": 2,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 460,
+      "agent_lines_removed": 178
+    },
+    {
+      "checkpoint_number": 3,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 460,
+      "agent_lines_removed": 178
+    },
+    {
+      "checkpoint_number": 4,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 460,
+      "agent_lines_removed": 178
+    },
+    {
+      "checkpoint_number": 5,
+      "user_lines_added": 0,
+      "user_lines_removed": 0,
+      "agent_lines_added": 460,
+      "agent_lines_removed": 178
+    }
+  ]
+}
